@@ -82,8 +82,8 @@ function buildAnalysis(slug: string, summary: string): ForensicAnalysis {
   };
 }
 
-function toSeed(d: MultilingualCaseDef): SeedCase {
-  const deep = buildMultilingualDeep({
+function multilingualDeepInput(d: MultilingualCaseDef) {
+  return {
     slug: d.slug,
     name: d.name,
     subtitle: d.subtitle,
@@ -105,7 +105,11 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
     primarySourceLanguageLabel: d.primarySourceLanguageLabel,
     translationNote: d.translationNote,
     sourceTitles: d.sources.map((s) => s.originalTitle ?? s.title),
-  });
+  };
+}
+
+function toSeed(d: MultilingualCaseDef): SeedCase {
+  const deep = buildMultilingualDeep(multilingualDeepInput(d));
   return {
     id: `case-${d.slug}`,
     slug: d.slug,
@@ -138,29 +142,7 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
 }
 
 function toEnrichment(d: MultilingualCaseDef): CaseEnrichment {
-  const patch = buildMultilingualDeep({
-    slug: d.slug,
-    name: d.name,
-    subtitle: d.subtitle,
-    overview: d.overview,
-    jurisdiction: d.jurisdiction,
-    location: d.location,
-    era: d.era,
-    yearStart: d.yearStart,
-    yearEnd: d.yearEnd,
-    status: d.status,
-    crimeCategories: d.crimeCategories,
-    offenderName: d.offenderName,
-    offenderBackground: d.offenderNameOriginal
-      ? `Documented in ${d.primarySourceLanguageLabel} press and court files as ${d.offenderNameOriginal}.`
-      : undefined,
-    nameOriginal: d.nameOriginal,
-    offenderNameOriginal: d.offenderNameOriginal,
-    primarySourceLanguage: d.primarySourceLanguage,
-    primarySourceLanguageLabel: d.primarySourceLanguageLabel,
-    translationNote: d.translationNote,
-    sourceTitles: d.sources.map((s) => s.originalTitle ?? s.title),
-  }).enrichmentPatch;
+  const patch = buildMultilingualDeep(multilingualDeepInput(d)).enrichmentPatch;
   return {
     location: d.location,
     country: d.country,
