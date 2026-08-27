@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import type { MonitorPayload } from "@/lib/monitor";
@@ -13,11 +22,14 @@ import { formatDate } from "@/lib/utils";
 type Props = { initial: MonitorPayload };
 type SidebarTab = "overview" | "cases" | "signals";
 
-function filtersToQuery(filters: SearchFilters): string {
+const TAB_IDS: SidebarTab[] = ["overview", "cases", "signals"];
+
+function filtersToQuery(filters: SearchFilters, caseId?: string): string {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(filters)) {
     if (v) p.set(k, String(v));
   }
+  if (caseId) p.set("case", caseId);
   return p.toString();
 }
 
@@ -25,35 +37,70 @@ function activeFilterCount(filters: SearchFilters): number {
   return Object.values(filters).filter(Boolean).length;
 }
 
+function caseIdFromSlug(cases: CrimeCase[], slug: string): string {
+  return cases.find((c) => c.slug === slug || c.id === slug)?.id ?? "";
+}
+
 export function WorldMonitor({ initial }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const [data, setData] = useState(initial);
-  const [selectedCaseId, setSelectedCaseId] = useState("");
+  const [selectedCaseId, setSelectedCaseId] = useState(() => {
+    const slug = searchParams.get("case") ?? "";
+    return caseIdFromSlug(initial.cases, slug);
+  });
   const [liveStatus, setLiveStatus] = useState<"live" | "syncing">("live");
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>("overview");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [keyword, setKeyword] = useState(initial.filters.q ?? "");
+  const [mountedAt] = useState(() => Date.now());
+  const caseCardRef = useRef<HTMLDivElement>(null);
+  const keywordDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const filters = data.filters;
   const countryOptions = data.countryOptions;
   const selectedPin = data.pins.find((p) => p.id === selectedCaseId);
+  const selectedCase = data.cases.find((c) => c.id === selectedCaseId);
   const unsolvedCount = useMemo(
     () => data.cases.filter((c) => c.status === "unsolved").length,
     [data.cases],
   );
+  const unplottedCount = data.unplottedCases.length;
 
   const applyFilters = useCallback(
-    (next: Partial<SearchFilters>) => {
+    (next: Partial<SearchFilters>, caseId?: string) => {
       const merged = { ...filters, ...next };
-      const qs = filtersToQuery(merged);
+      const qs = filtersToQuery(merged, caseId ?? (selectedCaseId || undefined));
       startTransition(() => {
         router.replace(qs ? `/monitor?${qs}` : "/monitor", { scroll: false });
       });
     },
-    [filters, router],
+    [filters, router, selectedCaseId],
+  );
+
+  const selectCase = useCallback(
+    (id: string, opts?: { switchTab?: boolean; syncUrl?: boolean }) => {
+      setSelectedCaseId(id);
+      if (opts?.switchTab !== false) setSidebarTab("cases");
+      if (opts?.syncUrl !== false && id) {
+        const slug = data.cases.find((c) => c.id === id)?.slug;
+        if (slug) {
+          const qs = filtersToQuery(filters, slug);
+          startTransition(() => {
+            router.replace(`/monitor?${qs}`, { scroll: false });
+          });
+        }
+      }
+      if (!id) {
+        const qs = filtersToQuery(filters);
+        startTransition(() => {
+          router.replace(qs ? `/monitor?${qs}` : "/monitor", { scroll: false });
+        });
+      }
+    },
+    [data.cases, filters, router],
   );
 
   const clearFilter = useCallback(
@@ -67,8 +114,26 @@ export function WorldMonitor({ initial }: Props) {
   useEffect(() => {
     setData(initial);
     setKeyword(initial.filters.q ?? "");
-  }, [initial]);
+    const slug = searchParams.get("case") ?? "";
+    if (slug) {
+      const id = caseIdFromSlug(initial.cases, slug);
+      if (id) setSelectedCaseId(id);
+    }
+  }, [initial, searchParams]);
 
+  // Debounced keyword search
+  useEffect(() => {
+    if (keyword === (filters.q ?? "")) return;
+    if (keywordDebounceRef.current) clearTimeout(keywordDebounceRef.current);
+    keywordDebounceRef.current = setTimeout(() => {
+      applyFilters({ q: keyword });
+    }, 400);
+    return () => {
+      if (keywordDebounceRef.current) clearTimeout(keywordDebounceRef.current);
+    };
+  }, [keyword, filters.q, applyFilters]);
+
+  // Poll for updates — skip first tick if SSR data is fresh
   useEffect(() => {
     let cancelled = false;
     async function poll() {
@@ -88,30 +153,56 @@ export function WorldMonitor({ initial }: Props) {
         if (!cancelled) setLiveStatus("live");
       }
     }
-    const id = window.setInterval(poll, 30000);
+
+    const ageMs = Date.now() - mountedAt;
+    const initialDelay = ageMs < 25000 ? 30000 - ageMs : 0;
+    let intervalId: number | undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      void poll();
+      intervalId = window.setInterval(poll, 30000);
+    }, initialDelay);
+
     return () => {
       cancelled = true;
-      window.clearInterval(id);
+      window.clearTimeout(timeoutId);
+      if (intervalId) window.clearInterval(intervalId);
     };
-  }, [searchParams]);
+  }, [searchParams, mountedAt]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setSelectedCaseId("");
+      if (e.key === "Escape") selectCase("");
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [selectCase]);
+
+  // Scroll case card into view on mobile when selected
+  useEffect(() => {
+    if (!selectedCaseId || !caseCardRef.current) return;
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      caseCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [selectedCaseId]);
+
+  function handleTabKey(e: ReactKeyboardEvent<HTMLButtonElement>, tab: SidebarTab) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const idx = TAB_IDS.indexOf(tab);
+    const next = e.key === "ArrowRight" ? (idx + 1) % TAB_IDS.length : (idx - 1 + TAB_IDS.length) % TAB_IDS.length;
+    setSidebarTab(TAB_IDS[next]);
+  }
 
   return (
-    <div className="monitor-dashboard">
+    <div className={`monitor-dashboard ${isPending ? "is-loading" : ""}`}>
       <header className="monitor-hero">
         <div className="monitor-hero-main">
           <p className="label">Live intelligence · forensic archive</p>
           <h1 className="display monitor-title">World crime monitor</h1>
           <p className="monitor-lede">
-            Plot cases on an official OpenStreetMap basemap. Pan, zoom, and filter by country,
-            category, or period — the index and signal feed update in sync.
+            Plot {data.totalCases} archived cases on an OpenStreetMap basemap. Pan, zoom, and filter
+            by country, category, or period — click clusters to drill down.
           </p>
         </div>
         <div className="monitor-hero-meta">
@@ -131,7 +222,7 @@ export function WorldMonitor({ initial }: Props) {
           <span className="monitor-stat-label">Cases shown</span>
         </div>
         <div className="monitor-stat">
-          <span className="monitor-stat-value">{data.pins.length}</span>
+          <span className="monitor-stat-value">{data.plottedCount}</span>
           <span className="monitor-stat-label">On map</span>
         </div>
         <div className="monitor-stat">
@@ -143,6 +234,22 @@ export function WorldMonitor({ initial }: Props) {
           <span className="monitor-stat-label">Unsolved</span>
         </div>
       </div>
+
+      {unplottedCount > 0 ? (
+        <div className="monitor-notice" role="status">
+          <p className="text-sm text-[var(--ink-soft)]">
+            <strong>{unplottedCount}</strong> filtered{" "}
+            {unplottedCount === 1 ? "case lacks" : "cases lack"} map coordinates
+            {unplottedCount <= 4
+              ? `: ${data.unplottedCases.map((c) => c.name).join(", ")}`
+              : ""}
+            .{" "}
+            <Link href="/search" className="text-[var(--accent)] hover:underline">
+              Search full archive
+            </Link>
+          </p>
+        </div>
+      ) : null}
 
       {activeFilterCount(filters) > 0 ? (
         <div className="monitor-chips" aria-label="Active filters">
@@ -184,10 +291,13 @@ export function WorldMonitor({ initial }: Props) {
 
       <div className="monitor-layout">
         <section className="monitor-map-panel">
+          {isPending ? <div className="monitor-map-loading" aria-hidden /> : null}
           <div className="monitor-map-header">
             <h2 className="display text-lg">Global map</h2>
             <span className="text-xs text-[var(--muted)]">
-              {data.pins.length ? `${data.pins.length} markers` : "No markers for current filters"}
+              {data.pins.length
+                ? `${data.pins.length} cases · zoom in to expand clusters`
+                : "No markers for current filters"}
             </span>
           </div>
           <CaseWorldMap
@@ -195,13 +305,14 @@ export function WorldMonitor({ initial }: Props) {
             selectedCountry={filters.country ?? ""}
             selectedCaseId={selectedCaseId}
             onSelectCountry={(code) => applyFilters({ country: code })}
-            onSelectCase={(id) => {
-              setSelectedCaseId(id);
-              setSidebarTab("cases");
-            }}
+            onSelectCase={(id) => selectCase(id)}
           />
           {selectedPin ? (
-            <MonitorCaseCard pin={selectedPin} onClose={() => setSelectedCaseId("")} />
+            <MonitorCaseCard
+              pin={selectedPin}
+              onClose={() => selectCase("")}
+              cardRef={caseCardRef as RefObject<HTMLDivElement | null>}
+            />
           ) : null}
           {!data.pins.length ? (
             <div className="monitor-map-empty">
@@ -217,7 +328,7 @@ export function WorldMonitor({ initial }: Props) {
         </section>
 
         <aside className="monitor-sidebar">
-          <div className="monitor-tabs" role="tablist">
+          <div className="monitor-tabs" role="tablist" aria-label="Monitor panels">
             {(
               [
                 ["overview", "Overview"],
@@ -229,9 +340,13 @@ export function WorldMonitor({ initial }: Props) {
                 key={id}
                 type="button"
                 role="tab"
+                id={`monitor-tab-${id}`}
                 aria-selected={sidebarTab === id}
+                aria-controls={`monitor-panel-${id}`}
+                tabIndex={sidebarTab === id ? 0 : -1}
                 className={`monitor-tab ${sidebarTab === id ? "is-active" : ""}`}
                 onClick={() => setSidebarTab(id)}
+                onKeyDown={(e) => handleTabKey(e, id)}
               >
                 {label}
               </button>
@@ -239,7 +354,7 @@ export function WorldMonitor({ initial }: Props) {
           </div>
 
           {sidebarTab === "overview" ? (
-            <>
+            <div id="monitor-panel-overview" role="tabpanel" aria-labelledby="monitor-tab-overview">
               <section className="monitor-panel">
                 <button
                   type="button"
@@ -251,13 +366,7 @@ export function WorldMonitor({ initial }: Props) {
                   <span className="text-xs text-[var(--muted)]">{filtersOpen ? "Hide" : "Show"}</span>
                 </button>
                 {filtersOpen ? (
-                  <form
-                    className="monitor-filters-form mt-3"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      applyFilters({ q: keyword });
-                    }}
-                  >
+                  <div className="monitor-filters-form mt-3">
                     <label className="monitor-field">
                       <span>Keyword</span>
                       <input
@@ -325,10 +434,13 @@ export function WorldMonitor({ initial }: Props) {
                         className="field"
                       />
                     </label>
-                    <button type="submit" className="btn btn-primary w-full text-sm">
-                      Search keyword
-                    </button>
-                  </form>
+                    <p className="text-xs text-[var(--muted)]">
+                      Keyword search updates as you type.{" "}
+                      <Link href="/search" className="text-[var(--accent)] hover:underline">
+                        Advanced filters →
+                      </Link>
+                    </p>
+                  </div>
                 ) : null}
               </section>
 
@@ -374,29 +486,38 @@ export function WorldMonitor({ initial }: Props) {
                   ) : null}
                 </ul>
               </section>
-            </>
+            </div>
           ) : null}
 
           {sidebarTab === "cases" ? (
-            <section className="monitor-panel monitor-panel-scroll">
+            <section
+              id="monitor-panel-cases"
+              role="tabpanel"
+              aria-labelledby="monitor-tab-cases"
+              className="monitor-panel monitor-panel-scroll"
+            >
               <h2 className="display text-base">Filtered dossiers</h2>
               <ul className="monitor-case-list mt-3">
                 {data.cases.map((c: CrimeCase) => {
                   const pin = data.pins.find((p) => p.id === c.id);
                   const active = selectedCaseId === c.id;
+                  const isTranslated = c.tags.includes("translated-en");
                   return (
                     <li key={c.id}>
                       <button
                         type="button"
                         className={`monitor-case-row ${active ? "is-active" : ""}`}
-                        onClick={() => setSelectedCaseId(c.id)}
+                        onClick={() => selectCase(c.id, { syncUrl: true })}
                       >
                         <span className="monitor-case-year">{c.yearStart}</span>
                         <span className="monitor-case-body">
-                          <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-medium">{c.name}</span>
                             {c.status === "unsolved" ? (
                               <span className="monitor-pill monitor-pill-open">open</span>
+                            ) : null}
+                            {isTranslated ? (
+                              <span className="monitor-pill monitor-pill-lang">translated</span>
                             ) : null}
                           </span>
                           <span className="text-xs text-[var(--muted)]">
@@ -407,7 +528,11 @@ export function WorldMonitor({ initial }: Props) {
                               .join(" · ")}
                           </span>
                         </span>
-                        {pin ? <span className="monitor-case-pin" title="Plotted on map" /> : null}
+                        {pin ? (
+                          <span className="monitor-case-pin" title="Plotted on map" />
+                        ) : (
+                          <span className="monitor-case-pin monitor-case-pin-off" title="No coordinates" />
+                        )}
                       </button>
                     </li>
                   );
@@ -418,20 +543,48 @@ export function WorldMonitor({ initial }: Props) {
                   </li>
                 ) : null}
               </ul>
+              {selectedCase && !selectedPin ? (
+                <div className="monitor-unplotted-card mt-4">
+                  <p className="text-sm font-medium text-[var(--ink)]">{selectedCase.name}</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    This case has no map coordinates.{" "}
+                    <Link href={`/cases/${selectedCase.slug}`} className="text-[var(--accent)] hover:underline">
+                      Open dossier
+                    </Link>
+                  </p>
+                </div>
+              ) : null}
             </section>
           ) : null}
 
           {sidebarTab === "signals" ? (
-            <section className="monitor-panel monitor-panel-scroll">
+            <section
+              id="monitor-panel-signals"
+              role="tabpanel"
+              aria-labelledby="monitor-tab-signals"
+              className="monitor-panel monitor-panel-scroll"
+            >
               <h2 className="display text-base">Live signals</h2>
-              <p className="mt-1 text-xs text-[var(--muted)]">Refreshes every 30 seconds</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Refreshes every 30 seconds ·{" "}
+                <Link href="/live" className="text-[var(--accent)] hover:underline">
+                  Full feed
+                </Link>
+              </p>
               <ul className="monitor-feed mt-4">
                 {data.updates.map((u: LiveUpdate) => (
                   <li key={u.id} className="monitor-feed-item">
                     <time className="monitor-feed-time">{formatDate(u.createdAt)}</time>
                     <span className="monitor-feed-kind">{u.kind.replaceAll("_", " ")}</span>
                     {u.caseSlug ? (
-                      <Link href={`/cases/${u.caseSlug}`} className="monitor-feed-link">
+                      <Link
+                        href={`/monitor?case=${u.caseSlug}`}
+                        className="monitor-feed-link"
+                        onClick={() => {
+                          const id = caseIdFromSlug(data.cases, u.caseSlug!);
+                          if (id) selectCase(id, { switchTab: true, syncUrl: false });
+                        }}
+                      >
                         {u.headline}
                       </Link>
                     ) : (

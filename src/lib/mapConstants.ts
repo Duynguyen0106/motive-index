@@ -136,8 +136,14 @@ export const COUNTRY_BOUNDS: Record<CountryCode, [[number, number], [number, num
   OTHER: null,
 };
 
-export const WORLD_GEOJSON_URL =
-  "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geojson";
+/** Bundled country boundaries (ISO3 feature ids). External fallback if missing. */
+export const WORLD_GEOJSON_LOCAL = "/data/world-countries.geojson";
+
+export const WORLD_GEOJSON_FALLBACK =
+  "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
+
+/** @deprecated Use WORLD_GEOJSON_LOCAL */
+export const WORLD_GEOJSON_URL = WORLD_GEOJSON_LOCAL;
 
 export const MAP_TILE_URL =
   "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";

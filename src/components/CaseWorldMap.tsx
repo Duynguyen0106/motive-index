@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
+import { getLeaflet, getLeafletWithCluster } from "@/lib/leafletClient";
 import {
   COUNTRY_BOUNDS,
   COUNTRY_ISO3,
@@ -14,11 +15,12 @@ import {
   MAP_TILE_URL,
   MAX_MAP_ZOOM,
   MIN_MAP_ZOOM,
-  WORLD_GEOJSON_URL,
+  WORLD_GEOJSON_FALLBACK,
+  WORLD_GEOJSON_LOCAL,
 } from "@/lib/mapConstants";
 import type { CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
-import type { GeoJSON as GeoJSONType, Layer, Map as LeafletMap, Path } from "leaflet";
+import type { GeoJSON as GeoJSONType, FeatureGroup, Layer, Map as LeafletMap, Path } from "leaflet";
 
 type Props = {
   pins: MonitorCasePin[];
@@ -47,6 +49,19 @@ function markerHtml(active: boolean, unsolved: boolean): string {
   return `<span class="monitor-leaflet-marker" style="width:${size}px;height:${size}px;background:${color}">${ring}</span>`;
 }
 
+async function fetchCountryGeoJson(): Promise<GeoJSON.FeatureCollection> {
+  for (const url of [WORLD_GEOJSON_LOCAL, WORLD_GEOJSON_FALLBACK]) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      return (await res.json()) as GeoJSON.FeatureCollection;
+    } catch {
+      /* try next source */
+    }
+  }
+  throw new Error("Country boundaries unavailable");
+}
+
 export function CaseWorldMap({
   pins,
   selectedCountry = "",
@@ -56,18 +71,21 @@ export function CaseWorldMap({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
-  const markersRef = useRef<Layer[]>([]);
+  const clusterRef = useRef<FeatureGroup | null>(null);
   const highlightRef = useRef<Layer | null>(null);
   const geoJsonRef = useRef<GeoJSONType | null>(null);
   const onSelectCountryRef = useRef(onSelectCountry);
+  const onSelectCaseRef = useRef(onSelectCase);
   const selectedCountryRef = useRef(selectedCountry);
   const [ready, setReady] = useState(false);
   const [hint, setHint] = useState("Loading map…");
+  const [clusterCount, setClusterCount] = useState(0);
 
   useEffect(() => {
     onSelectCountryRef.current = onSelectCountry;
+    onSelectCaseRef.current = onSelectCase;
     selectedCountryRef.current = selectedCountry;
-  }, [onSelectCountry, selectedCountry]);
+  }, [onSelectCountry, onSelectCase, selectedCountry]);
 
   // Init Leaflet map once
   useEffect(() => {
@@ -76,8 +94,7 @@ export function CaseWorldMap({
     if (!container || mapRef.current) return;
 
     (async () => {
-      const L = (await import("leaflet")).default;
-      await import("leaflet/dist/leaflet.css");
+      const L = await getLeafletWithCluster();
 
       if (cancelled || !containerRef.current) return;
 
@@ -97,18 +114,37 @@ export function CaseWorldMap({
         maxZoom: MAX_MAP_ZOOM,
       }).addTo(map);
 
+      const cluster = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        maxClusterRadius: 52,
+        spiderfyOnMaxZoom: true,
+        disableClusteringAtZoom: 8,
+        iconCreateFunction: (group: { getChildCount: () => number; getAllChildMarkers: () => L.Marker[] }) => {
+          const count = group.getChildCount();
+          const hasUnsolved = group
+            .getAllChildMarkers()
+            .some((m: L.Marker) => (m.options as { unsolved?: boolean }).unsolved);
+          const size = count < 10 ? 36 : count < 25 ? 42 : 48;
+          return L.divIcon({
+            html: `<span class="monitor-cluster ${hasUnsolved ? "has-unsolved" : ""}">${count}</span>`,
+            className: "monitor-cluster-icon",
+            iconSize: [size, size],
+          });
+        },
+      });
+      cluster.addTo(map);
+      clusterRef.current = cluster;
+
       mapRef.current = map;
       setReady(true);
-      setHint("Drag to pan · Scroll or pinch to zoom");
+      setHint("Drag to pan · Scroll or pinch to zoom · Click clusters to expand");
 
-      // Load official country boundaries
       try {
-        const res = await fetch(WORLD_GEOJSON_URL);
-        const data = await res.json();
+        const data = await fetchCountryGeoJson();
         if (cancelled || !mapRef.current) return;
 
         const layer = L.geoJSON(data, {
-          style: (feature) => {
+          style: (feature?: GeoJSON.Feature) => {
             const iso3 = featureIso3(feature);
             const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
             const active = selectedCountry && code === selectedCountry;
@@ -119,7 +155,7 @@ export function CaseWorldMap({
               fillOpacity: active ? 0.12 : 0.03,
             };
           },
-          onEachFeature: (feature, featureLayer) => {
+          onEachFeature: (feature: GeoJSON.Feature, featureLayer: Layer) => {
             const iso3 = featureIso3(feature);
             const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
             if (!code) return;
@@ -140,6 +176,7 @@ export function CaseWorldMap({
 
     return () => {
       cancelled = true;
+      clusterRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
       geoJsonRef.current = null;
@@ -149,52 +186,56 @@ export function CaseWorldMap({
 
   // Sync markers when pins / selection change
   useEffect(() => {
-    if (!ready || !mapRef.current) return;
+    if (!ready || !mapRef.current || !clusterRef.current) return;
 
     (async () => {
-      const L = (await import("leaflet")).default;
-      const map = mapRef.current!;
+      const L = await getLeaflet();
+      const cluster = clusterRef.current!;
 
-      for (const layer of markersRef.current) {
-        map.removeLayer(layer);
-      }
-      markersRef.current = [];
+      cluster.clearLayers();
 
       for (const pin of pins) {
         const active = selectedCaseId === pin.id;
         const unsolved = pin.status === "unsolved";
         const marker = L.marker([pin.lat, pin.lng], {
+          unsolved,
           icon: L.divIcon({
             className: "monitor-leaflet-icon",
             html: markerHtml(active, unsolved),
             iconSize: [20, 20],
             iconAnchor: [10, 10],
           }),
-        });
+        } as L.MarkerOptions & { unsolved?: boolean });
 
-        marker.bindTooltip(pin.name, {
-          direction: "top",
-          offset: [0, -8],
-          opacity: 0.95,
-        });
+        marker.bindTooltip(
+          `<strong>${pin.name}</strong><br/>${pin.yearStart}${pin.yearEnd ? `–${pin.yearEnd}` : ""} · ${COUNTRY_LABELS[pin.country]}`,
+          {
+            direction: "top",
+            offset: [0, -8],
+            opacity: 0.95,
+          },
+        );
 
         marker.on("click", () => {
-          onSelectCase?.(pin.id);
-          map.flyTo([pin.lat, pin.lng], Math.max(map.getZoom(), 5), { duration: 0.6 });
+          onSelectCaseRef.current?.(pin.id);
+          mapRef.current?.flyTo([pin.lat, pin.lng], Math.max(mapRef.current.getZoom(), 6), {
+            duration: 0.6,
+          });
         });
 
-        marker.addTo(map);
-        markersRef.current.push(marker);
+        cluster.addLayer(marker);
       }
+
+      setClusterCount(cluster.getLayers().length);
     })();
-  }, [pins, ready, selectedCaseId, onSelectCase]);
+  }, [pins, ready, selectedCaseId]);
 
   // Highlight country + fly to bounds
   useEffect(() => {
     if (!ready || !geoJsonRef.current) return;
 
     (async () => {
-      const L = (await import("leaflet")).default;
+      const L = await getLeaflet();
       const map = mapRef.current!;
 
       if (highlightRef.current) {
@@ -229,6 +270,11 @@ export function CaseWorldMap({
         if (bounds) {
           map.flyToBounds(bounds, { padding: [24, 24], duration: 0.8, maxZoom: 5 });
         }
+      } else if (pins.length && clusterRef.current) {
+        const bounds = clusterRef.current.getBounds();
+        if (bounds.isValid()) {
+          map.flyToBounds(bounds, { padding: [32, 32], duration: 0.8, maxZoom: 4 });
+        }
       } else if (pins.length) {
         const latLngs = pins.map((p) => [p.lat, p.lng] as [number, number]);
         if (latLngs.length === 1) {
@@ -254,8 +300,15 @@ export function CaseWorldMap({
   function resetView() {
     if (!mapRef.current) return;
     void (async () => {
-      const L = (await import("leaflet")).default;
+      const L = await getLeaflet();
       if (!mapRef.current) return;
+      if (clusterRef.current && clusterRef.current.getLayers().length) {
+        const bounds = clusterRef.current.getBounds();
+        if (bounds.isValid()) {
+          mapRef.current.fitBounds(bounds, { padding: [32, 32], maxZoom: 4 });
+          return;
+        }
+      }
       if (pins.length) {
         const latLngs = pins.map((p) => [p.lat, p.lng] as [number, number]);
         if (latLngs.length === 1) {
@@ -291,7 +344,7 @@ export function CaseWorldMap({
           <span className="monitor-dot monitor-dot-unsolved" /> Unsolved
         </span>
         <span className="monitor-legend-meta">
-          {pins.length} plotted · OpenStreetMap
+          {pins.length} cases · {clusterCount} markers · OpenStreetMap
         </span>
       </div>
     </div>
@@ -302,13 +355,21 @@ export function CaseWorldMap({
 export function MonitorCaseCard({
   pin,
   onClose,
+  cardRef,
 }: {
   pin: MonitorCasePin;
   onClose?: () => void;
+  cardRef?: RefObject<HTMLDivElement | null>;
 }) {
   const unsolved = pin.status === "unsolved";
   return (
-    <div className="monitor-case-card" role="dialog" aria-label={`Case: ${pin.name}`}>
+    <div
+      ref={cardRef}
+      className="monitor-case-card"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Case: ${pin.name}`}
+    >
       <div className="monitor-case-card-accent" data-status={pin.status} />
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">

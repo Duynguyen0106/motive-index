@@ -13,11 +13,21 @@ export type CountryMonitorStat = {
   categories: string[];
 };
 
+export type UnplottedCase = {
+  id: string;
+  slug: string;
+  name: string;
+  country: CountryCode;
+  reason: "no_coordinates" | "unknown_region";
+};
+
 export type MonitorPayload = {
   generatedAt: string;
   filters: SearchFilters;
   totalCases: number;
   filteredCount: number;
+  plottedCount: number;
+  unplottedCases: UnplottedCase[];
   countryOptions: CountryCode[];
   countryStats: CountryMonitorStat[];
   pins: ReturnType<typeof spreadPins>;
@@ -63,12 +73,27 @@ export function buildMonitorPayload(
   const rawPins = cases
     .map((c) => toMonitorPin(c))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const plottedIds = new Set(rawPins.map((p) => p.id));
+  const unplottedCases = cases
+    .filter((c) => !plottedIds.has(c.id))
+    .map((c) => ({
+      id: c.id,
+      slug: c.slug,
+      name: c.name,
+      country: resolveCaseCountry(c),
+      reason:
+        resolveCaseCountry(c) === "OTHER"
+          ? ("unknown_region" as const)
+          : ("no_coordinates" as const),
+    }));
 
   return {
     generatedAt: new Date().toISOString(),
     filters,
     totalCases: all.length,
     filteredCount: cases.length,
+    plottedCount: rawPins.length,
+    unplottedCases,
     countryOptions: listCountryOptions(all),
     countryStats: buildCountryStats(cases),
     pins: spreadPins(rawPins),

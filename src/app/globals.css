@@ -428,6 +428,68 @@ a {
   margin-bottom: 1rem;
 }
 
+.monitor-notice {
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--paper);
+}
+
+.monitor-dashboard.is-loading .monitor-map-panel {
+  position: relative;
+}
+
+.monitor-map-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: rgb(250 248 244 / 45%);
+  pointer-events: none;
+  animation: monitor-pulse 1.2s ease-in-out infinite;
+}
+
+.monitor-cluster-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.monitor-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  background: var(--accent);
+  color: var(--paper);
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgb(26 24 20 / 18%);
+}
+
+.monitor-cluster.has-unsolved {
+  background: var(--maroon);
+}
+
+.monitor-pill-lang {
+  background: var(--bg-subtle);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.monitor-case-pin-off {
+  background: var(--line) !important;
+  opacity: 0.45;
+}
+
+.monitor-unplotted-card {
+  padding: 0.75rem;
+  border: 1px dashed var(--line-strong);
+  background: var(--bg-subtle);
+}
+
 .monitor-chip {
   display: inline-flex;
   align-items: center;
@@ -454,7 +516,7 @@ a {
 }
 
 .monitor-header {
-  display: none;
+  display: none; /* legacy slot — hero replaces header */
 }
 
 .monitor-status {
