@@ -830,6 +830,49 @@ a.monitor-news-headline:hover {
   max-height: min(68vh, 640px);
 }
 
+.monitor-sidebar-fab {
+  display: none;
+}
+
+.monitor-quick-filters .monitor-chip {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--bg-subtle);
+  font-size: 0.6875rem;
+}
+
+@media (max-width: 1023px) {
+  .monitor-sidebar-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 0.5rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+
+  .monitor-sidebar-fab:hover {
+    background: var(--bg-subtle);
+    border-color: var(--accent);
+  }
+
+  .monitor-sidebar.is-collapsed {
+    display: none;
+  }
+
+  .monitor-sidebar:not(.is-collapsed) {
+    animation: monitor-card-in 0.2s ease-out;
+  }
+}
+
 @media (min-width: 1024px) {
   .monitor-sidebar {
     position: sticky;

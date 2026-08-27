@@ -399,9 +399,33 @@ export function MonitorCaseCard({
       <p className="mt-1 font-mono text-[10px] text-[var(--muted)]">
         {pin.lat.toFixed(2)}°, {pin.lng.toFixed(2)}°
       </p>
-      <Link href={`/cases/${pin.slug}`} className="btn btn-primary mt-4 block text-center text-sm">
-        Open dossier →
-      </Link>
+      <div className="mt-4 flex flex-col gap-2">
+        <Link href={`/cases/${pin.slug}`} className="btn btn-primary block text-center text-sm">
+          Open dossier →
+        </Link>
+        <ShareMonitorLink slug={pin.slug} />
+      </div>
     </div>
+  );
+}
+
+function ShareMonitorLink({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyLink() {
+    const url = `${window.location.origin}/?case=${encodeURIComponent(slug)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <button type="button" onClick={() => void copyLink()} className="btn btn-ghost text-sm">
+      {copied ? "Link copied" : "Copy map link"}
+    </button>
   );
 }

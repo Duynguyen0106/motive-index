@@ -16,6 +16,22 @@ export type WorldNewsFeed = {
 /** Regional Google News RSS + international crime desks (public RSS). */
 export const WORLD_NEWS_FEEDS: WorldNewsFeed[] = [
   {
+    id: "us-en",
+    region: "United States",
+    country: "US",
+    language: "en",
+    languageLabel: "English",
+    url: "https://news.google.com/rss/search?q=murder+trial+OR+homicide+OR+serial+killer&hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    id: "ca-en",
+    region: "Canada",
+    country: "CA",
+    language: "en",
+    languageLabel: "English",
+    url: "https://news.google.com/rss/search?q=murder+OR+homicide+Canada&hl=en-CA&gl=CA&ceid=CA:en",
+  },
+  {
     id: "global-en",
     region: "Global",
     language: "en",
@@ -47,12 +63,52 @@ export const WORLD_NEWS_FEEDS: WorldNewsFeed[] = [
     url: "https://news.google.com/rss/search?q=meurtre+OR+homicide+OR+criminalit%C3%A9&hl=fr&gl=FR&ceid=FR:fr",
   },
   {
+    id: "eu-es",
+    region: "Europe (Spain)",
+    country: "ES",
+    language: "es",
+    languageLabel: "Spanish",
+    url: "https://news.google.com/rss/search?q=asesinato+OR+homicidio+OR+crimen&hl=es&gl=ES&ceid=ES:es",
+  },
+  {
+    id: "eu-it",
+    region: "Europe (Italy)",
+    country: "IT",
+    language: "it",
+    languageLabel: "Italian",
+    url: "https://news.google.com/rss/search?q=omicidio+OR+assassino+OR+cronaca+nera&hl=it&gl=IT&ceid=IT:it",
+  },
+  {
+    id: "latam-br",
+    region: "Brazil",
+    country: "BR",
+    language: "pt",
+    languageLabel: "Portuguese",
+    url: "https://news.google.com/rss/search?q=homic%C3%ADdio+OR+assassinato+OR+serial&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+  },
+  {
     id: "latam-es",
     region: "Latin America",
     country: "MX",
     language: "es",
     languageLabel: "Spanish",
     url: "https://news.google.com/rss/search?q=homicidio+OR+asesinato+OR+crimen&hl=es-419&gl=MX&ceid=MX:es-419",
+  },
+  {
+    id: "asia-kr",
+    region: "East Asia (South Korea)",
+    country: "KR",
+    language: "ko",
+    languageLabel: "Korean",
+    url: "https://news.google.com/rss/search?q=%EC%82%B4%EC%9D%B8+OR+%EB%B2%94%EC%A3%84&hl=ko&gl=KR&ceid=KR:ko",
+  },
+  {
+    id: "asia-cn",
+    region: "East Asia (China)",
+    country: "CN",
+    language: "zh",
+    languageLabel: "Chinese",
+    url: "https://news.google.com/rss/search?q=%E8%B0%8B%E6%9D%80+OR+%E5%87%B6%E6%9D%80&hl=zh-CN&gl=CN&ceid=CN:zh-Hans",
   },
   {
     id: "asia-jp",
@@ -69,6 +125,14 @@ export const WORLD_NEWS_FEEDS: WorldNewsFeed[] = [
     language: "en",
     languageLabel: "English",
     url: "https://news.google.com/rss/search?q=murder+OR+homicide+India&hl=en-IN&gl=IN&ceid=IN:en",
+  },
+  {
+    id: "nordic-se",
+    region: "Nordic (Sweden)",
+    country: "SE",
+    language: "sv",
+    languageLabel: "Swedish",
+    url: "https://news.google.com/rss/search?q=mord+OR+brott+OR+seriem%C3%B6rdare&hl=sv&gl=SE&ceid=SE:sv",
   },
   {
     id: "oceania-au",
@@ -167,6 +231,12 @@ function looksLikeCrimeNews(text: string): boolean {
     "犯罪",
     "قتل",
     "جريمة",
+    "omicidio",
+    "homicídio",
+    "assassinato",
+    "살인",
+    "谋杀",
+    "mord",
   ];
   return keys.some((k) => hay.includes(k));
 }

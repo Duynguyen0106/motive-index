@@ -26,12 +26,21 @@ type SidebarTab = "overview" | "cases" | "news" | "signals";
 
 const TAB_IDS: SidebarTab[] = ["overview", "cases", "news", "signals"];
 
-function filtersToQuery(filters: SearchFilters, caseId?: string): string {
+function parseSidebarTab(value: string | null): SidebarTab {
+  if (value && TAB_IDS.includes(value as SidebarTab)) return value as SidebarTab;
+  return "overview";
+}
+
+function buildMonitorQuery(
+  filters: SearchFilters,
+  opts?: { caseSlug?: string; tab?: SidebarTab },
+): string {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(filters)) {
     if (v) p.set(k, String(v));
   }
-  if (caseId) p.set("case", caseId);
+  if (opts?.caseSlug) p.set("case", opts.caseSlug);
+  if (opts?.tab && opts.tab !== "overview") p.set("tab", opts.tab);
   return p.toString();
 }
 
@@ -54,7 +63,11 @@ export function WorldMonitor({ initial }: Props) {
     return caseIdFromSlug(initial.cases, slug);
   });
   const [liveStatus, setLiveStatus] = useState<"live" | "syncing">("live");
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("overview");
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>(() =>
+    parseSidebarTab(searchParams.get("tab")),
+  );
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [keyword, setKeyword] = useState(initial.filters.q ?? "");
   const [mountedAt] = useState(() => Date.now());
@@ -74,35 +87,71 @@ export function WorldMonitor({ initial }: Props) {
   const applyFilters = useCallback(
     (next: Partial<SearchFilters>, caseId?: string) => {
       const merged = { ...filters, ...next };
-      const qs = filtersToQuery(merged, caseId ?? (selectedCaseId || undefined));
+      const slug = caseId
+        ? data.cases.find((c) => c.id === caseId)?.slug ?? caseId
+        : selectedCaseId
+          ? data.cases.find((c) => c.id === selectedCaseId)?.slug
+          : undefined;
+      const qs = buildMonitorQuery(merged, { caseSlug: slug, tab: sidebarTab });
       startTransition(() => {
         router.replace(qs ? `/?${qs}` : "/", { scroll: false });
       });
     },
-    [filters, router, selectedCaseId],
+    [filters, router, selectedCaseId, sidebarTab, data.cases],
+  );
+
+  const syncMonitorUrl = useCallback(
+    (opts?: { caseId?: string; tab?: SidebarTab; clearCase?: boolean }) => {
+      const slug = opts?.clearCase
+        ? undefined
+        : opts?.caseId
+          ? data.cases.find((c) => c.id === opts.caseId)?.slug
+          : selectedCaseId
+            ? data.cases.find((c) => c.id === selectedCaseId)?.slug
+            : undefined;
+      const tab = opts?.tab ?? sidebarTab;
+      const qs = buildMonitorQuery(filters, { caseSlug: slug, tab });
+      startTransition(() => {
+        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+      });
+    },
+    [data.cases, filters, router, selectedCaseId, sidebarTab],
+  );
+
+  const selectTab = useCallback(
+    (tab: SidebarTab) => {
+      setSidebarTab(tab);
+      if (isMobileLayout) setSidebarOpen(true);
+      syncMonitorUrl({ tab });
+    },
+    [isMobileLayout, syncMonitorUrl],
   );
 
   const selectCase = useCallback(
     (id: string, opts?: { switchTab?: boolean; syncUrl?: boolean }) => {
       setSelectedCaseId(id);
-      if (opts?.switchTab !== false) setSidebarTab("cases");
+      const nextTab = opts?.switchTab !== false ? ("cases" as SidebarTab) : sidebarTab;
+      if (opts?.switchTab !== false) {
+        setSidebarTab("cases");
+        if (isMobileLayout) setSidebarOpen(true);
+      }
       if (opts?.syncUrl !== false && id) {
         const slug = data.cases.find((c) => c.id === id)?.slug;
         if (slug) {
-          const qs = filtersToQuery(filters, slug);
+          const qs = buildMonitorQuery(filters, { caseSlug: slug, tab: nextTab });
           startTransition(() => {
             router.replace(`/?${qs}`, { scroll: false });
           });
         }
       }
       if (!id) {
-        const qs = filtersToQuery(filters);
+        const qs = buildMonitorQuery(filters, { tab: sidebarTab });
         startTransition(() => {
           router.replace(qs ? `/?${qs}` : "/", { scroll: false });
         });
       }
     },
-    [data.cases, filters, router],
+    [data.cases, filters, router, sidebarTab, isMobileLayout],
   );
 
   const clearFilter = useCallback(
@@ -121,7 +170,20 @@ export function WorldMonitor({ initial }: Props) {
       const id = caseIdFromSlug(initial.cases, slug);
       if (id) setSelectedCaseId(id);
     }
+    setSidebarTab(parseSidebarTab(searchParams.get("tab")));
   }, [initial, searchParams]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const update = () => {
+      const mobile = mq.matches;
+      setIsMobileLayout(mobile);
+      if (!mobile) setSidebarOpen(true);
+    };
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Debounced keyword search
   useEffect(() => {
@@ -192,9 +254,19 @@ export function WorldMonitor({ initial }: Props) {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
     const idx = TAB_IDS.indexOf(tab);
-    const next = e.key === "ArrowRight" ? (idx + 1) % TAB_IDS.length : (idx - 1 + TAB_IDS.length) % TAB_IDS.length;
-    setSidebarTab(TAB_IDS[next]);
+    const next =
+      e.key === "ArrowRight"
+        ? (idx + 1) % TAB_IDS.length
+        : (idx - 1 + TAB_IDS.length) % TAB_IDS.length;
+    selectTab(TAB_IDS[next]);
   }
+
+  const sidebarTabLabels: Record<SidebarTab, string> = {
+    overview: "Overview",
+    cases: `Cases (${data.cases.length})`,
+    news: `News (${data.worldNews.items.length})`,
+    signals: "Signals",
+  };
 
   return (
     <div className={`monitor-dashboard ${isPending ? "is-loading" : ""}`}>
@@ -359,16 +431,24 @@ export function WorldMonitor({ initial }: Props) {
           ) : null}
         </section>
 
-        <aside className="monitor-sidebar">
+        {isMobileLayout ? (
+          <button
+            type="button"
+            className="monitor-sidebar-fab"
+            aria-expanded={sidebarOpen}
+            aria-controls="monitor-sidebar"
+            onClick={() => setSidebarOpen((open) => !open)}
+          >
+            {sidebarOpen ? "Hide panels" : `Show ${sidebarTabLabels[sidebarTab]}`}
+          </button>
+        ) : null}
+
+        <aside
+          id="monitor-sidebar"
+          className={`monitor-sidebar ${isMobileLayout && !sidebarOpen ? "is-collapsed" : ""}`}
+        >
           <div className="monitor-tabs" role="tablist" aria-label="Monitor panels">
-            {(
-              [
-                ["overview", "Overview"],
-                ["cases", `Cases (${data.cases.length})`],
-                ["news", `News (${data.worldNews.items.length})`],
-                ["signals", "Signals"],
-              ] as const
-            ).map(([id, label]) => (
+            {TAB_IDS.map((id) => (
               <button
                 key={id}
                 type="button"
@@ -378,10 +458,10 @@ export function WorldMonitor({ initial }: Props) {
                 aria-controls={`monitor-panel-${id}`}
                 tabIndex={sidebarTab === id ? 0 : -1}
                 className={`monitor-tab ${sidebarTab === id ? "is-active" : ""}`}
-                onClick={() => setSidebarTab(id)}
+                onClick={() => selectTab(id)}
                 onKeyDown={(e) => handleTabKey(e, id)}
               >
-                {label}
+                {sidebarTabLabels[id]}
               </button>
             ))}
           </div>
@@ -478,6 +558,39 @@ export function WorldMonitor({ initial }: Props) {
                     </p>
                   </div>
                 ) : null}
+                <div className="monitor-quick-filters mt-4 border-t border-[var(--line)] pt-4">
+                  <p className="text-xs font-semibold tracking-[0.08em] text-[var(--muted)] uppercase">
+                    Quick filters
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className="monitor-chip"
+                      onClick={() => applyFilters({ status: "unsolved", country: "", crimeCategory: "" })}
+                    >
+                      Unsolved
+                    </button>
+                    <button
+                      type="button"
+                      className="monitor-chip"
+                      onClick={() => applyFilters({ country: "US", status: "", crimeCategory: "" })}
+                    >
+                      United States
+                    </button>
+                    <button
+                      type="button"
+                      className="monitor-chip"
+                      onClick={() =>
+                        applyFilters({ crimeCategory: "serial_murder", status: "", country: "" })
+                      }
+                    >
+                      Serial murder
+                    </button>
+                    <button type="button" className="monitor-chip" onClick={() => selectTab("news")}>
+                      Live news
+                    </button>
+                  </div>
+                </div>
               </section>
 
               <section className="monitor-panel">

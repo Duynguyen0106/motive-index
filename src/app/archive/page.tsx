@@ -43,9 +43,14 @@ export default function ArchivePage() {
               <h2 className="display mt-2 text-3xl text-[var(--ink)]">{cotw.name}</h2>
               <p className="mt-2 text-[var(--ink-soft)]">{cotw.subtitle}</p>
             </div>
-            <Link href={`/cases/${cotw.id}`} className="btn btn-primary mt-4 md:mt-0">
-              Read dossier
-            </Link>
+            <div className="mt-4 flex flex-wrap gap-2 md:mt-0">
+              <Link href={`/cases/${cotw.slug}`} className="btn btn-primary">
+                Read dossier
+              </Link>
+              <Link href={`/?case=${cotw.slug}`} className="btn btn-ghost">
+                Plot on map
+              </Link>
+            </div>
           </div>
         </section>
       ) : null}

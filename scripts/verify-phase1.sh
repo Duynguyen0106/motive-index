@@ -67,7 +67,8 @@ expect_200 "GET /contribute" "$BASE/contribute"
 expect_200 "GET /about" "$BASE/about"
 expect_200 "GET /method" "$BASE/method"
 expect_200 "GET /live" "$BASE/live"
-expect_200 "GET /monitor" "$BASE/monitor"
+code=$(http_code "$BASE/monitor")
+if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /monitor redirects to home" 1; else check "GET /monitor redirects to home [got $code]" 0; fi
 expect_200 "GET /api/monitor" "$BASE/api/monitor"
 expect_contains "Monitor filter country US" "$BASE/?country=US" "Ted Bundy"
 expect_contains "Live country filter" "$BASE/live?country=US" "United States"

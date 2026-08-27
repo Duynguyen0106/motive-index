@@ -89,10 +89,10 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
                   {c.narrative?.reviewNote ? ` · ${c.narrative.reviewNote}` : ""}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                  <Link href={`/cases/${c.id}?tab=story`} className="text-link">
+                  <Link href={`/cases/${c.slug}?tab=story`} className="text-link">
                     Preview full story
                   </Link>
-                  <Link href={`/cases/${c.id}`} className="text-[var(--muted)] hover:text-[var(--ink)]">
+                  <Link href={`/cases/${c.slug}`} className="text-[var(--muted)] hover:text-[var(--ink)]">
                     Open dossier
                   </Link>
                 </div>

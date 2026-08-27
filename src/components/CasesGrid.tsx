@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
+import { monitorUrlFromFilters } from "@/lib/search";
 import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
@@ -93,6 +94,22 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
 
       <p className="mb-3 text-sm text-[var(--muted)]">
         {filtered.length} of {cases.length} shown
+        {country || crimeType || q.trim() ? (
+          <>
+            {" "}
+            ·{" "}
+            <Link
+              href={monitorUrlFromFilters({
+                country,
+                crimeCategory: crimeType,
+                q: q.trim(),
+              })}
+              className="text-[var(--accent)] hover:underline"
+            >
+              View on map
+            </Link>
+          </>
+        ) : null}
       </p>
 
       <div className="index-table">
