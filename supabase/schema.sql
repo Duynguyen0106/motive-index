@@ -69,7 +69,9 @@ create policy "Auth update cases"
   to authenticated
   using (true);
 
-create policy "Auth insert documents"
-  on public.documents for insert
-  to authenticated
-  with check (true);
+-- Moderation helpers (optional view)
+create or replace view public.cases_awaiting_moderation as
+select *
+from public.cases
+where coalesce(payload->'analysis'->>'status', '') in ('draft', 'pending')
+   or payload->'tags' ? 'awaiting-moderation';

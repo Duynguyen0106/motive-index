@@ -267,6 +267,79 @@ export function upsertCase(next: CrimeCase): CrimeCase {
   return next;
 }
 
+export function getModerationQueue(): CrimeCase[] {
+  return getAllCases().filter((c) => {
+    const awaiting =
+      c.tags.includes("awaiting-moderation") ||
+      c.tags.includes("live-ingest") ||
+      c.tags.includes("admin-created") ||
+      c.analysis.status === "draft" ||
+      c.analysis.status === "pending";
+    const rejected = c.tags.includes("rejected");
+    return awaiting && !rejected && c.analysis.status !== "published";
+  });
+}
+
+export function publishCase(slug: string, reviewerEmail: string): CrimeCase | undefined {
+  const existing = getCaseBySlug(slug);
+  if (!existing) return undefined;
+  const tags = existing.tags.filter(
+    (t) => !["awaiting-moderation", "draft", "rejected"].includes(t),
+  );
+  if (!tags.includes("published")) tags.push("published");
+
+  return upsertCase({
+    ...existing,
+    tags,
+    analysis: {
+      ...existing.analysis,
+      status: "published",
+      reviewedByHuman: true,
+      updatedAt: new Date().toISOString(),
+      expertCommentary: [
+        ...(existing.analysis.expertCommentary ?? []),
+        {
+          id: `mod-${Date.now()}`,
+          author: reviewerEmail,
+          role: "editor",
+          title: "Moderation approval",
+          body: "Approved for educational publication after human review of public-source draft.",
+          reviewed: true,
+          publishedAt: new Date().toISOString(),
+        },
+      ],
+    },
+  });
+}
+
+export function rejectCase(
+  slug: string,
+  reviewerEmail: string,
+  note?: string,
+): CrimeCase | undefined {
+  const existing = getCaseBySlug(slug);
+  if (!existing) return undefined;
+  const tags = Array.from(
+    new Set([
+      ...existing.tags.filter((t) => t !== "awaiting-moderation"),
+      "rejected",
+      "draft",
+    ]),
+  );
+
+  return upsertCase({
+    ...existing,
+    tags,
+    analysis: {
+      ...existing.analysis,
+      status: "draft",
+      reviewedByHuman: true,
+      updatedAt: new Date().toISOString(),
+      summary: `${existing.analysis.summary}\n\n[Rejected by ${reviewerEmail}] ${note ?? ""}`.trim(),
+    },
+  });
+}
+
 export function addUpdate(update: LiveUpdate): LiveUpdate {
   const store = getStore();
   store.updates = [update, ...store.updates];

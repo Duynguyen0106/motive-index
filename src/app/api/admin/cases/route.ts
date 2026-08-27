@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
-import { isSupabaseConfigured } from "@/lib/supabaseClient";
-import { getSupabaseServerClient } from "@/lib/supabaseServer";
+import { syncCaseToSupabase } from "@/lib/repository";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -109,39 +108,14 @@ export async function POST(req: Request) {
     featured: false,
   };
 
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = getSupabaseServerClient();
-      const { error } = await supabase.from("cases").insert({
-        id: crimeCase.id,
-        slug: crimeCase.slug,
-        name: crimeCase.name,
-        subtitle: crimeCase.subtitle,
-        jurisdiction: crimeCase.jurisdiction,
-        location: crimeCase.location,
-        year_start: crimeCase.yearStart,
-        year_end: crimeCase.yearEnd ?? null,
-        status: crimeCase.status,
-        crime_categories: crimeCase.crimeCategories,
-        overview: crimeCase.overview,
-        warning: crimeCase.warning,
-        payload: crimeCase,
-      });
-      if (error) throw error;
-    } catch (err) {
-      return NextResponse.json(
-        {
-          error:
-            err instanceof Error
-              ? `Supabase insert failed: ${err.message}`
-              : "Supabase insert failed",
-        },
-        { status: 500 },
-      );
-    }
-  }
-
   upsertCase(crimeCase);
+  const sync = await syncCaseToSupabase(crimeCase);
+  if (!sync.ok) {
+    return NextResponse.json(
+      { error: `Local save ok, Supabase sync failed: ${sync.error}` },
+      { status: 207 },
+    );
+  }
   addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
@@ -152,5 +126,5 @@ export async function POST(req: Request) {
     status: "draft",
   });
 
-  return NextResponse.json({ case: crimeCase }, { status: 201 });
+  return NextResponse.json({ case: crimeCase, supabaseSynced: !sync.skipped }, { status: 201 });
 }

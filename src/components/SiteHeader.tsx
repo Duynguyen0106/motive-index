@@ -4,9 +4,8 @@ const links = [
   { href: "/", label: "Cases" },
   { href: "/search", label: "Search" },
   { href: "/documents", label: "Documents" },
-  { href: "/analyses", label: "Analyses" },
-  { href: "/resources", label: "Resources" },
-  { href: "/admin/upload", label: "Admin" },
+  { href: "/live", label: "Live" },
+  { href: "/admin/moderation", label: "Admin" },
   { href: "/about", label: "About" },
 ];
 
