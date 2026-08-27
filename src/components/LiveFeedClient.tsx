@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { readJsonResponse } from "@/lib/clientFetch";
 import type { LiveUpdate } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -15,7 +16,7 @@ export function LiveFeedClient({ initial }: { initial: LiveUpdate[] }) {
       try {
         const res = await fetch("/api/updates", { cache: "no-store" });
         if (!res.ok) return;
-        const data = (await res.json()) as { updates: LiveUpdate[] };
+        const data = await readJsonResponse<{ updates: LiveUpdate[] }>(res);
         if (!cancelled) setUpdates(data.updates);
       } catch {
         /* ignore transient poll errors */

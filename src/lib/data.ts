@@ -23,6 +23,7 @@ import {
   FACTOR_LABELS,
   FRAMEWORK_LABELS,
 } from "@/lib/types";
+import { resolveCaseCountry } from "@/lib/country";
 
 type Store = {
   cases: CrimeCase[];
@@ -183,6 +184,7 @@ export function searchCases(filters: SearchFilters): CrimeCase[] {
       return false;
     }
     if (filters.status && c.status !== filters.status) return false;
+    if (filters.country && resolveCaseCountry(c) !== filters.country) return false;
     if (filters.location) {
       const loc = filters.location.toLowerCase();
       if (

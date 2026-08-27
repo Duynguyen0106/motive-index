@@ -319,3 +319,250 @@ a {
     transition: none;
   }
 }
+
+/* —— World crime monitor dashboard —— */
+.monitor-page {
+  min-height: calc(100vh - 8rem);
+  background: var(--bg);
+}
+
+.monitor-dashboard {
+  width: min(1400px, calc(100% - 2rem));
+  margin-inline: auto;
+  padding: 1.5rem 0 2.5rem;
+}
+
+.monitor-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.monitor-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.monitor-live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: monitor-pulse 2s ease-in-out infinite;
+}
+
+.monitor-live-dot.is-syncing {
+  background: var(--muted);
+  animation: none;
+}
+
+@keyframes monitor-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.monitor-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .monitor-layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.85fr);
+    align-items: start;
+  }
+}
+
+.monitor-map-panel {
+  position: relative;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  min-height: 360px;
+}
+
+.monitor-map-wrap {
+  position: relative;
+}
+
+.monitor-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+}
+
+.monitor-map-zone-label {
+  font-family: var(--font-plex), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.monitor-map-zone-count {
+  font-family: var(--font-plex), sans-serif;
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.monitor-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.monitor-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.monitor-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--paper);
+}
+
+.monitor-dot-closed {
+  background: var(--accent);
+}
+
+.monitor-dot-unsolved {
+  background: var(--maroon);
+}
+
+.monitor-legend-meta {
+  margin-left: auto;
+}
+
+.monitor-case-card {
+  position: absolute;
+  bottom: 3rem;
+  left: 1rem;
+  z-index: 2;
+  max-width: 280px;
+  padding: 1rem;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  box-shadow: 0 4px 24px rgb(26 24 20 / 8%);
+}
+
+.monitor-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.monitor-filters,
+.monitor-panel {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  padding: 1rem;
+}
+
+.monitor-field {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-size: 0.8125rem;
+}
+
+.monitor-field > span {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.monitor-country-index,
+.monitor-case-list,
+.monitor-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.monitor-country-row,
+.monitor-case-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: background 0.15s;
+}
+
+.monitor-country-row:hover,
+.monitor-case-row:hover,
+.monitor-country-row.is-active,
+.monitor-case-row.is-active {
+  background: var(--accent-soft);
+}
+
+.monitor-country-code {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  min-width: 1.75rem;
+}
+
+.monitor-country-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-family: var(--font-literata), serif;
+  color: var(--ink);
+}
+
+.monitor-unsolved-badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--maroon);
+}
+
+.monitor-feed-item {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.15rem 0.5rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.monitor-feed-item .label {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1023px) {
+  .monitor-case-card {
+    position: static;
+    max-width: none;
+    margin: 0;
+    border-top: 1px solid var(--line);
+    box-shadow: none;
+  }
+}

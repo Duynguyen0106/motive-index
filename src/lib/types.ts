@@ -2,6 +2,9 @@ export type CaseStatus = "closed" | "unsolved" | "historical";
 export type AnalysisStatus = "published" | "draft" | "pending";
 export type ContributionStatus = "pending" | "in_review" | "accepted" | "rejected";
 
+/** ISO-style country codes used for case filtering. */
+export type CountryCode = "US" | "GB" | "CA" | "AU" | "OTHER";
+
 export type CrimeCategory =
   | "serial_murder"
   | "mass_violence"
@@ -214,6 +217,11 @@ export interface CrimeCase {
   caseNumber?: string;
   jurisdiction: string;
   location: string;
+  /** Normalized country for filtering (ISO-style code). */
+  country?: CountryCode;
+  /** Optional map coordinates (degrees). */
+  lat?: number;
+  lng?: number;
   yearStart: number;
   yearEnd?: number;
   era: string;
@@ -289,6 +297,7 @@ export interface SearchFilters {
   psychologicalFactor?: PsychologicalFactor | "";
   theoreticalFramework?: TheoreticalFramework | "";
   diagnosis?: string;
+  country?: CountryCode | "";
   location?: string;
   period?: string;
   offenderSex?: string;

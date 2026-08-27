@@ -1,5 +1,6 @@
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
+import { inferCountry } from "@/lib/country";
 import type { CaseDocument, CrimeCase } from "@/lib/types";
 
 /** Best-effort sync of a case into Supabase `cases` table. */
@@ -21,6 +22,7 @@ export async function syncCaseToSupabase(crimeCase: CrimeCase): Promise<{
       subtitle: crimeCase.subtitle,
       jurisdiction: crimeCase.jurisdiction,
       location: crimeCase.location,
+      country: crimeCase.country ?? inferCountry(crimeCase.jurisdiction, crimeCase.location),
       year_start: crimeCase.yearStart,
       year_end: crimeCase.yearEnd ?? null,
       status: crimeCase.status,

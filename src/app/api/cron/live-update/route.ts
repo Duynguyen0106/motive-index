@@ -28,16 +28,29 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const result = await runLiveUpdatePipeline({
-    limit: typeof body.limit === "number" ? body.limit : undefined,
-    analyze: body.analyze !== false,
-  });
 
-  return NextResponse.json({
-    ok: true,
-    triggeredAt: new Date().toISOString(),
-    result,
-  });
+  try {
+    const result = await runLiveUpdatePipeline({
+      limit: typeof body.limit === "number" ? body.limit : undefined,
+      analyze: body.analyze !== false,
+      generateNarrative: body.generateNarrative !== false,
+      llmNarrative: false,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      triggeredAt: new Date().toISOString(),
+      result,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: err instanceof Error ? err.message : "Pipeline failed",
+      },
+      { status: 500 },
+    );
+  }
 }
 
 export async function GET(req: Request) {
@@ -55,6 +68,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await runLiveUpdatePipeline({ limit: 5 });
-  return NextResponse.json({ ok: true, result });
+  try {
+    const result = await runLiveUpdatePipeline({ limit: 5, llmNarrative: false });
+    return NextResponse.json({ ok: true, result });
+  } catch (err) {
+    return NextResponse.json(
+      { ok: false, error: err instanceof Error ? err.message : "Pipeline failed" },
+      { status: 500 },
+    );
+  }
 }

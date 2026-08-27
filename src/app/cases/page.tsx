@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CaseRow } from "@/components/CaseRow";
+import { CasesGrid } from "@/components/CasesGrid";
 import { PageHeader } from "@/components/PageHeader";
 import { getAllCases } from "@/lib/data";
 
@@ -19,16 +19,7 @@ export default function CasesPage() {
         description="Each record maps public behavioral signals to psychological constructs—with confidence notes, counter-evidence, and explicit unknowns."
       />
       <div className="site-shell mt-8">
-        <div className="index-table">
-          <div className="index-head">
-            <span>Year</span>
-            <span>Case</span>
-            <span className="text-right">Type</span>
-          </div>
-          {cases.map((c) => (
-            <CaseRow key={c.id} crimeCase={c} />
-          ))}
-        </div>
+        <CasesGrid cases={cases} />
       </div>
     </div>
   );

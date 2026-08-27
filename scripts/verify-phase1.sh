@@ -63,6 +63,9 @@ expect_200 "GET /contribute" "$BASE/contribute"
 expect_200 "GET /about" "$BASE/about"
 expect_200 "GET /method" "$BASE/method"
 expect_200 "GET /live" "$BASE/live"
+expect_200 "GET /monitor" "$BASE/monitor"
+expect_200 "GET /api/monitor" "$BASE/api/monitor"
+expect_contains "Monitor filter country US" "$BASE/monitor?country=US" "Ted Bundy"
 
 echo
 echo "-- Case dossiers & tabs --"
@@ -88,6 +91,8 @@ echo
 echo "-- Search filters --"
 expect_contains "Filter power_control finds BTK" "$BASE/search?psychologicalFactor=power_control" "Dennis Rader"
 expect_contains "Filter serial_murder" "$BASE/search?crimeCategory=serial_murder" "Ted Bundy"
+expect_contains "Filter country GB finds Shipman" "$BASE/search?country=GB" "Harold Shipman"
+expect_contains "Filter country US finds Bundy" "$BASE/search?country=US" "Ted Bundy"
 expect_contains "Filter location California" "$BASE/search?location=California" "Zodiac"
 expect_contains "Filter period 1974" "$BASE/search?period=1974" "Ted Bundy"
 expect_contains "Filter offender female" "$BASE/search?offenderSex=female" "Aileen Wuornos"

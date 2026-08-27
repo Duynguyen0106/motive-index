@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { adminFetchInit, readJsonResponse } from "@/lib/clientFetch";
 import type { CrimeCase } from "@/lib/types";
 
 export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
@@ -16,11 +17,11 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
     setMessage("");
     try {
       const res = await fetch("/api/admin/moderate", {
+        ...adminFetchInit,
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ slug, action }),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<{ error?: string; case?: CrimeCase }>(res);
       if (!res.ok) throw new Error(data.error || "Action failed");
       setItems((prev) => prev.filter((c) => c.slug !== slug));
       setMessage(`${action}d: ${data.case?.name ?? slug}`);
@@ -37,11 +38,16 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
     setMessage("");
     try {
       const res = await fetch("/api/admin/generate-narrative", {
+        ...adminFetchInit,
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ slug }),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<{
+        error?: string;
+        case?: CrimeCase;
+        provider?: string;
+        chapterCount?: number;
+      }>(res);
       if (!res.ok) throw new Error(data.error || "Generate failed");
       setItems((prev) =>
         prev.map((c) => (c.slug === slug ? (data.case as CrimeCase) : c)),

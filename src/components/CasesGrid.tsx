@@ -2,29 +2,41 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { CrimeCase, CrimeCategory } from "@/lib/types";
+import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
+import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
 export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
   const [q, setQ] = useState("");
   const [crimeType, setCrimeType] = useState<CrimeCategory | "">("");
+  const [country, setCountry] = useState<CountryCode | "">("");
+
+  const countryOptions = useMemo(() => listCountryOptions(cases), [cases]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     return cases.filter((c) => {
       if (crimeType && !c.crimeCategories.includes(crimeType)) return false;
+      if (country && resolveCaseCountry(c) !== country) return false;
       if (!query) return true;
-      const hay = [c.name, c.subtitle, c.overview, c.location, ...(c.aliases ?? [])]
+      const hay = [
+        c.name,
+        c.subtitle,
+        c.overview,
+        c.location,
+        COUNTRY_LABELS[resolveCaseCountry(c)],
+        ...(c.aliases ?? []),
+      ]
         .join(" ")
         .toLowerCase();
       return hay.includes(query);
     });
-  }, [cases, q, crimeType]);
+  }, [cases, q, crimeType, country]);
 
   return (
     <div>
       <form
-        className="mb-8 grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-4 md:grid-cols-[1fr_220px_auto] md:items-end"
+        className="mb-8 grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-4 md:grid-cols-[1fr_180px_180px_auto] md:items-end"
         onSubmit={(e) => e.preventDefault()}
       >
         <label className="block text-sm">
@@ -35,6 +47,21 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
             placeholder="Name, place, motif…"
             className="field mt-1"
           />
+        </label>
+        <label className="block text-sm">
+          <span className="label mb-1 block normal-case tracking-normal">Country</span>
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value as CountryCode | "")}
+            className="field mt-1"
+          >
+            <option value="">All countries</option>
+            {countryOptions.map((code) => (
+              <option key={code} value={code}>
+                {COUNTRY_LABELS[code]}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="block text-sm">
           <span className="label mb-1 block normal-case tracking-normal">Crime type</span>
@@ -56,6 +83,7 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
           onClick={() => {
             setQ("");
             setCrimeType("");
+            setCountry("");
           }}
           className="btn btn-ghost"
         >
@@ -83,6 +111,9 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
               <span className="index-title group-hover:text-[var(--accent)]">{c.name}</span>
               <span className="mt-1 block text-sm text-[var(--ink-soft)] line-clamp-2">
                 {c.subtitle}
+              </span>
+              <span className="mt-1 block text-xs text-[var(--muted)]">
+                {COUNTRY_LABELS[resolveCaseCountry(c)]}
               </span>
             </span>
             <span className="index-meta">

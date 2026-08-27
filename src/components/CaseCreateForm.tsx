@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { adminFetchInit, readJsonResponse } from "@/lib/clientFetch";
 import { CRIME_CATEGORY_LABELS, type CrimeCategory } from "@/lib/types";
 
 type Extracted = {
@@ -47,13 +48,18 @@ export function CaseCreateForm() {
     setMessage("");
     try {
       const res = await fetch("/api/extract", {
+        ...adminFetchInit,
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ rawText }),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<{
+        error?: string;
+        extracted?: Extracted;
+        provider?: string;
+        note?: string;
+      }>(res);
       if (!res.ok) throw new Error(data.error || "Extract failed");
-      setForm({ ...empty, ...data.extracted });
+      setForm({ ...empty, ...data.extracted! });
       setExtractNote(
         `${data.provider}${data.note ? ` — ${data.note}` : ""}`,
       );
@@ -70,13 +76,13 @@ export function CaseCreateForm() {
     setMessage("");
     try {
       const res = await fetch("/api/admin/cases", {
+        ...adminFetchInit,
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      const data = await readJsonResponse<{ error?: string; case?: { id: string } }>(res);
       if (!res.ok) throw new Error(data.error || "Create failed");
-      router.push(`/cases/${data.case.id}`);
+      router.push(`/cases/${data.case!.id}`);
       router.refresh();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Create failed");

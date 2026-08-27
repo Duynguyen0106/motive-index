@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
 import { syncCaseToSupabase } from "@/lib/repository";
+import { inferCountry } from "@/lib/country";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
     subtitle: data.subtitle || "Admin-created case",
     jurisdiction: data.jurisdiction,
     location: data.location,
+    country: inferCountry(data.jurisdiction, data.location),
     yearStart: year,
     yearEnd: data.yearEnd ?? undefined,
     era: String(year),

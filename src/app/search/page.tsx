@@ -6,7 +6,9 @@ import {
   FACTOR_LABELS,
   FRAMEWORK_LABELS,
 } from "@/lib/types";
-import type { CrimeCategory, DocumentType, PsychologicalFactor, TheoreticalFramework } from "@/lib/types";
+import type { CrimeCategory, CountryCode, DocumentType, PsychologicalFactor, TheoreticalFramework } from "@/lib/types";
+import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
+import { getAllCases } from "@/lib/data";
 import { parseSearchParams, runSearch } from "@/lib/search";
 
 export const metadata: Metadata = {
@@ -20,6 +22,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const raw = await searchParams;
   const filters = parseSearchParams(raw);
   const { cases, documents } = runSearch(filters);
+  const countryOptions = listCountryOptions(getAllCases());
   const hasQuery = Object.values(filters).some((v) => Boolean(v));
 
   return (
@@ -32,7 +35,7 @@ export default async function SearchPage({ searchParams }: Props) {
       </h1>
       <p className="body-copy mt-4 max-w-2xl text-lg text-[var(--ink-soft)]">
         Filter the repository by psychological factor, crime category, theory,
-        period, location, and document type.
+        country, period, location, and document type.
       </p>
 
       <form className="card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3">
@@ -102,6 +105,22 @@ export default async function SearchPage({ searchParams }: Props) {
             placeholder="e.g. psychopathy"
             className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
           />
+        </label>
+
+        <label className="block text-sm">
+          <span className="font-medium">Country</span>
+          <select
+            name="country"
+            defaultValue={filters.country ?? ""}
+            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+          >
+            <option value="">Any</option>
+            {countryOptions.map((code) => (
+              <option key={code} value={code}>
+                {COUNTRY_LABELS[code]}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="block text-sm">
@@ -193,7 +212,7 @@ export default async function SearchPage({ searchParams }: Props) {
             <li key={c.id}>
               <Link href={`/cases/${c.slug}`} className="card card-hover block p-5">
                 <p className="text-xs text-[var(--muted)] uppercase tracking-[0.12em]">
-                  {c.location} · {c.yearStart}
+                  {COUNTRY_LABELS[resolveCaseCountry(c)]} · {c.location} · {c.yearStart}
                   {c.yearEnd ? `–${c.yearEnd}` : ""}
                 </p>
                 <h3 className="display mt-1 text-2xl">{c.name}</h3>
