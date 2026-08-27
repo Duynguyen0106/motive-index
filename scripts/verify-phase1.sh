@@ -63,6 +63,9 @@ expect_200 "GET /contribute" "$BASE/contribute"
 expect_200 "GET /about" "$BASE/about"
 expect_200 "GET /method" "$BASE/method"
 expect_200 "GET /live" "$BASE/live"
+expect_200 "GET /monitor" "$BASE/monitor"
+expect_200 "GET /api/monitor" "$BASE/api/monitor"
+expect_contains "Monitor filter country US" "$BASE/monitor?country=US" "Ted Bundy"
 
 echo
 echo "-- Case dossiers & tabs --"

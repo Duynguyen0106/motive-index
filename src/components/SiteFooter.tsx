@@ -22,6 +22,9 @@ export function SiteFooter() {
             <Link href="/cases" className="text-link">
               Case index
             </Link>
+            <Link href="/monitor" className="text-link">
+              World monitor
+            </Link>
             <Link href="/search" className="text-link">
               Advanced search
             </Link>

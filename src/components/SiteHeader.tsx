@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/", label: "Archive" },
+  { href: "/monitor", label: "Monitor" },
   { href: "/search", label: "Search" },
   { href: "/documents", label: "Documents" },
   { href: "/live", label: "Updates" },

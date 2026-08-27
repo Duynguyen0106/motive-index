@@ -219,6 +219,9 @@ export interface CrimeCase {
   location: string;
   /** Normalized country for filtering (ISO-style code). */
   country?: CountryCode;
+  /** Optional map coordinates (degrees). */
+  lat?: number;
+  lng?: number;
   yearStart: number;
   yearEnd?: number;
   era: string;

@@ -26,7 +26,10 @@ export default function HomePage() {
             </p>
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <Link href="/search" className="text-link font-medium">
+            <Link href="/monitor" className="text-link font-medium">
+              World monitor
+            </Link>
+            <Link href="/search" className="text-[var(--ink-soft)] hover:text-[var(--ink)]">
               Search &amp; filter
             </Link>
             <Link href="/method" className="text-[var(--ink-soft)] hover:text-[var(--ink)]">
