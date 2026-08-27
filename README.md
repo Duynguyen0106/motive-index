@@ -37,7 +37,7 @@ Without Supabase env vars the app uses the local `.data` store and local admin c
 
 - Manual/admin: `/admin/moderation` → **Run live update now**
 - API: `POST /api/cron/live-update` (Bearer `CRON_SECRET` in production)
-- Schedule: `vercel.json` cron every 6 hours
+- Schedule: `vercel.json` cron once daily (noon UTC; Hobby plan limit). Manual runs: admin `/live` or `POST /api/cron/live-update`
 - Flow: RSS → dedupe → draft case → analysis stub → moderation queue → approve/publish
 - Supabase sync: `syncCaseToSupabase()` on create/publish when env is configured
 
