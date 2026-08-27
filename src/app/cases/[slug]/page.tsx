@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CaseTabs, getActiveTab } from "@/components/CaseTabs";
+import { CaseTabs } from "@/components/CaseTabs";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PsychMap } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
+import { getActiveTab } from "@/lib/case-tabs";
 import {
   getAllCases,
   getCaseBySlug,

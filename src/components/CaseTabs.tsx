@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-
-const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "timeline", label: "Timeline" },
-  { id: "analysis", label: "Psychological analysis" },
-  { id: "documents", label: "Documents" },
-  { id: "references", label: "References" },
-] as const;
+import { CASE_TABS } from "@/lib/case-tabs";
 
 export function CaseTabs({ slug }: { slug: string }) {
   const pathname = usePathname();
@@ -18,8 +11,11 @@ export function CaseTabs({ slug }: { slug: string }) {
 
   return (
     <div className="border-b border-[var(--line)]">
-      <nav className="site-shell flex gap-1 overflow-x-auto py-0" aria-label="Case sections">
-        {TABS.map((tab) => {
+      <nav
+        className="site-shell flex gap-1 overflow-x-auto py-0"
+        aria-label="Case sections"
+      >
+        {CASE_TABS.map((tab) => {
           const href = `${pathname}?tab=${tab.id}`;
           const isActive = active === tab.id;
           return (
@@ -41,11 +37,4 @@ export function CaseTabs({ slug }: { slug: string }) {
       </nav>
     </div>
   );
-}
-
-export function getActiveTab(tab: string | undefined) {
-  const ids = TABS.map((t) => t.id);
-  return ids.includes(tab as (typeof TABS)[number]["id"])
-    ? (tab as (typeof TABS)[number]["id"])
-    : "overview";
 }
