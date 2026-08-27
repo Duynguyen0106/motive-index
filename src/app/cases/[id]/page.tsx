@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseTabs } from "@/components/CaseTabs";
+import { CaseTabKeyboardNav } from "@/components/CaseTabKeyboardNav";
 import { CaseNarrativeView } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
@@ -182,6 +183,7 @@ export default async function CasePage({ params, searchParams }: Props) {
       </header>
 
       <Suspense fallback={null}>
+        <CaseTabKeyboardNav />
         <CaseTabs slug={crimeCase.slug} />
       </Suspense>
 

@@ -26,6 +26,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const { cases, documents } = runSearch(filters);
   const countryOptions = listCountryOptions(getAllCases());
   const hasQuery = hasActiveFilters(filters);
+  const focusSearch = raw.focus === "1" || raw.focus === "true";
   const monitorHref = monitorUrlFromFilters({
     q: filters.q,
     country: filters.country,
@@ -60,6 +61,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <input
             name="q"
             defaultValue={filters.q}
+            autoFocus={focusSearch}
             placeholder="e.g. compartmentalization, manifesto, trust"
             className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
           />

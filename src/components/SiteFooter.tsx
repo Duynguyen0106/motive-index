@@ -15,7 +15,7 @@ export function SiteFooter() {
             <p className="label mt-6">Colophon</p>
             <p className="mt-1 text-xs text-[var(--muted)]">
               Public-source citations · Human-reviewed analysis · Content warnings
-              on sensitive dossiers
+              on sensitive dossiers · Press <kbd className="keyboard-kbd inline">?</kbd> for shortcuts
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-[var(--ink-soft)]">

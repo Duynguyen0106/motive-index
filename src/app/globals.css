@@ -1161,3 +1161,81 @@ a.monitor-news-headline:hover {
     height: 50vh;
   }
 }
+
+.keyboard-help-fab {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 900;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.keyboard-help-fab:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--bg-subtle);
+}
+
+.keyboard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(20 18 16 / 45%);
+  backdrop-filter: blur(2px);
+}
+
+.keyboard-panel {
+  width: min(100%, 28rem);
+  max-height: min(90vh, 32rem);
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 12%);
+}
+
+.keyboard-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.keyboard-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+
+.keyboard-kbd {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  background: var(--bg-subtle);
+  font-family: var(--font-plex), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.keyboard-kbd.inline {
+  padding: 0.05rem 0.35rem;
+  font-size: 0.6875rem;
+}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, Literata } from "next/font/google";
+import { Suspense } from "react";
+import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { DEFAULT_DESCRIPTION, getSiteUrl, SITE_NAME } from "@/lib/seo";
@@ -52,6 +54,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <Suspense fallback={null}>
+          <KeyboardShortcuts />
+        </Suspense>
       </body>
     </html>
   );
