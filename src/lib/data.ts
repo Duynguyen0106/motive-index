@@ -284,13 +284,19 @@ export function publishCase(slug: string, reviewerEmail: string): CrimeCase | un
   const existing = getCaseBySlug(slug);
   if (!existing) return undefined;
   const tags = existing.tags.filter(
-    (t) => !["awaiting-moderation", "draft", "rejected"].includes(t),
+    (t) =>
+      !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(
+        t,
+      ),
   );
   if (!tags.includes("published")) tags.push("published");
 
   return upsertCase({
     ...existing,
     tags,
+    narrative: existing.narrative
+      ? { ...existing.narrative, reviewNote: undefined, source: "human" as const }
+      : undefined,
     analysis: {
       ...existing.analysis,
       status: "published",
@@ -303,7 +309,7 @@ export function publishCase(slug: string, reviewerEmail: string): CrimeCase | un
           author: reviewerEmail,
           role: "editor",
           title: "Moderation approval",
-          body: "Approved for educational publication after human review of public-source draft.",
+          body: "Approved for educational publication after human review of public-source draft and narrative.",
           reviewed: true,
           publishedAt: new Date().toISOString(),
         },

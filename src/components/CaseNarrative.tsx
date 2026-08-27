@@ -55,13 +55,32 @@ function ChapterBlock({ chapter }: { chapter: DossierChapter }) {
   );
 }
 
-export function CaseNarrativeView({ narrative }: { narrative: CaseNarrative }) {
+export function CaseNarrativeView({
+  narrative,
+  isDraft,
+}: {
+  narrative: CaseNarrative;
+  isDraft?: boolean;
+}) {
   const chapters = CHAPTER_ORDER.map((id) => narrative.chapters.find((c) => c.id === id)).filter(
     Boolean,
   ) as DossierChapter[];
 
   return (
     <div className="grid gap-10 lg:grid-cols-[11rem_1fr]">
+      {isDraft ? (
+        <div className="note-warn note lg:col-span-2 text-sm">
+          <p className="label mb-1">Draft narrative — not published</p>
+          <p className="text-[var(--ink-soft)]">
+            {narrative.reviewNote ??
+              "This story was auto-generated from public sources. Editors must verify facts before approval."}
+            {narrative.source ? ` Source: ${narrative.source}.` : ""}
+            {narrative.generatedAt
+              ? ` Generated ${new Date(narrative.generatedAt).toLocaleString()}.`
+              : ""}
+          </p>
+        </div>
+      ) : null}
       <nav className="hidden lg:block" aria-label="Story chapters">
         <p className="label mb-3">In this dossier</p>
         <ol className="space-y-2 text-sm">

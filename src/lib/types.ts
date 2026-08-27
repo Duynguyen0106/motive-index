@@ -198,6 +198,11 @@ export interface CaseNarrative {
   /** One-sentence documentary cold open. */
   hook: string;
   chapters: DossierChapter[];
+  /** How the narrative was produced. */
+  source?: "llm" | "heuristic" | "human";
+  generatedAt?: string;
+  /** Shown on draft narratives awaiting moderation. */
+  reviewNote?: string;
 }
 
 export interface CrimeCase {

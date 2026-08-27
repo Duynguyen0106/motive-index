@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyzeFromSignals } from "@/lib/analyze";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
+import { applyNarrativeToCase, generateCaseNarrative } from "@/lib/narrativeGenerate";
 import type { CrimeCase } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
   const year = new Date().getFullYear();
   const analysis = analyzeFromSignals([], name);
 
-  const crimeCase: CrimeCase = {
+  let crimeCase: CrimeCase = {
     id: `case-${Date.now()}`,
     slug,
     name,
@@ -82,6 +83,15 @@ export async function POST(req: Request) {
     analysis,
     featured: false,
   };
+
+  const narrativeResult = await generateCaseNarrative({
+    caseName: name,
+    overview: parsed.data.summary,
+    subtitle: crimeCase.subtitle,
+    sourceTitle: parsed.data.headline,
+    yearStart: year,
+  });
+  crimeCase = applyNarrativeToCase(crimeCase, narrativeResult, parsed.data.headline);
 
   upsertCase(crimeCase);
   const update = addUpdate({

@@ -2,6 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { analyzeFromSignals } from "@/lib/analyze";
 import { addUpdate, getAllCases, getCaseBySlug, upsertCase } from "@/lib/data";
+import {
+  applyNarrativeToCase,
+  generateCaseNarrative,
+} from "@/lib/narrativeGenerate";
 import { syncCaseToSupabase } from "@/lib/repository";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
@@ -18,6 +22,7 @@ export type PipelineResult = {
   created: number;
   skipped: number;
   analyzed: number;
+  narrativesGenerated: number;
   errors: string[];
   createdSlugs: string[];
 };
@@ -251,6 +256,7 @@ export async function runLiveUpdatePipeline(options?: {
   feeds?: string[];
   limit?: number;
   analyze?: boolean;
+  generateNarrative?: boolean;
 }): Promise<PipelineResult> {
   const feeds =
     options?.feeds ??
@@ -259,12 +265,14 @@ export async function runLiveUpdatePipeline(options?: {
       : DEFAULT_FEEDS);
   const limit = options?.limit ?? Number(process.env.LIVE_UPDATE_LIMIT ?? 8);
   const analyze = options?.analyze ?? true;
+  const generateNarrative = options?.generateNarrative ?? true;
 
   const result: PipelineResult = {
     fetched: 0,
     created: 0,
     skipped: 0,
     analyzed: 0,
+    narrativesGenerated: 0,
     errors: [],
     createdSlugs: [],
   };
@@ -300,12 +308,31 @@ export async function runLiveUpdatePipeline(options?: {
     }
 
     try {
-      const draft = draftCaseFromItem(item);
+      let draft = draftCaseFromItem(item);
       if (!analyze) {
         draft.analysis.status = "pending";
         draft.analysis.constructs = [];
       } else {
         result.analyzed += 1;
+      }
+
+      if (generateNarrative) {
+        try {
+          const narrativeResult = await generateCaseNarrative({
+            caseName: draft.name,
+            overview: item.summary,
+            subtitle: draft.subtitle,
+            sourceTitle: item.title,
+            sourceUrl: item.link,
+            yearStart: draft.yearStart,
+          });
+          draft = applyNarrativeToCase(draft, narrativeResult, item.title);
+          result.narrativesGenerated += 1;
+        } catch (err) {
+          result.errors.push(
+            `Narrative ${draft.slug}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       }
 
       upsertCase(draft);
@@ -314,7 +341,7 @@ export async function runLiveUpdatePipeline(options?: {
         id: `upd-${Date.now()}-${result.created}`,
         createdAt: new Date().toISOString(),
         headline: `Live draft ingested: ${draft.name.slice(0, 80)}`,
-        summary: "Awaiting moderation before publish.",
+        summary: "Awaiting moderation before publish. Documentary narrative draft attached.",
         caseSlug: draft.slug,
         kind: "new_case",
         status: "draft",

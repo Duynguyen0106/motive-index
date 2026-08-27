@@ -32,36 +32,79 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
     }
   }
 
+  async function regenerateStory(slug: string) {
+    setBusy(`nar-${slug}`);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/generate-narrative", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ slug }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generate failed");
+      setItems((prev) =>
+        prev.map((c) => (c.slug === slug ? (data.case as CrimeCase) : c)),
+      );
+      setMessage(
+        `Story updated (${data.provider}, ${data.chapterCount} chapters) for ${slug}`,
+      );
+      router.refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Generate failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <div>
-      {message ? (
-        <p className="mb-4 text-sm text-[var(--accent)]">{message}</p>
-      ) : null}
+      {message ? <p className="mb-4 text-sm text-[var(--accent)]">{message}</p> : null}
       <ul className="grid gap-4">
         {items.map((c) => (
-          <li key={c.id} className="card p-5">
+          <li key={c.id} className="panel p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.12em] text-[var(--accent)] uppercase">
+              <div className="max-w-2xl">
+                <p className="label">
                   {c.analysis.status} · {c.tags.join(" · ")}
                 </p>
                 <h2 className="display mt-1 text-2xl">{c.name}</h2>
-                <p className="mt-2 text-sm text-[var(--ink-soft)] line-clamp-3">
-                  {c.overview}
+                {c.narrative ? (
+                  <p className="lede mt-3 text-base">{c.narrative.hook}</p>
+                ) : (
+                  <p className="mt-2 text-sm text-[var(--ink-soft)] line-clamp-3">
+                    {c.overview}
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  {c.narrative
+                    ? `${c.narrative.chapters.length} story chapters · ${c.narrative.source ?? "unknown"} draft`
+                    : "No narrative yet — regenerate story before publish"}
+                  {c.narrative?.reviewNote ? ` · ${c.narrative.reviewNote}` : ""}
                 </p>
-                <Link
-                  href={`/cases/${c.id}`}
-                  className="mt-2 inline-block text-sm font-medium text-[var(--accent)] hover:underline"
-                >
-                  Open dossier
-                </Link>
+                <div className="mt-3 flex flex-wrap gap-4 text-sm">
+                  <Link href={`/cases/${c.id}?tab=story`} className="text-link">
+                    Preview full story
+                  </Link>
+                  <Link href={`/cases/${c.id}`} className="text-[var(--muted)] hover:text-[var(--ink)]">
+                    Open dossier
+                  </Link>
+                </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <button
+                  type="button"
+                  disabled={Boolean(busy)}
+                  onClick={() => regenerateStory(c.slug)}
+                  className="btn btn-ghost text-sm"
+                >
+                  {busy === `nar-${c.slug}` ? "Generating…" : "Regenerate story"}
+                </button>
                 <button
                   type="button"
                   disabled={busy === c.slug}
                   onClick={() => act(c.slug, "approve")}
-                  className="rounded bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                  className="btn btn-primary text-sm"
                 >
                   Approve & publish
                 </button>
@@ -69,7 +112,7 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
                   type="button"
                   disabled={busy === c.slug}
                   onClick={() => act(c.slug, "reject")}
-                  className="rounded border border-[var(--line)] px-3 py-2 text-sm font-semibold text-[var(--maroon)] disabled:opacity-60"
+                  className="btn btn-ghost text-sm text-[var(--maroon)]"
                 >
                   Reject
                 </button>

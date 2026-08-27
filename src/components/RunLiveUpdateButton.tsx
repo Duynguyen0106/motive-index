@@ -20,7 +20,7 @@ export function RunLiveUpdateButton() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Pipeline failed");
       setResult(
-        `Fetched ${data.result.fetched}, created ${data.result.created}, skipped ${data.result.skipped}, analyzed ${data.result.analyzed}`,
+        `Fetched ${data.result.fetched}, created ${data.result.created}, skipped ${data.result.skipped}, analyzed ${data.result.analyzed}, narratives ${data.result.narrativesGenerated ?? 0}`,
       );
       router.refresh();
     } catch (err) {
@@ -31,17 +31,17 @@ export function RunLiveUpdateButton() {
   }
 
   return (
-    <div className="card p-5">
+    <div className="panel p-5">
       <h2 className="display text-xl">Live update worker</h2>
       <p className="mt-2 text-sm text-[var(--ink-soft)]">
-        Pull public RSS crime/forensic clusters, dedupe headlines, create draft
-        dossiers, run analysis stubs, and queue them for moderation.
+        Pull public RSS crime/forensic clusters, dedupe headlines, generate documentary
+        story drafts (LLM or template), run analysis stubs, and queue for moderation.
       </p>
       <button
         type="button"
         onClick={run}
         disabled={busy}
-        className="mt-4 rounded bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="btn btn-primary mt-4"
       >
         {busy ? "Running pipeline…" : "Run live update now"}
       </button>

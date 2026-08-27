@@ -112,7 +112,10 @@ export default async function CasePage({ params, searchParams }: Props) {
 
       <div className="site-shell py-8">
         {tab === "story" && narrative ? (
-          <CaseNarrativeView narrative={narrative} />
+          <CaseNarrativeView
+            narrative={narrative}
+            isDraft={crimeCase.analysis.status !== "published"}
+          />
         ) : null}
 
         {tab === "story" && !narrative ? (
