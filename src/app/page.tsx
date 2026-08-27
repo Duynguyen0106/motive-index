@@ -9,40 +9,66 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="site-shell relative overflow-hidden pb-16 pt-10 md:pb-24 md:pt-16">
+      <section className="relative overflow-hidden border-b border-[var(--line)] pb-16 pt-10 md:pb-24 md:pt-16">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-[-8%] hidden w-[55%] md:block"
+          className="pointer-events-none absolute inset-0"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(31,92,77,0.28),transparent_68%)]" />
-          <div className="absolute inset-[12%] border border-[var(--line)] opacity-70" />
-          <div className="absolute inset-[22%] border border-[var(--accent)]/25" />
-          <div className="draw-line absolute top-1/2 left-[8%] h-px w-[84%] bg-[var(--ink)]/20" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_78%_42%,rgba(31,92,77,0.22),transparent_42%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_12%_0%,rgba(158,176,192,0.35),transparent_40%)]" />
+          <svg
+            className="absolute top-8 right-[-4%] hidden h-[120%] w-[58%] opacity-[0.55] md:block"
+            viewBox="0 0 640 640"
+            fill="none"
+          >
+            <circle cx="320" cy="320" r="260" stroke="rgba(18,23,28,0.14)" strokeWidth="1" />
+            <circle cx="320" cy="320" r="190" stroke="rgba(18,23,28,0.12)" strokeWidth="1" />
+            <circle cx="320" cy="320" r="120" stroke="rgba(31,92,77,0.35)" strokeWidth="1.5" />
+            <path
+              d="M320 60 L320 580 M60 320 L580 320 M120 120 L520 520 M520 120 L120 520"
+              stroke="rgba(18,23,28,0.08)"
+              strokeWidth="1"
+            />
+            <path
+              className="draw-line"
+              d="M320 150 L455 250 L420 400 L250 430 L180 280 Z"
+              stroke="rgba(31,92,77,0.75)"
+              strokeWidth="2"
+              fill="rgba(31,92,77,0.12)"
+            />
+            <circle cx="320" cy="150" r="5" fill="#1f5c4d" />
+            <circle cx="455" cy="250" r="5" fill="#1f5c4d" />
+            <circle cx="420" cy="400" r="5" fill="#1f5c4d" />
+            <circle cx="250" cy="430" r="5" fill="#1f5c4d" />
+            <circle cx="180" cy="280" r="5" fill="#1f5c4d" />
+          </svg>
         </div>
 
-        <p className="fade-up text-xs font-semibold tracking-[0.22em] text-[var(--accent)] uppercase">
-          Forensic psychological archive
-        </p>
-        <h1 className="fade-up display mt-5 max-w-4xl text-[clamp(3.4rem,11vw,7.5rem)] text-[var(--ink)]">
-          Motive Index
-        </h1>
-        <p className="fade-up-delay serif mt-6 max-w-xl text-xl leading-relaxed text-[var(--ink-soft)] md:text-2xl">
-          Famous cases, live updates, and structured analysis of the psychology
-          behind criminal behavior—evidence-bound, never sensational.
-        </p>
-        <div className="fade-up-delay-2 mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            href="/cases"
-            className="bg-[var(--ink)] px-6 py-3 text-sm font-semibold tracking-wide text-[var(--bg)] transition-opacity hover:opacity-90"
-          >
-            Enter the archive
-          </Link>
-          <Link
-            href="/method"
-            className="border border-[var(--ink)]/20 px-6 py-3 text-sm font-semibold tracking-wide text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          >
-            How analysis works
-          </Link>
+        <div className="site-shell relative">
+          <p className="fade-up text-xs font-semibold tracking-[0.22em] text-[var(--accent)] uppercase">
+            Forensic psychological archive
+          </p>
+          <h1 className="fade-up display mt-5 max-w-4xl text-[clamp(3.4rem,11vw,7.5rem)] text-[var(--ink)]">
+            Motive Index
+          </h1>
+          <p className="fade-up-delay serif mt-6 max-w-xl text-xl leading-relaxed text-[var(--ink-soft)] md:text-2xl">
+            Famous cases, live updates, and structured analysis of the psychology
+            behind criminal behavior—evidence-bound, never sensational.
+          </p>
+          <div className="fade-up-delay-2 mt-10 flex flex-wrap items-center gap-4">
+            <Link
+              href="/cases"
+              className="bg-[var(--ink)] px-6 py-3 text-sm font-semibold tracking-wide text-[var(--bg)] transition-opacity hover:opacity-90"
+            >
+              Enter the archive
+            </Link>
+            <Link
+              href="/method"
+              className="border border-[var(--ink)]/20 px-6 py-3 text-sm font-semibold tracking-wide text-[var(--ink)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            >
+              How analysis works
+            </Link>
+          </div>
         </div>
       </section>
 
