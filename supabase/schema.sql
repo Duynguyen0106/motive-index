@@ -1,5 +1,5 @@
--- Motive Index — Supabase schema (run in SQL editor)
--- Cases + documents aligned to the research archive model.
+-- Motive Index — run once in Supabase SQL Editor
+-- Project: sccrvdqrllsgnxctyrhr
 
 create extension if not exists "pgcrypto";
 
@@ -43,33 +43,60 @@ create table if not exists public.documents (
 create index if not exists documents_case_id_idx on public.documents (case_id);
 create index if not exists cases_crime_categories_idx on public.cases using gin (crime_categories);
 
--- Storage bucket for primary-source uploads (create in dashboard or via API)
--- insert into storage.buckets (id, name, public) values ('case-documents', 'case-documents', false);
-
 alter table public.cases enable row level security;
 alter table public.documents enable row level security;
 
--- Public read of published educational metadata
+drop policy if exists "Public read cases" on public.cases;
 create policy "Public read cases"
   on public.cases for select
   using (true);
 
+drop policy if exists "Public read documents" on public.documents;
 create policy "Public read documents"
   on public.documents for select
   using (true);
 
--- Writes require authenticated users (admin)
+drop policy if exists "Auth insert cases" on public.cases;
 create policy "Auth insert cases"
   on public.cases for insert
   to authenticated
   with check (true);
 
+drop policy if exists "Auth update cases" on public.cases;
 create policy "Auth update cases"
   on public.cases for update
   to authenticated
   using (true);
 
--- Moderation helpers (optional view)
+drop policy if exists "Auth insert documents" on public.documents;
+create policy "Auth insert documents"
+  on public.documents for insert
+  to authenticated
+  with check (true);
+
+drop policy if exists "Auth update documents" on public.documents;
+create policy "Auth update documents"
+  on public.documents for update
+  to authenticated
+  using (true);
+
+-- Storage bucket for admin uploads
+insert into storage.buckets (id, name, public)
+values ('case-documents', 'case-documents', false)
+on conflict (id) do nothing;
+
+drop policy if exists "Auth read case documents" on storage.objects;
+create policy "Auth read case documents"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'case-documents');
+
+drop policy if exists "Auth upload case documents" on storage.objects;
+create policy "Auth upload case documents"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'case-documents');
+
 create or replace view public.cases_awaiting_moderation as
 select *
 from public.cases
