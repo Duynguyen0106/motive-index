@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #d9e0e6;
+  --bg-deep: #c5d0da;
+  --ink: #12171c;
+  --ink-soft: #3a4450;
+  --muted: #5c6b7a;
+  --paper: rgba(248, 250, 252, 0.72);
+  --line: rgba(18, 23, 28, 0.12);
+  --accent: #1f5c4d;
+  --accent-soft: #d7ebe4;
+  --warning: #8a3b2a;
+  --live: #b45309;
+  --hero-fog: #9eb0c0;
+  --background: var(--bg);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-display: var(--font-syne);
+  --font-serif: var(--font-literata);
+  --font-sans: var(--font-figtree);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--ink);
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 700px at 12% -10%, rgba(158, 176, 192, 0.55), transparent 55%),
+    radial-gradient(900px 600px at 90% 8%, rgba(31, 92, 77, 0.14), transparent 50%),
+    radial-gradient(800px 500px at 50% 100%, rgba(180, 83, 9, 0.08), transparent 45%),
+    linear-gradient(180deg, #e7eef3 0%, var(--bg) 42%, var(--bg-deep) 100%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.brand-mark {
+  font-family: var(--font-syne), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.display {
+  font-family: var(--font-syne), sans-serif;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+
+.serif {
+  font-family: var(--font-literata), Georgia, serif;
+}
+
+.hairline {
+  border-color: var(--line);
+}
+
+.paper {
+  background: var(--paper);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+}
+
+.fade-up {
+  animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fade-up-delay {
+  animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.fade-up-delay-2 {
+  animation: fadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+}
+
+.pulse-live {
+  animation: pulseLive 2.4s ease-in-out infinite;
+}
+
+.draw-line {
+  animation: drawLine 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  transform-origin: left;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseLive {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes drawLine {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .fade-up-delay,
+  .fade-up-delay-2,
+  .pulse-live,
+  .draw-line {
+    animation: none;
+  }
+}
