@@ -1,11 +1,13 @@
 import type { ForensicAnalysis, LiveUpdate, TimelineEvent, BehaviorSignal, SourceRef, CaseStatus } from "@/lib/types";
 import { worldSeedCases } from "@/data/worldCases";
+import { multilingualSeedCases } from "@/data/multilingualCases";
 
 /** Seed rows before catalog enrichment supplies research metadata. */
 export type SeedCase = {
   id: string;
   slug: string;
   name: string;
+  nameOriginal?: string;
   subtitle: string;
   jurisdiction: string;
   era: string;
@@ -13,6 +15,9 @@ export type SeedCase = {
   tags: string[];
   warning: string;
   overview: string;
+  primarySourceLanguage?: string;
+  primarySourceLanguageLabel?: string;
+  translationNote?: string;
   timeline: TimelineEvent[];
   signals: BehaviorSignal[];
   sources: SourceRef[];
@@ -910,6 +915,7 @@ export const cases: SeedCase[] = [
     },
   },
   ...worldSeedCases,
+  ...multilingualSeedCases,
   {
     id: "case-ripley-draft",
     slug: "contemporary-draft-example",

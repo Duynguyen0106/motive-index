@@ -1,4 +1,5 @@
 import type { CrimeCase, CountryCode } from "@/lib/types";
+import { MULTILINGUAL_CASE_COORDS } from "@/data/multilingualCases";
 import { WORLD_CASE_COORDS } from "@/data/worldCases";
 import { resolveCaseCountry } from "@/lib/country";
 
@@ -7,6 +8,7 @@ export type GeoPoint = { lat: number; lng: number };
 /** Approximate coordinates for catalog cases (city-level where known). */
 const SLUG_COORDS: Record<string, GeoPoint> = {
   ...WORLD_CASE_COORDS,
+  ...MULTILINGUAL_CASE_COORDS,
   "ted-bundy": { lat: 47.6062, lng: -122.3321 },
   "dennis-rader-btk": { lat: 37.6872, lng: -97.3301 },
   "ted-kaczynski": { lat: 46.8797, lng: -110.3626 },
@@ -69,6 +71,15 @@ export const COUNTRY_CENTROIDS: Record<CountryCode, GeoPoint> = {
   US: { lat: 39.8283, lng: -98.5795 },
   VN: { lat: 14.0583, lng: 108.2772 },
   ZA: { lat: -30.5595, lng: 22.9375 },
+  IQ: { lat: 33.2232, lng: 43.6793 },
+  BD: { lat: 23.685, lng: 90.3563 },
+  LV: { lat: 56.8796, lng: 24.6032 },
+  ET: { lat: 9.145, lng: 40.4897 },
+  SA: { lat: 23.8859, lng: 45.0792 },
+  RS: { lat: 44.0165, lng: 21.0059 },
+  BG: { lat: 42.7339, lng: 25.4858 },
+  SK: { lat: 48.669, lng: 19.699 },
+  UZ: { lat: 41.3775, lng: 64.5853 },
   OTHER: { lat: 20, lng: 0 },
 };
 

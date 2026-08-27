@@ -18,6 +18,7 @@ import type {
 } from "@/lib/types";
 import { getCaseNarrative } from "@/data/narratives";
 import { worldEnrichments } from "@/data/worldCases";
+import { multilingualEnrichments } from "@/data/multilingualCases";
 import { inferCountry } from "@/lib/country";
 
 export interface CaseEnrichment {
@@ -42,6 +43,10 @@ export interface CaseEnrichment {
   references: CaseReference[];
   expertCommentary?: ExpertCommentary[];
   caseOfWeek?: boolean;
+  nameOriginal?: string;
+  primarySourceLanguage?: string;
+  primarySourceLanguageLabel?: string;
+  translationNote?: string;
 }
 
 export const enrichments: Record<string, CaseEnrichment> = {
@@ -547,6 +552,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     contentLevel: "standard",
   },
   ...worldEnrichments,
+  ...multilingualEnrichments,
 };
 
 export const documents: CaseDocument[] = [
@@ -948,6 +954,11 @@ export function applyEnrichment(
     documentIds: e.documentIds,
     references: e.references,
     caseOfWeek: e.caseOfWeek,
+    nameOriginal: e.nameOriginal ?? base.nameOriginal,
+    primarySourceLanguage: e.primarySourceLanguage ?? base.primarySourceLanguage,
+    primarySourceLanguageLabel:
+      e.primarySourceLanguageLabel ?? base.primarySourceLanguageLabel,
+    translationNote: e.translationNote ?? base.translationNote,
     narrative: getCaseNarrative(base.slug),
     analysis: {
       ...base.analysis,

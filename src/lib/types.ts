@@ -28,6 +28,7 @@ export type CountryCode =
   | "IE"
   | "IL"
   | "IN"
+  | "IQ"
   | "IR"
   | "IT"
   | "JP"
@@ -55,6 +56,14 @@ export type CountryCode =
   | "US"
   | "VN"
   | "ZA"
+  | "BD"
+  | "LV"
+  | "ET"
+  | "SA"
+  | "RS"
+  | "BG"
+  | "SK"
+  | "UZ"
   | "OTHER";
 
 export type CrimeCategory =
@@ -115,6 +124,12 @@ export type PsychologicalFactor =
 
 export interface SourceRef {
   title: string;
+  /** Title in the original publication language, when translated for display. */
+  originalTitle?: string;
+  /** ISO 639-1 language code of the primary source (e.g. ja, de, ar). */
+  language?: string;
+  /** Human-readable language name for UI. */
+  languageLabel?: string;
   url?: string;
   kind: "court" | "news" | "academic" | "biography" | "primary";
 }
@@ -224,6 +239,11 @@ export interface CaseDocument {
 export interface CaseReference {
   id: string;
   citation: string;
+  /** Citation text in the original source language. */
+  originalCitation?: string;
+  /** ISO 639-1 language code. */
+  language?: string;
+  languageLabel?: string;
   kind: "book" | "journal" | "report" | "media" | "court";
   url?: string;
 }
@@ -292,6 +312,13 @@ export interface CrimeCase {
   warning: string;
   contentLevel: "standard" | "restricted";
   overview: string;
+  /** Offender or case name in the primary source language. */
+  nameOriginal?: string;
+  /** ISO 639-1 code of the main non-English source language, if any. */
+  primarySourceLanguage?: string;
+  primarySourceLanguageLabel?: string;
+  /** How English text was produced and what to verify in originals. */
+  translationNote?: string;
   /** Full documentary narrative (childhood → crime → motive → aftermath). */
   narrative?: CaseNarrative;
   timeline: TimelineEvent[];

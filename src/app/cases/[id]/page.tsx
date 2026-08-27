@@ -76,6 +76,28 @@ export default async function CasePage({ params, searchParams }: Props) {
         <h1 className="display mt-2 max-w-4xl text-[clamp(2.4rem,6vw,3.75rem)] text-[var(--ink)]">
           {crimeCase.name}
         </h1>
+        {crimeCase.nameOriginal ? (
+          <p className="mt-2 text-lg text-[var(--ink-soft)]">
+            Original ({crimeCase.primarySourceLanguageLabel ?? "source language"}):{" "}
+            <span lang={crimeCase.primarySourceLanguage}>{crimeCase.nameOriginal}</span>
+          </p>
+        ) : null}
+        {crimeCase.primarySourceLanguage ? (
+          <div className="mt-4 max-w-3xl rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
+              Translated dossier · {crimeCase.primarySourceLanguageLabel}
+            </p>
+            {crimeCase.translationNote ? (
+              <p className="body-copy mt-2 text-sm text-[var(--ink-soft)]">
+                {crimeCase.translationNote}
+              </p>
+            ) : null}
+            <p className="mt-2 text-xs text-[var(--muted)]">
+              English text synthesized from non-English public sources. See References for
+              original-language citations.
+            </p>
+          </div>
+        ) : null}
         {crimeCase.aliases?.length ? (
           <p className="mt-2 text-sm text-[var(--muted)]">
             Also known as: {crimeCase.aliases.join(" · ")}
@@ -470,6 +492,11 @@ export default async function CasePage({ params, searchParams }: Props) {
                     <span className="mr-2 text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
                       {r.kind}
                     </span>
+                    {r.languageLabel ? (
+                      <span className="mr-2 rounded bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--accent)]">
+                        {r.languageLabel}
+                      </span>
+                    ) : null}
                     {r.url ? (
                       <a href={r.url} className="hover:text-[var(--accent)] hover:underline">
                         {r.citation}
@@ -477,6 +504,14 @@ export default async function CasePage({ params, searchParams }: Props) {
                     ) : (
                       r.citation
                     )}
+                    {r.originalCitation ? (
+                      <p
+                        className="mt-1 text-sm text-[var(--muted)]"
+                        lang={r.language}
+                      >
+                        Original: {r.originalCitation}
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -489,7 +524,23 @@ export default async function CasePage({ params, searchParams }: Props) {
                     <span className="mr-2 text-xs uppercase text-[var(--muted)]">
                       {s.kind}
                     </span>
-                    {s.title}
+                    {s.languageLabel ? (
+                      <span className="mr-2 rounded bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--accent)]">
+                        {s.languageLabel}
+                      </span>
+                    ) : null}
+                    {s.url ? (
+                      <a href={s.url} className="hover:text-[var(--accent)] hover:underline">
+                        {s.title}
+                      </a>
+                    ) : (
+                      s.title
+                    )}
+                    {s.originalTitle ? (
+                      <p className="mt-1 text-sm text-[var(--muted)]" lang={s.language}>
+                        Original: {s.originalTitle}
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
