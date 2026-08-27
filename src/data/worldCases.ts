@@ -4,6 +4,7 @@
  */
 import type { CaseEnrichment } from "@/data/catalog";
 import type { SeedCase } from "@/data/seed";
+import { buildWorldDeep } from "@/lib/deepContentBuilder";
 import type {
   CaseStatus,
   CountryCode,
@@ -60,8 +61,27 @@ function buildAnalysis(summary: string): ForensicAnalysis {
   };
 }
 
+function worldDeepInput(d: WorldCaseDef) {
+  return {
+    slug: d.slug,
+    name: d.name,
+    subtitle: d.subtitle,
+    overview: d.overview,
+    jurisdiction: d.jurisdiction,
+    location: d.location,
+    era: d.era,
+    yearStart: d.yearStart,
+    yearEnd: d.yearEnd,
+    status: d.status,
+    crimeCategories: d.crimeCategories,
+    offenderName: d.offenderName,
+    offenderBackground: d.offenderBackground,
+  };
+}
+
 function toSeed(d: WorldCaseDef): SeedCase {
   const id = `case-${d.slug}`;
+  const deep = buildWorldDeep(worldDeepInput(d));
   return {
     id,
     slug: d.slug,
@@ -70,40 +90,12 @@ function toSeed(d: WorldCaseDef): SeedCase {
     jurisdiction: d.jurisdiction,
     era: d.era,
     status: d.status,
-    tags: d.tags ?? ["world-catalog", "public-record"],
+    tags: [...(d.tags ?? []), "world-catalog", "public-record", "deep-dossier"],
     warning: "Public-record behavioral analysis. Minimal graphic detail. Not legal or clinical advice.",
     overview: d.overview,
     featured: d.featured ?? false,
-    timeline: [
-      {
-        id: `${d.slug}-t1`,
-        date: String(d.yearStart),
-        label: "Offense period begins (public record)",
-        detail: d.overview.slice(0, 180) + "…",
-        behavioralNote: "Timeline from courts, inquiries, or established journalism.",
-      },
-      {
-        id: `${d.slug}-t2`,
-        date: String(d.yearEnd ?? d.yearStart + 5),
-        label: "Investigation / resolution",
-        detail: "Case progressed through public investigation and judicial process.",
-        behavioralNote: "System response and detection lag are part of the forensic lesson.",
-      },
-    ],
-    signals: [
-      {
-        id: `${d.slug}-s1`,
-        dimension: "planning",
-        observation: "Public sources describe patterned or repeated offending rather than an isolated impulse act.",
-        sourceIds: [`${d.slug}-src`],
-      },
-      {
-        id: `${d.slug}-s2`,
-        dimension: "social_functioning",
-        observation: "Offender maintained outward social or occupational credibility for a period in public accounts.",
-        sourceIds: [`${d.slug}-src`],
-      },
-    ],
+    timeline: deep.timeline,
+    signals: deep.signals,
     sources: [
       { title: "Trial / inquiry / established press archives", kind: "court" },
       { title: "Academic or journalistic case studies", kind: "academic" },
@@ -115,6 +107,7 @@ function toSeed(d: WorldCaseDef): SeedCase {
 }
 
 function toEnrichment(d: WorldCaseDef): CaseEnrichment {
+  const patch = buildWorldDeep(worldDeepInput(d)).enrichmentPatch;
   return {
     location: d.location,
     country: d.country,
@@ -130,7 +123,7 @@ function toEnrichment(d: WorldCaseDef): CaseEnrichment {
         note: "Construct-level teaching only; no remote clinical diagnosis.",
       },
     ],
-    offenders: [
+    offenders: patch.offenders ?? [
       {
         id: `off-${d.slug}`,
         name: d.offenderName,
@@ -148,15 +141,15 @@ function toEnrichment(d: WorldCaseDef): CaseEnrichment {
         known: true,
       },
     ],
-    legalOutcome: {
+    legalOutcome: patch.legalOutcome ?? {
       summary: "Resolved through public judicial process — see primary sources.",
       sentencing: "See jurisdiction records.",
     },
-    behavioralProfile: {
+    behavioralProfile: patch.behavioralProfile ?? {
       modusOperandi: "See overview and jurisdiction-specific inquiry reports.",
       organizationLevel: d.crimeCategories.includes("serial_murder") ? "organized" : "mixed",
     },
-    motivationalFactors: [
+    motivationalFactors: patch.motivationalFactors ?? [
       { label: "Documented motive themes", detail: "Infer from trial narratives and expert testimony where available." },
     ],
     relatedCaseSlugs: [],

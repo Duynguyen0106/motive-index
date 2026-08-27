@@ -1,4 +1,5 @@
 import type { CaseNarrative } from "@/lib/types";
+import { getDeepNarrative } from "@/data/deepContent";
 
 export const caseNarratives: Record<string, CaseNarrative> = {
   "ted-bundy": {
@@ -535,5 +536,5 @@ export const caseNarratives: Record<string, CaseNarrative> = {
 };
 
 export function getCaseNarrative(slug: string): CaseNarrative | undefined {
-  return caseNarratives[slug];
+  return caseNarratives[slug] ?? getDeepNarrative(slug);
 }

@@ -40,7 +40,12 @@ function ChapterBlock({ chapter }: { chapter: DossierChapter }) {
           ) : null}
           <div className="body-copy mt-5 space-y-4 text-[var(--ink-soft)] md:text-[1.0625rem]">
             {chapter.paragraphs.map((p, i) => (
-              <p key={i}>{p}</p>
+              <p
+                key={i}
+                className={p.startsWith("[Translation") ? "rounded border border-[var(--line)] bg-[var(--bg-subtle)] px-3 py-2 text-sm italic" : undefined}
+              >
+                {p}
+              </p>
             ))}
           </div>
           {chapter.psychNote ? (
@@ -79,6 +84,11 @@ export function CaseNarrativeView({
               ? ` Generated ${new Date(narrative.generatedAt).toLocaleString()}.`
               : ""}
           </p>
+        </div>
+      ) : narrative.reviewNote ? (
+        <div className="note lg:col-span-2 text-sm">
+          <p className="label mb-1">Dossier provenance</p>
+          <p className="text-[var(--ink-soft)]">{narrative.reviewNote}</p>
         </div>
       ) : null}
       <nav className="hidden lg:block" aria-label="Story chapters">

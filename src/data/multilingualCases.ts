@@ -4,6 +4,9 @@
  */
 import type { CaseEnrichment } from "@/data/catalog";
 import type { SeedCase } from "@/data/seed";
+import {
+  buildMultilingualDeep,
+} from "@/lib/deepContentBuilder";
 import type {
   CaseReference,
   CaseStatus,
@@ -80,6 +83,29 @@ function buildAnalysis(slug: string, summary: string): ForensicAnalysis {
 }
 
 function toSeed(d: MultilingualCaseDef): SeedCase {
+  const deep = buildMultilingualDeep({
+    slug: d.slug,
+    name: d.name,
+    subtitle: d.subtitle,
+    overview: d.overview,
+    jurisdiction: d.jurisdiction,
+    location: d.location,
+    era: d.era,
+    yearStart: d.yearStart,
+    yearEnd: d.yearEnd,
+    status: d.status,
+    crimeCategories: d.crimeCategories,
+    offenderName: d.offenderName,
+    offenderBackground: d.offenderNameOriginal
+      ? `Documented in ${d.primarySourceLanguageLabel} press and court files as ${d.offenderNameOriginal}.`
+      : undefined,
+    nameOriginal: d.nameOriginal,
+    offenderNameOriginal: d.offenderNameOriginal,
+    primarySourceLanguage: d.primarySourceLanguage,
+    primarySourceLanguageLabel: d.primarySourceLanguageLabel,
+    translationNote: d.translationNote,
+    sourceTitles: d.sources.map((s) => s.originalTitle ?? s.title),
+  });
   return {
     id: `case-${d.slug}`,
     slug: d.slug,
@@ -89,36 +115,15 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
     jurisdiction: d.jurisdiction,
     era: d.era,
     status: d.status,
-    tags: [...(d.tags ?? []), "multilingual-source", "translated-en"],
+    tags: [...(d.tags ?? []), "multilingual-source", "translated-en", "deep-dossier"],
     warning:
       "English summary translated from non-English public sources. Consult original-language citations. Not legal or clinical advice.",
     overview: d.overview,
     primarySourceLanguage: d.primarySourceLanguage,
     primarySourceLanguageLabel: d.primarySourceLanguageLabel,
     translationNote: d.translationNote,
-    timeline: [
-      {
-        id: `${d.slug}-t1`,
-        date: String(d.yearStart),
-        label: "Offense period (per original-language record)",
-        detail: d.overview.slice(0, 200) + "…",
-        behavioralNote: "Dates from court or inquiry documents in source language.",
-      },
-      {
-        id: `${d.slug}-t2`,
-        date: String(d.yearEnd ?? d.yearStart),
-        label: "Resolution",
-        detail: "See original-language court or press sources in References.",
-      },
-    ],
-    signals: [
-      {
-        id: `${d.slug}-s1`,
-        dimension: "planning",
-        observation: "Pattern described in original-language trial or investigative reporting.",
-        sourceIds: [`${d.slug}-src`],
-      },
-    ],
+    timeline: deep.timeline,
+    signals: deep.signals,
     sources: d.sources.map(({ originalTitle, language, languageLabel, ...rest }) => ({
       ...rest,
       originalTitle,
@@ -133,6 +138,29 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
 }
 
 function toEnrichment(d: MultilingualCaseDef): CaseEnrichment {
+  const patch = buildMultilingualDeep({
+    slug: d.slug,
+    name: d.name,
+    subtitle: d.subtitle,
+    overview: d.overview,
+    jurisdiction: d.jurisdiction,
+    location: d.location,
+    era: d.era,
+    yearStart: d.yearStart,
+    yearEnd: d.yearEnd,
+    status: d.status,
+    crimeCategories: d.crimeCategories,
+    offenderName: d.offenderName,
+    offenderBackground: d.offenderNameOriginal
+      ? `Documented in ${d.primarySourceLanguageLabel} press and court files as ${d.offenderNameOriginal}.`
+      : undefined,
+    nameOriginal: d.nameOriginal,
+    offenderNameOriginal: d.offenderNameOriginal,
+    primarySourceLanguage: d.primarySourceLanguage,
+    primarySourceLanguageLabel: d.primarySourceLanguageLabel,
+    translationNote: d.translationNote,
+    sourceTitles: d.sources.map((s) => s.originalTitle ?? s.title),
+  }).enrichmentPatch;
   return {
     location: d.location,
     country: d.country,
@@ -148,7 +176,7 @@ function toEnrichment(d: MultilingualCaseDef): CaseEnrichment {
         note: `Inferences drawn from ${d.primarySourceLanguageLabel} public record, rendered in English.`,
       },
     ],
-    offenders: [
+    offenders: patch.offenders ?? [
       {
         id: `off-${d.slug}`,
         name: d.offenderName,
@@ -161,12 +189,16 @@ function toEnrichment(d: MultilingualCaseDef): CaseEnrichment {
       },
     ],
     victims: [{ id: `vic-${d.slug}`, name: "Victims (public record)", role: "victim", known: true }],
-    legalOutcome: { summary: "See original-language court documents in References." },
-    behavioralProfile: {
+    legalOutcome: patch.legalOutcome ?? {
+      summary: "See original-language court documents in References.",
+    },
+    behavioralProfile: patch.behavioralProfile ?? {
       modusOperandi: "See English overview; verify phrasing against originals.",
       organizationLevel: "mixed",
     },
-    motivationalFactors: [{ label: "Source-language narratives", detail: d.translationNote }],
+    motivationalFactors: patch.motivationalFactors ?? [
+      { label: "Source-language narratives", detail: d.translationNote },
+    ],
     relatedCaseSlugs: [],
     documentIds: [],
     references: d.references.map(({ originalCitation, language, languageLabel, ...rest }) => ({
