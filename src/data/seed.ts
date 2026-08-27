@@ -1,4 +1,5 @@
 import type { ForensicAnalysis, LiveUpdate, TimelineEvent, BehaviorSignal, SourceRef, CaseStatus } from "@/lib/types";
+import { worldSeedCases } from "@/data/worldCases";
 
 /** Seed rows before catalog enrichment supplies research metadata. */
 export type SeedCase = {
@@ -908,6 +909,7 @@ export const cases: SeedCase[] = [
       updatedAt: "2026-08-01T12:00:00.000Z",
     },
   },
+  ...worldSeedCases,
   {
     id: "case-ripley-draft",
     slug: "contemporary-draft-example",

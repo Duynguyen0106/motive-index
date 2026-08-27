@@ -1,51 +1,126 @@
 import type { CountryCode } from "@/lib/types";
 
-/** ISO 3166-1 alpha-3 codes used in world GeoJSON boundaries. */
+/** ISO 3166-1 alpha-3 for GeoJSON boundary matching. */
 export const COUNTRY_ISO3: Record<CountryCode, string | null> = {
-  US: "USA",
-  GB: "GBR",
-  CA: "CAN",
+  AR: "ARG",
+  AT: "AUT",
   AU: "AUS",
+  BE: "BEL",
+  BR: "BRA",
+  CA: "CAN",
+  CH: "CHE",
+  CL: "CHL",
+  CN: "CHN",
+  CO: "COL",
+  CZ: "CZE",
+  DE: "DEU",
+  DK: "DNK",
+  EG: "EGY",
+  ES: "ESP",
+  FI: "FIN",
+  FR: "FRA",
+  GB: "GBR",
+  GR: "GRC",
+  HU: "HUN",
+  ID: "IDN",
+  IE: "IRL",
+  IL: "ISR",
+  IN: "IND",
+  IR: "IRN",
+  IT: "ITA",
+  JP: "JPN",
+  KE: "KEN",
+  KR: "KOR",
+  MX: "MEX",
+  MY: "MYS",
+  NG: "NGA",
+  NL: "NLD",
+  NO: "NOR",
+  NZ: "NZL",
+  PE: "PER",
+  PH: "PHL",
+  PK: "PAK",
+  PL: "POL",
+  PT: "PRT",
+  RO: "ROU",
+  RU: "RUS",
+  SE: "SWE",
+  SG: "SGP",
+  TH: "THA",
+  TR: "TUR",
+  TW: "TWN",
+  UA: "UKR",
+  US: "USA",
+  VN: "VNM",
+  ZA: "ZAF",
   OTHER: null,
 };
 
-/** Map ISO3 from GeoJSON back to our filter codes. */
-export const ISO3_TO_COUNTRY: Record<string, CountryCode> = {
-  USA: "US",
-  GBR: "GB",
-  CAN: "CA",
-  AUS: "AU",
-};
+export const ISO3_TO_COUNTRY: Record<string, CountryCode> = Object.fromEntries(
+  Object.entries(COUNTRY_ISO3)
+    .filter(([, iso3]) => iso3)
+    .map(([code, iso3]) => [iso3!, code as CountryCode]),
+) as Record<string, CountryCode>;
 
 /** Lat/lng bounds for fly-to when a country filter is active. */
-export const COUNTRY_BOUNDS: Record<
-  CountryCode,
-  [[number, number], [number, number]] | null
-> = {
-  US: [
-    [24.396308, -124.848974],
-    [49.384358, -66.885444],
-  ],
-  GB: [
-    [49.8, -8.65],
-    [60.95, 1.85],
-  ],
-  CA: [
-    [41.675105, -141.00275],
-    [83.23324, -52.648099],
-  ],
-  AU: [
-    [-43.634597, 112.92111],
-    [-10.668186, 153.638672],
-  ],
+export const COUNTRY_BOUNDS: Record<CountryCode, [[number, number], [number, number]] | null> = {
+  AR: [[-55.25, -73.59], [-21.78, -53.59]],
+  AT: [[46.37, 9.53], [49.02, 17.16]],
+  AU: [[-43.63, 112.92], [-10.67, 153.64]],
+  BE: [[49.5, 2.54], [51.51, 6.41]],
+  BR: [[-33.75, -73.99], [5.27, -34.79]],
+  CA: [[41.68, -141.0], [83.23, -52.65]],
+  CH: [[45.82, 5.96], [47.81, 10.49]],
+  CL: [[-55.98, -75.64], [-17.51, -66.96]],
+  CN: [[18.16, 73.5], [53.56, 134.77]],
+  CO: [[-4.23, -79.0], [12.59, -66.87]],
+  CZ: [[48.55, 12.09], [51.06, 18.86]],
+  DE: [[47.27, 5.87], [55.06, 15.04]],
+  DK: [[54.56, 8.08], [57.75, 12.69]],
+  EG: [[22.0, 24.7], [31.67, 36.87]],
+  ES: [[36.0, -9.3], [43.79, 4.33]],
+  FI: [[59.81, 20.55], [70.09, 31.59]],
+  FR: [[41.33, -5.14], [51.09, 9.56]],
+  GB: [[49.8, -8.65], [60.95, 1.85]],
+  GR: [[34.8, 19.37], [41.75, 29.65]],
+  HU: [[45.74, 16.11], [48.59, 22.9]],
+  ID: [[-11.0, 95.0], [6.08, 141.02]],
+  IE: [[51.42, -10.48], [55.39, -5.99]],
+  IL: [[29.5, 34.27], [33.34, 35.88]],
+  IN: [[6.75, 68.18], [35.5, 97.4]],
+  IR: [[25.06, 44.03], [39.78, 63.32]],
+  IT: [[36.65, 6.63], [47.09, 18.52]],
+  JP: [[24.25, 122.93], [45.52, 153.99]],
+  KE: [[-4.68, 33.91], [5.03, 41.91]],
+  KR: [[33.11, 124.61], [38.61, 131.87]],
+  MX: [[14.53, -118.4], [32.72, -86.71]],
+  MY: [[0.85, 99.64], [7.36, 119.27]],
+  NG: [[4.27, 2.69], [13.89, 14.68]],
+  NL: [[50.75, 3.36], [53.55, 7.23]],
+  NO: [[57.98, 4.65], [71.19, 31.17]],
+  NZ: [[-47.29, 166.43], [-34.39, 178.56]],
+  PE: [[-18.35, -81.33], [-0.04, -68.65]],
+  PH: [[4.59, 116.95], [21.12, 126.6]],
+  PK: [[23.63, 60.87], [37.09, 77.84]],
+  PL: [[49.0, 14.12], [54.84, 24.15]],
+  PT: [[36.96, -9.5], [42.15, -6.19]],
+  RO: [[43.62, 20.26], [48.27, 29.69]],
+  RU: [[41.19, 19.64], [81.86, 180.0]],
+  SE: [[55.34, 11.11], [69.06, 24.16]],
+  SG: [[1.16, 103.6], [1.47, 104.08]],
+  TH: [[5.61, 97.34], [20.46, 105.64]],
+  TR: [[35.82, 26.04], [42.11, 44.82]],
+  TW: [[21.9, 120.04], [25.3, 122.01]],
+  UA: [[44.39, 22.13], [52.38, 40.23]],
+  US: [[24.4, -124.85], [49.38, -66.89]],
+  VN: [[8.18, 102.14], [23.39, 109.46]],
+  ZA: [[-34.84, 16.45], [-22.13, 32.89]],
   OTHER: null,
 };
 
-/** Natural Earth country boundaries (GeoJSON, alpha-3 id). */
 export const WORLD_GEOJSON_URL =
   "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geojson";
 
-/** Light editorial basemap — OpenStreetMap data via CARTO. */
 export const MAP_TILE_URL =
   "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 

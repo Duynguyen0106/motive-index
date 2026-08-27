@@ -17,6 +17,7 @@ import type {
   LegalOutcome,
 } from "@/lib/types";
 import { getCaseNarrative } from "@/data/narratives";
+import { worldEnrichments } from "@/data/worldCases";
 import { inferCountry } from "@/lib/country";
 
 export interface CaseEnrichment {
@@ -545,6 +546,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     references: [],
     contentLevel: "standard",
   },
+  ...worldEnrichments,
 };
 
 export const documents: CaseDocument[] = [
