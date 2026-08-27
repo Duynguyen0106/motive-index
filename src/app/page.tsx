@@ -58,7 +58,7 @@ export default function HomePage() {
           <div className="fade-up-delay-2 mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/cases"
-              className="bg-[var(--ink)] px-6 py-3 text-sm font-semibold tracking-wide text-[var(--bg)] transition-opacity hover:opacity-90"
+              className="bg-[var(--ink)] px-6 py-3 text-sm font-semibold tracking-wide text-[#eef2f5] transition-opacity hover:opacity-90"
             >
               Enter the archive
             </Link>
