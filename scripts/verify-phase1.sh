@@ -72,6 +72,22 @@ if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /monitor redirect
 expect_200 "GET /api/monitor" "$BASE/api/monitor"
 expect_contains "Monitor filter country US" "$BASE/?country=US" "Ted Bundy"
 expect_contains "Live country filter" "$BASE/live?country=US" "United States"
+expect_200 "GET /sitemap.xml" "$BASE/sitemap.xml"
+expect_200 "GET /robots.txt" "$BASE/robots.txt"
+expect_contains "Sitemap includes case slug" "$BASE/sitemap.xml" "ted-bundy"
+expect_contains "Monitor tab news" "$BASE/?tab=news" "World crime news"
+expect_contains "Archive URL filter" "$BASE/archive?country=US" "Ted Bundy"
+
+echo
+echo "-- SEO & canonical URLs --"
+code=$(http_code "$BASE/cases/case-bundy")
+if [[ "$code" == "308" || "$code" == "301" ]]; then check "Legacy case id redirects" 1; else check "Legacy case id redirects [got $code]" 0; fi
+expect_contains "Multilingual dossier banner" "$BASE/cases/alexander-pichushkin" "Translated dossier"
+
+echo
+echo "-- APIs (extended) --"
+code=$(http_code "$BASE/api/world-news")
+if [[ "$code" == "200" ]] && grep -q '"generatedAt"' /tmp/mi_body.txt; then check "GET /api/world-news" 1; else check "GET /api/world-news" 0; fi
 
 echo
 echo "-- Case dossiers & tabs --"

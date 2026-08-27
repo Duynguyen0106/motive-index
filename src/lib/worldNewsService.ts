@@ -1,4 +1,6 @@
 import { WORLD_NEWS_SEED } from "@/data/worldNewsSeed";
+import { getAllCases } from "@/lib/data";
+import { matchCaseSlugFromText } from "@/lib/newsCaseMatcher";
 import type { CountryCode } from "@/lib/types";
 import {
   fetchLiveWorldNews,
@@ -25,6 +27,16 @@ function dedupeNews(items: WorldNewsItem[]): WorldNewsItem[] {
   return out.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 }
 
+function linkNewsToDossiers(items: WorldNewsItem[]): WorldNewsItem[] {
+  const catalog = getAllCases();
+  return items.map((item) => ({
+    ...item,
+    caseSlug:
+      item.caseSlug ??
+      matchCaseSlugFromText(`${item.headline} ${item.summary}`, catalog),
+  }));
+}
+
 /** Merge live RSS + curated seed; prefer freshest unique headlines. */
 export async function buildWorldNewsPayload(
   options?: { limit?: number; country?: CountryCode | ""; live?: boolean },
@@ -40,7 +52,7 @@ export async function buildWorldNewsPayload(
     }
   }
 
-  const merged = dedupeNews([...live, ...WORLD_NEWS_SEED]);
+  const merged = linkNewsToDossiers(dedupeNews([...live, ...WORLD_NEWS_SEED]));
   const filtered = filterWorldNewsByCountry(merged, options?.country ?? "");
 
   return {

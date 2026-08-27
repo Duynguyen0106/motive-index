@@ -1,9 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CasesGrid } from "@/components/CasesGrid";
 import { Disclaimer } from "@/components/Disclaimer";
 import { LiveTicker } from "@/components/LiveTicker";
 import { PageHeader } from "@/components/PageHeader";
 import { getAllCases, getCaseOfWeek, getUpdates } from "@/lib/data";
+
+export const metadata: Metadata = {
+  title: "Case archive",
+  description:
+    "Browse structured forensic psychology dossiers—filter by country, crime type, and keyword.",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -15,17 +24,20 @@ export default function ArchivePage() {
   return (
     <>
       <div className="site-shell py-10 md:py-12">
+        <Breadcrumbs
+          items={[{ label: "Monitor", href: "/" }, { label: "Case archive" }]}
+        />
         <PageHeader
           label="Case archive"
           title="Behavioral dossiers"
           description="Structured case files, document pointers, and forensic-psychological commentary—with citations, confidence notes, and explicit unknowns."
         />
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <Link href="/" className="text-link font-medium">
-            ← World monitor
-          </Link>
           <Link href="/search" className="text-[var(--ink-soft)] hover:text-[var(--ink)]">
-            Search &amp; filter
+            Advanced search
+          </Link>
+          <Link href="/live" className="text-[var(--ink-soft)] hover:text-[var(--ink)]">
+            World news
           </Link>
           <Link href="/method" className="text-[var(--ink-soft)] hover:text-[var(--ink)]">
             How we analyze
@@ -60,7 +72,9 @@ export default function ArchivePage() {
           <h2 className="display text-2xl text-[var(--ink)]">Case index</h2>
           <p className="text-sm text-[var(--muted)]">{cases.length} records in catalog</p>
         </div>
-        <CasesGrid cases={cases} />
+        <Suspense fallback={<p className="text-[var(--muted)]">Loading index…</p>}>
+          <CasesGrid cases={cases} />
+        </Suspense>
       </section>
 
       <section className="site-shell pb-16">

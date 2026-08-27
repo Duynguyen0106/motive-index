@@ -1,18 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { monitorUrlFromFilters } from "@/lib/search";
 import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
 export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
-  const [q, setQ] = useState("");
-  const [crimeType, setCrimeType] = useState<CrimeCategory | "">("");
-  const [country, setCountry] = useState<CountryCode | "">("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
+  const [crimeType, setCrimeType] = useState<CrimeCategory | "">(
+    () => (searchParams.get("crimeCategory") as CrimeCategory | "") ?? "",
+  );
+  const [country, setCountry] = useState<CountryCode | "">(
+    () => (searchParams.get("country") as CountryCode | "") ?? "",
+  );
 
   const countryOptions = useMemo(() => listCountryOptions(cases), [cases]);
+
+  useEffect(() => {
+    setQ(searchParams.get("q") ?? "");
+    setCrimeType((searchParams.get("crimeCategory") as CrimeCategory | "") ?? "");
+    setCountry((searchParams.get("country") as CountryCode | "") ?? "");
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const p = new URLSearchParams();
+      if (q.trim()) p.set("q", q.trim());
+      if (country) p.set("country", country);
+      if (crimeType) p.set("crimeCategory", crimeType);
+      const qs = p.toString();
+      const next = qs ? `/archive?${qs}` : "/archive";
+      const current = `${window.location.pathname}${window.location.search}`;
+      if (current !== next) {
+        router.replace(next, { scroll: false });
+      }
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [q, country, crimeType, router]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -33,6 +67,12 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
       return hay.includes(query);
     });
   }, [cases, q, crimeType, country]);
+
+  function clearFilters() {
+    setQ("");
+    setCrimeType("");
+    setCountry("");
+  }
 
   return (
     <div>
@@ -79,15 +119,7 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
             ))}
           </select>
         </label>
-        <button
-          type="button"
-          onClick={() => {
-            setQ("");
-            setCrimeType("");
-            setCountry("");
-          }}
-          className="btn btn-ghost"
-        >
+        <button type="button" onClick={clearFilters} className="btn btn-ghost">
           Clear
         </button>
       </form>

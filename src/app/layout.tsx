@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans, Literata } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { DEFAULT_DESCRIPTION, getSiteUrl, SITE_NAME } from "@/lib/seo";
 import "./globals.css";
 
 const literata = Literata({
@@ -17,12 +18,28 @@ const plex = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "Motive Index — Forensic psychological case archive",
-    template: "%s · Motive Index",
+    default: `${SITE_NAME} — Forensic psychological case archive`,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Educational archive of historical crime cases with forensic psychological analysis—evidence, confidence, and explicit unknowns.",
+  description: DEFAULT_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { LiveFeedClient } from "@/components/LiveFeedClient";
 import { PageHeader } from "@/components/PageHeader";
@@ -35,6 +36,11 @@ export default async function LivePage({ searchParams }: Props) {
 
   return (
     <div className="py-12 md:py-14">
+      <div className="site-shell">
+        <Breadcrumbs
+          items={[{ label: "Monitor", href: "/" }, { label: "World crime news" }]}
+        />
+      </div>
       <PageHeader
         label="Live intelligence"
         title={country ? `World crime news · ${COUNTRY_LABELS[country]}` : "World crime news"}

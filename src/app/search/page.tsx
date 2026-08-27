@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import {
   CRIME_CATEGORY_LABELS,
   DOCUMENT_TYPE_LABELS,
@@ -35,7 +36,10 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className="site-shell py-12 md:py-14">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
+      <Breadcrumbs
+        items={[{ label: "Monitor", href: "/" }, { label: "Advanced search" }]}
+      />
+      <p className="text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase mt-5">
         Search
       </p>
       <h1 className="display mt-3 text-4xl text-[var(--ink)] md:text-5xl">

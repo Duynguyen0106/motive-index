@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseTabs } from "@/components/CaseTabs";
 import { CaseNarrativeView } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PsychMap } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
-import { getActiveTab } from "@/lib/case-tabs";
+import { getActiveTab, CASE_TABS } from "@/lib/case-tabs";
 import {
   getAllCases,
   getCaseBySlug,
@@ -24,6 +25,7 @@ import {
 import { formatDate } from "@/lib/utils";
 import { resolveCaseCountry } from "@/lib/country";
 import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
+import { getSiteUrl } from "@/lib/seo";
 import type { SearchFilters } from "@/lib/types";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
@@ -44,14 +46,30 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  return getAllCases().map((c) => ({ id: c.id }));
+  return getAllCases().map((c) => ({ id: c.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const c = getCaseByIdOrSlug(id);
   if (!c) return { title: "Case not found" };
-  return { title: c.name, description: c.subtitle };
+  const url = `${getSiteUrl()}/cases/${c.slug}`;
+  return {
+    title: c.name,
+    description: c.subtitle,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: c.name,
+      description: c.subtitle,
+      url,
+    },
+    twitter: {
+      card: "summary",
+      title: c.name,
+      description: c.subtitle,
+    },
+  };
 }
 
 export default async function CasePage({ params, searchParams }: Props) {
@@ -60,8 +78,14 @@ export default async function CasePage({ params, searchParams }: Props) {
   const crimeCase = getCaseByIdOrSlug(id);
   if (!crimeCase) notFound();
 
+  if (decodeURIComponent(id) !== crimeCase.slug) {
+    const tab = sp.tab ? `?tab=${encodeURIComponent(sp.tab)}` : "";
+    permanentRedirect(`/cases/${crimeCase.slug}${tab}`);
+  }
+
   const narrative = crimeCase.narrative;
   const tab = getActiveTab(sp.tab, { hasNarrative: Boolean(narrative) });
+  const tabLabel = CASE_TABS.find((t) => t.id === tab)?.label ?? tab;
 
   const country = resolveCaseCountry(crimeCase);
   const searchSimilar: SearchFilters = {
@@ -75,9 +99,14 @@ export default async function CasePage({ params, searchParams }: Props) {
   return (
     <article className="pb-16">
       <header className="site-shell py-10 md:py-12">
-        <Link href="/archive" className="text-sm text-link">
-          ← Case archive
-        </Link>
+        <Breadcrumbs
+          items={[
+            { label: "Monitor", href: "/" },
+            { label: "Archive", href: "/archive" },
+            { label: crimeCase.name, href: `/cases/${crimeCase.slug}` },
+            { label: tabLabel },
+          ]}
+        />
         <p className="label mt-5">
           {crimeCase.yearStart}
           {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location} ·{" "}
