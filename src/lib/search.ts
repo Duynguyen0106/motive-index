@@ -17,6 +17,7 @@ export function parseSearchParams(
       "theoreticalFramework",
     ) as SearchFilters["theoreticalFramework"],
     diagnosis: g("diagnosis"),
+    country: g("country") as SearchFilters["country"],
     location: g("location"),
     period: g("period"),
     offenderSex: g("offenderSex"),

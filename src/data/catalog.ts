@@ -4,6 +4,7 @@ import type {
   ContributionSubmission,
   CrimeCase,
   CrimeCategory,
+  CountryCode,
   DiagnosisNote,
   ExpertCommentary,
   GlossaryTerm,
@@ -16,11 +17,13 @@ import type {
   LegalOutcome,
 } from "@/lib/types";
 import { getCaseNarrative } from "@/data/narratives";
+import { inferCountry } from "@/lib/country";
 
 export interface CaseEnrichment {
   aliases?: string[];
   caseNumber?: string;
   location: string;
+  country?: CountryCode;
   yearStart: number;
   yearEnd?: number;
   crimeCategories: CrimeCategory[];
@@ -44,6 +47,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   "ted-bundy": {
     aliases: ["Theodore Robert Bundy"],
     location: "United States (multi-state)",
+    country: "US",
     yearStart: 1974,
     yearEnd: 1989,
     crimeCategories: ["serial_murder"],
@@ -130,6 +134,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   "dennis-rader-btk": {
     aliases: ["BTK", "Bind Torture Kill"],
     location: "Wichita, Kansas, United States",
+    country: "US",
     yearStart: 1974,
     yearEnd: 2005,
     crimeCategories: ["serial_murder"],
@@ -206,6 +211,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   "ted-kaczynski": {
     aliases: ["Unabomber"],
     location: "United States",
+    country: "US",
     yearStart: 1978,
     yearEnd: 1996,
     crimeCategories: ["terrorism_ideological"],
@@ -268,6 +274,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   },
   "aileen-wuornos": {
     location: "Florida, United States",
+    country: "US",
     yearStart: 1989,
     yearEnd: 1990,
     crimeCategories: ["serial_murder", "homicide"],
@@ -329,6 +336,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   "zodiac-killer": {
     aliases: ["Zodiac"],
     location: "Northern California, United States",
+    country: "US",
     yearStart: 1968,
     yearEnd: 1974,
     crimeCategories: ["serial_murder"],
@@ -384,6 +392,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   "charles-manson": {
     aliases: ["Manson Family leader"],
     location: "California, United States",
+    country: "US",
     yearStart: 1969,
     yearEnd: 1971,
     crimeCategories: ["homicide", "mass_violence"],
@@ -448,6 +457,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   "harold-shipman": {
     aliases: ["Dr. Death (press epithet — avoid sensational use)"],
     location: "England, United Kingdom",
+    country: "GB",
     yearStart: 1975,
     yearEnd: 1998,
     crimeCategories: ["healthcare_murder", "homicide"],
@@ -507,6 +517,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
   },
   "contemporary-draft-example": {
     location: "Example jurisdiction",
+    country: "OTHER",
     yearStart: 2026,
     crimeCategories: ["other"],
     psychologicalFactors: [],
@@ -862,6 +873,7 @@ export function applyEnrichment(
     | "aliases"
     | "caseNumber"
     | "location"
+    | "country"
     | "yearStart"
     | "yearEnd"
     | "crimeCategories"
@@ -882,9 +894,11 @@ export function applyEnrichment(
 ): CrimeCase {
   const e = enrichments[base.slug];
   if (!e) {
+    const location = base.location ?? base.jurisdiction;
     return {
       ...base,
-      location: base.location ?? base.jurisdiction,
+      location,
+      country: base.country ?? inferCountry(base.jurisdiction, location),
       yearStart: base.yearStart ?? (Number(base.era) || 1900),
       crimeCategories: base.crimeCategories ?? ["other"],
       psychologicalFactors: base.psychologicalFactors ?? [],
@@ -915,6 +929,7 @@ export function applyEnrichment(
     aliases: e.aliases,
     caseNumber: e.caseNumber,
     location: e.location,
+    country: e.country ?? inferCountry(base.jurisdiction, e.location),
     yearStart: e.yearStart,
     yearEnd: e.yearEnd,
     crimeCategories: e.crimeCategories,

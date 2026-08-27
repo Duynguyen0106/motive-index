@@ -8,6 +8,7 @@ import {
   heuristicNarrativeFromSources,
 } from "@/lib/narrativeGenerate";
 import { syncCaseToSupabase } from "@/lib/repository";
+import { inferCountry } from "@/lib/country";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
 export type FeedItem = {
@@ -187,6 +188,7 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
     subtitle: "Live-ingest draft from public news cluster",
     jurisdiction: "Unspecified (from news feed)",
     location: "Unspecified",
+    country: inferCountry("Unspecified (from news feed)", "Unspecified"),
     yearStart: year,
     era: String(year),
     status: "closed",

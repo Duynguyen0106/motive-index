@@ -10,6 +10,7 @@ create table if not exists public.cases (
   subtitle text,
   jurisdiction text,
   location text,
+  country text,
   year_start int,
   year_end int,
   status text check (status in ('closed', 'unsolved', 'historical')),

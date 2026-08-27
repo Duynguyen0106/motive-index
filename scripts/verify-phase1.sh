@@ -88,6 +88,8 @@ echo
 echo "-- Search filters --"
 expect_contains "Filter power_control finds BTK" "$BASE/search?psychologicalFactor=power_control" "Dennis Rader"
 expect_contains "Filter serial_murder" "$BASE/search?crimeCategory=serial_murder" "Ted Bundy"
+expect_contains "Filter country GB finds Shipman" "$BASE/search?country=GB" "Harold Shipman"
+expect_contains "Filter country US finds Bundy" "$BASE/search?country=US" "Ted Bundy"
 expect_contains "Filter location California" "$BASE/search?location=California" "Zodiac"
 expect_contains "Filter period 1974" "$BASE/search?period=1974" "Ted Bundy"
 expect_contains "Filter offender female" "$BASE/search?offenderSex=female" "Aileen Wuornos"
