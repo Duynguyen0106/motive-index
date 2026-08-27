@@ -69,14 +69,14 @@ export async function POST(req: Request) {
   }
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const { chatCompletionHeaders, getChatCompletionsUrl, getChatModel } = await import(
+      "@/lib/openai"
+    );
+    const res = await fetch(getChatCompletionsUrl(), {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: chatCompletionHeaders(apiKey),
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+        model: getChatModel(),
         response_format: { type: "json_object" },
         messages: [
           {
