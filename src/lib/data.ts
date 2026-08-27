@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import {
   applyEnrichment,
   documents as seedDocuments,
@@ -22,14 +24,60 @@ import {
   FRAMEWORK_LABELS,
 } from "@/lib/types";
 
-let casesStore: CrimeCase[] = seedCases.map((c) => applyEnrichment(c));
-let updatesStore: LiveUpdate[] = structuredClone(seedUpdates);
-let documentsStore: CaseDocument[] = structuredClone(seedDocuments);
-let contributionsStore: ContributionSubmission[] = structuredClone(seedContributions);
+type Store = {
+  cases: CrimeCase[];
+  updates: LiveUpdate[];
+  documents: CaseDocument[];
+  contributions: ContributionSubmission[];
+};
+
+const DATA_DIR = path.join(process.cwd(), ".data");
+const STORE_PATH = path.join(DATA_DIR, "store.json");
+
+function seedStore(): Store {
+  return {
+    cases: seedCases.map((c) => applyEnrichment(c)),
+    updates: structuredClone(seedUpdates),
+    documents: structuredClone(seedDocuments),
+    contributions: structuredClone(seedContributions),
+  };
+}
+
+function readStoreFromDisk(): Store | null {
+  try {
+    if (!fs.existsSync(STORE_PATH)) return null;
+    const raw = JSON.parse(fs.readFileSync(STORE_PATH, "utf8")) as Store;
+    if (!raw?.cases?.length) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
+function writeStore(store: Store): void {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
+  } catch {
+    /* best-effort persistence for local MVP */
+  }
+}
+
+function getStore(): Store {
+  const g = globalThis as unknown as { __motiveIndexStore?: Store };
+  if (!g.__motiveIndexStore) {
+    g.__motiveIndexStore = readStoreFromDisk() ?? seedStore();
+  }
+  return g.__motiveIndexStore;
+}
+
+function persist(): void {
+  writeStore(getStore());
+}
 
 export function getAllCases(): CrimeCase[] {
-  return casesStore
-    .slice()
+  return getStore()
+    .cases.slice()
     .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
 }
 
@@ -48,26 +96,26 @@ export function getCaseOfWeek(): CrimeCase | undefined {
 }
 
 export function getCaseBySlug(slug: string): CrimeCase | undefined {
-  return casesStore.find((c) => c.slug === slug);
+  return getStore().cases.find((c) => c.slug === slug);
 }
 
 export function getUpdates(limit = 20): LiveUpdate[] {
-  return updatesStore
-    .slice()
+  return getStore()
+    .updates.slice()
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
     .slice(0, limit);
 }
 
 export function getAllDocuments(): CaseDocument[] {
-  return documentsStore.slice();
+  return getStore().documents.slice();
 }
 
 export function getDocumentsForCase(slug: string): CaseDocument[] {
-  return documentsStore.filter((d) => d.caseSlug === slug);
+  return getStore().documents.filter((d) => d.caseSlug === slug);
 }
 
 export function getDocumentById(id: string): CaseDocument | undefined {
-  return documentsStore.find((d) => d.id === id);
+  return getStore().documents.find((d) => d.id === id);
 }
 
 export function getGlossary(): GlossaryTerm[] {
@@ -83,21 +131,23 @@ export function getTheoryBySlug(slug: string): TheoryOverview | undefined {
 }
 
 export function getContributions(): ContributionSubmission[] {
-  return contributionsStore
-    .slice()
+  return getStore()
+    .contributions.slice()
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 }
 
 export function addContribution(
   input: Omit<ContributionSubmission, "id" | "createdAt" | "status">,
 ): ContributionSubmission {
+  const store = getStore();
   const row: ContributionSubmission = {
     ...input,
     id: `sub-${Date.now()}`,
     status: "pending",
     createdAt: new Date().toISOString(),
   };
-  contributionsStore = [row, ...contributionsStore];
+  store.contributions = [row, ...store.contributions];
+  persist();
   return row;
 }
 
@@ -209,20 +259,23 @@ export function searchDocuments(filters: SearchFilters): CaseDocument[] {
 }
 
 export function upsertCase(next: CrimeCase): CrimeCase {
-  const idx = casesStore.findIndex((c) => c.id === next.id || c.slug === next.slug);
-  if (idx >= 0) casesStore[idx] = next;
-  else casesStore = [next, ...casesStore];
+  const store = getStore();
+  const idx = store.cases.findIndex((c) => c.id === next.id || c.slug === next.slug);
+  if (idx >= 0) store.cases[idx] = next;
+  else store.cases = [next, ...store.cases];
+  persist();
   return next;
 }
 
 export function addUpdate(update: LiveUpdate): LiveUpdate {
-  updatesStore = [update, ...updatesStore];
+  const store = getStore();
+  store.updates = [update, ...store.updates];
+  persist();
   return update;
 }
 
 export function resetStore(): void {
-  casesStore = seedCases.map((c) => applyEnrichment(c));
-  updatesStore = structuredClone(seedUpdates);
-  documentsStore = structuredClone(seedDocuments);
-  contributionsStore = structuredClone(seedContributions);
+  const g = globalThis as unknown as { __motiveIndexStore?: Store };
+  g.__motiveIndexStore = seedStore();
+  persist();
 }

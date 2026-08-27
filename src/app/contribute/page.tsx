@@ -3,6 +3,8 @@ import { ContributeForm } from "@/components/ContributeForm";
 import { getContributions } from "@/lib/data";
 import { formatDate } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Contribute",
   description: "Submit cases, analyses, or documents for moderation and peer review.",

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify": "bash scripts/verify-phase1.sh http://localhost:3000"
   },
   "dependencies": {
     "next": "16.3.3",

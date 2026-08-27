@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   slug: z.string().min(1),
+  force: z.boolean().optional(),
   signals: z
     .array(
       z.object({
@@ -33,7 +34,10 @@ export async function POST(req: Request) {
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid body", details: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid body", details: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const existing = getCaseBySlug(parsed.data.slug);
@@ -41,7 +45,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
 
-  const signals = (parsed.data.signals as BehaviorSignal[] | undefined) ?? existing.signals;
+  if (
+    existing.analysis.status === "published" &&
+    existing.analysis.reviewedByHuman &&
+    !parsed.data.force
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Refusing to overwrite a human-reviewed published analysis. Pass force:true to replace with a draft.",
+      },
+      { status: 409 },
+    );
+  }
+
+  const signals =
+    (parsed.data.signals as BehaviorSignal[] | undefined) ?? existing.signals;
   const analysis = await analyzeWithOptionalLLM({
     caseName: existing.name,
     overview: existing.overview,
@@ -54,6 +73,7 @@ export async function POST(req: Request) {
     analysis: {
       ...analysis,
       status: analysis.constructs.length ? "draft" : "pending",
+      expertCommentary: existing.analysis.expertCommentary,
     },
   });
 

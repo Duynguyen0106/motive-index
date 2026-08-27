@@ -21,6 +21,9 @@ import {
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
+export const dynamicParams = true;
+export const dynamic = "force-dynamic";
+
 function theoryHref(framework: string): string {
   const match = getTheories().find((t) => t.framework === framework);
   return match ? `/resources/theories/${match.slug}` : "/resources";
