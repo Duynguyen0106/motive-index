@@ -14,6 +14,7 @@ import {
   getDocumentsForCase,
   getTheories,
 } from "@/lib/data";
+import type { CrimeCase } from "@/lib/types";
 import {
   CRIME_CATEGORY_LABELS,
   FACTOR_LABELS,
@@ -21,6 +22,10 @@ import {
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
+function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
+  const key = decodeURIComponent(idOrSlug);
+  return getAllCases().find((c) => c.id === key) ?? getCaseBySlug(key);
+}
 export const dynamicParams = true;
 export const dynamic = "force-dynamic";
 
@@ -30,29 +35,29 @@ function theoryHref(framework: string): string {
 }
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;
 };
 
 export async function generateStaticParams() {
-  return getAllCases().map((c) => ({ slug: c.slug }));
+  return getAllCases().map((c) => ({ id: c.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const c = getCaseBySlug(slug);
+  const { id } = await params;
+  const c = getCaseByIdOrSlug(id);
   if (!c) return { title: "Case not found" };
   return { title: c.name, description: c.subtitle };
 }
 
 export default async function CasePage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { id } = await params;
   const sp = await searchParams;
   const tab = getActiveTab(sp.tab);
-  const crimeCase = getCaseBySlug(slug);
+  const crimeCase = getCaseByIdOrSlug(id);
   if (!crimeCase) notFound();
 
-  const docs = getDocumentsForCase(slug);
+  const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
 
   return (
@@ -103,7 +108,7 @@ export default async function CasePage({ params, searchParams }: Props) {
       </header>
 
       <Suspense fallback={null}>
-        <CaseTabs slug={slug} />
+        <CaseTabs slug={crimeCase.slug} />
       </Suspense>
 
       <div className="site-shell py-8">

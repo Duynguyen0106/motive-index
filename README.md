@@ -18,6 +18,21 @@ Built for students, academics, researchers, training contexts, and scholarly pub
 | Auth, Postgres, Elasticsearch | 🔜 next production phase |
 | Age-gated restricted docs | 🔜 policy stubbed |
 
+## Supabase / admin checklist compliance
+
+| Requirement | Location |
+|-------------|----------|
+| Supabase client init | `src/lib/supabaseClient.ts` (+ `supabaseServer.ts`) |
+| Home fetches all cases in a grid | `src/app/page.tsx` + `CasesGrid` |
+| Case detail by ID + documents | `src/app/cases/[id]/page.tsx` |
+| Search bar + crime type filter on home | `CasesGrid` on `/` |
+| Admin upload → storage + documents | `src/app/admin/upload` + `POST /api/admin/upload` |
+| Email/password auth protecting admin | `/login`, middleware, `POST /api/auth/login` |
+| OpenAI structured extract from raw text | `POST /api/extract` |
+| Form that prefills case creation | `src/app/admin/cases/new` |
+
+Without Supabase env vars the app uses the local `.data` store and local admin credentials (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). Apply `supabase/schema.sql` when connecting a project.
+
 ## Run
 
 ```bash

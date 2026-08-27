@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 const links = [
-  { href: "/cases", label: "Browse" },
+  { href: "/", label: "Cases" },
   { href: "/search", label: "Search" },
   { href: "/documents", label: "Documents" },
   { href: "/analyses", label: "Analyses" },
   { href: "/resources", label: "Resources" },
-  { href: "/contribute", label: "Contribute" },
+  { href: "/admin/upload", label: "Admin" },
   { href: "/about", label: "About" },
 ];
 
