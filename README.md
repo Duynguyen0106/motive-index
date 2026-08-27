@@ -1,17 +1,24 @@
 # Motive Index
 
-Live-updated educational archive for **forensic psychological analysis** of famous crime cases.
+Educational research archive for **historical crime case files** and **forensic psychological analysis**.
 
-Behavior-first dossiers with evidence, counter-evidence, confidence scores, competing explanations, and explicit unknowns—not sensational true-crime content.
+Built for students, academics, researchers, training contexts, and scholarly public readers—with content warnings, citation discipline, and an explicitly non-sensational academic design.
 
-## Stack
+## Product scope (this codebase)
 
-- Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
-- Zod-validated forensic analysis rubric
-- In-memory store seeded with curated cases (swap for Postgres later)
-- Optional OpenAI analysis when `OPENAI_API_KEY` is set; otherwise deterministic draft analyzer
+| Area | Status in MVP |
+|------|----------------|
+| Structured case database | ✅ metadata + dossiers |
+| Advanced search & filters | ✅ `/search` |
+| Psychological analysis + commentary | ✅ constructs + expert/student notes |
+| Document library | ✅ tagged pointers / link-outs |
+| Contributions & moderation queue | ✅ form + `/api/contribute` |
+| Educational resources | ✅ glossary, theories, case of the week |
+| Ethics / about | ✅ `/about` |
+| Auth, Postgres, Elasticsearch | 🔜 next production phase |
+| Age-gated restricted docs | 🔜 policy stubbed |
 
-## Run locally
+## Run
 
 ```bash
 npm install
@@ -20,48 +27,34 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Routes
-
-| Path | Purpose |
-|------|---------|
-| `/` | Brand hero + live ticker + featured dossiers |
-| `/cases` | Full archive |
-| `/cases/[slug]` | Timeline, psych map, sources |
-| `/live` | Polling live feed |
-| `/method` | Rubric & pipeline |
-| `GET /api/cases` | Case index JSON |
-| `GET /api/updates` | Live updates JSON |
-| `POST /api/ingest` | Create a draft case stub from a public headline |
-| `POST /api/analyze` | Regenerate analysis draft for a case slug |
-
-### Ingest example
+Optional LLM analysis drafts:
 
 ```bash
-curl -X POST http://localhost:3000/api/ingest \
-  -H 'content-type: application/json' \
-  -d '{"headline":"Example arrest cluster","summary":"Public reporting describes an arrest with contested motive statements.","jurisdiction":"Example"}'
+cp .env.example .env.local
+# set OPENAI_API_KEY
 ```
 
-### Analyze example
+## Primary routes
 
-```bash
-curl -X POST http://localhost:3000/api/analyze \
-  -H 'content-type: application/json' \
-  -d '{"slug":"ted-bundy"}'
-```
+- `/` — home, live ticker, case of the week
+- `/cases` — browse dossiers
+- `/cases/[slug]?tab=` — Overview · Timeline · Analysis · Documents · References
+- `/search` — filters for crime type, psych factors, theories, period, docs, etc.
+- `/documents` — document library
+- `/analyses` — commentary index
+- `/resources` — glossary + theories
+- `/contribute` — submission + moderation queue
+- `/about` — purpose, ethics, access policy
+- `/method` — scoring rubric
+- `/live` — ingest/update feed
+
+## Architecture notes
+
+- Next.js App Router + TypeScript + Tailwind
+- In-memory store seeded from `src/data/seed.ts` + `src/data/catalog.ts`
+- Swap store for **PostgreSQL** (cases, people, documents, tags) and add full-text search when moving to production
+- Documents are mostly **citations / link-outs**; only mark `publicDomain` + `hosted` when legally clear
 
 ## Ethics
 
-- Public sources only
-- No clinical certainty about living persons
-- No instructional crime detail
-- Victim dignity over spectacle
-- Draft vs human-reviewed labels are visible on every dossier
-
-## Next production steps
-
-1. Postgres + persistent job queue for ingest
-2. News/RSS connectors with dedupe
-3. Human review admin UI
-4. Embedding search across constructs
-5. Evaluation set scored by domain reviewers
+See `/about`. Core rules: victim dignity, warnings, no invented diagnoses, copyright-aware sourcing, educational disclaimer, distress resources.

@@ -1,6 +1,25 @@
-import type { CrimeCase, LiveUpdate } from "@/lib/types";
+import type { ForensicAnalysis, LiveUpdate, TimelineEvent, BehaviorSignal, SourceRef, CaseStatus } from "@/lib/types";
 
-export const cases: CrimeCase[] = [
+/** Seed rows before catalog enrichment supplies research metadata. */
+export type SeedCase = {
+  id: string;
+  slug: string;
+  name: string;
+  subtitle: string;
+  jurisdiction: string;
+  era: string;
+  status: CaseStatus;
+  tags: string[];
+  warning: string;
+  overview: string;
+  timeline: TimelineEvent[];
+  signals: BehaviorSignal[];
+  sources: SourceRef[];
+  analysis: ForensicAnalysis;
+  featured?: boolean;
+};
+
+export const cases: SeedCase[] = [
   {
     id: "case-bundy",
     slug: "ted-bundy",

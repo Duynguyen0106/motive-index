@@ -25,15 +25,17 @@ export async function POST(req: Request) {
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid body", details: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid body", details: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const name = parsed.data.name ?? parsed.data.headline;
   let slug = slugify(name);
-  if (getCaseBySlug(slug)) {
-    slug = `${slug}-${Date.now().toString(36)}`;
-  }
+  if (getCaseBySlug(slug)) slug = `${slug}-${Date.now().toString(36)}`;
 
+  const year = new Date().getFullYear();
   const analysis = analyzeFromSignals([], name);
 
   const crimeCase: CrimeCase = {
@@ -42,11 +44,27 @@ export async function POST(req: Request) {
     name,
     subtitle: "Newly ingested public-source stub",
     jurisdiction: parsed.data.jurisdiction,
-    era: String(new Date().getFullYear()),
+    location: parsed.data.jurisdiction,
+    yearStart: year,
+    era: String(year),
     status: "closed",
+    crimeCategories: ["other"],
     tags: ["live-ingest", "draft"],
+    psychologicalFactors: [],
+    theoreticalFrameworks: [],
+    diagnoses: [],
+    offenders: [{ id: `off-${Date.now()}`, name: "Not verified", role: "offender", known: false }],
+    victims: [],
+    legalOutcome: { summary: "Draft stub — legal outcome not verified." },
+    behavioralProfile: {
+      modusOperandi: "Awaiting extraction.",
+      organizationLevel: "unknown",
+    },
+    motivationalFactors: [],
+    relatedCaseSlugs: [],
     warning:
       "Draft stub from public ingest. Not verified. No psychological constructs published yet.",
+    contentLevel: "standard",
     overview: parsed.data.summary,
     timeline: [
       {
@@ -58,6 +76,8 @@ export async function POST(req: Request) {
       },
     ],
     signals: [],
+    documentIds: [],
+    references: [],
     sources: [{ title: "Ingest payload (public summary)", kind: "news" }],
     analysis,
     featured: false,
