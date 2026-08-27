@@ -28,6 +28,9 @@ export function SiteFooter() {
             <Link href="/search" className="text-link">
               Advanced search
             </Link>
+            <Link href="/live" className="text-link">
+              World news
+            </Link>
             <Link href="/resources" className="text-link">
               Glossary & theories
             </Link>

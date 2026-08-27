@@ -1,5 +1,4 @@
 import type { SearchFilters } from "@/lib/types";
-import { searchCases, searchDocuments } from "@/lib/data";
 
 export function parseSearchParams(
   params: Record<string, string | string[] | undefined>,
@@ -26,9 +25,32 @@ export function parseSearchParams(
   };
 }
 
-export function runSearch(filters: SearchFilters) {
-  return {
-    cases: searchCases(filters),
-    documents: searchDocuments(filters),
-  };
+export function hasActiveFilters(filters: SearchFilters): boolean {
+  return Object.values(filters).some(Boolean);
+}
+
+const MONITOR_FILTER_KEYS = ["q", "country", "crimeCategory", "status", "period"] as const;
+
+export function filtersToQueryString(
+  filters: SearchFilters,
+  keys: readonly (keyof SearchFilters)[] = Object.keys(filters) as (keyof SearchFilters)[],
+): string {
+  const p = new URLSearchParams();
+  for (const k of keys) {
+    const v = filters[k];
+    if (v) p.set(k, String(v));
+  }
+  return p.toString();
+}
+
+export function monitorUrlFromFilters(filters: SearchFilters, caseSlug?: string): string {
+  const p = new URLSearchParams(filtersToQueryString(filters, [...MONITOR_FILTER_KEYS]));
+  if (caseSlug) p.set("case", caseSlug);
+  const qs = p.toString();
+  return qs ? `/?${qs}` : "/";
+}
+
+export function searchUrlFromFilters(filters: SearchFilters): string {
+  const qs = filtersToQueryString(filters);
+  return qs ? `/search?${qs}` : "/search";
 }

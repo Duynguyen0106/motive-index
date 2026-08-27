@@ -1,4 +1,4 @@
-import { getAllCases, getUpdates, searchCases } from "@/lib/data";
+import { getAllCases, getCaseOfWeek, getUpdates, searchCases } from "@/lib/data";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { spreadPins, toMonitorPin } from "@/lib/geo";
 import { parseSearchParams } from "@/lib/search";
@@ -35,6 +35,7 @@ export type MonitorPayload = {
   cases: CrimeCase[];
   updates: LiveUpdate[];
   worldNews: WorldNewsPayload;
+  featuredCase?: CrimeCase;
 };
 
 function buildCountryStats(cases: CrimeCase[]): CountryMonitorStat[] {
@@ -107,5 +108,6 @@ export async function buildMonitorPayload(
     cases,
     updates: getUpdates(updateLimit),
     worldNews,
+    featuredCase: getCaseOfWeek(),
   };
 }

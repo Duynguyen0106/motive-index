@@ -9,7 +9,8 @@ import {
 import type { CrimeCategory, CountryCode, DocumentType, PsychologicalFactor, TheoreticalFramework } from "@/lib/types";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { getAllCases } from "@/lib/data";
-import { parseSearchParams, runSearch } from "@/lib/search";
+import { parseSearchParams, hasActiveFilters, monitorUrlFromFilters } from "@/lib/search";
+import { runSearch } from "@/lib/searchServer";
 
 export const metadata: Metadata = {
   title: "Search",
@@ -23,7 +24,14 @@ export default async function SearchPage({ searchParams }: Props) {
   const filters = parseSearchParams(raw);
   const { cases, documents } = runSearch(filters);
   const countryOptions = listCountryOptions(getAllCases());
-  const hasQuery = Object.values(filters).some((v) => Boolean(v));
+  const hasQuery = hasActiveFilters(filters);
+  const monitorHref = monitorUrlFromFilters({
+    q: filters.q,
+    country: filters.country,
+    crimeCategory: filters.crimeCategory,
+    status: filters.status,
+    period: filters.period,
+  });
 
   return (
     <div className="site-shell py-12 md:py-14">
@@ -38,7 +46,11 @@ export default async function SearchPage({ searchParams }: Props) {
         country, period, location, and document type.
       </p>
 
-      <form className="card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3">
+      <form
+        action="/search"
+        method="get"
+        className="card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3"
+      >
         <label className="block text-sm md:col-span-2 lg:col-span-3">
           <span className="font-medium text-[var(--ink)]">Full-text query</span>
           <input
@@ -203,57 +215,94 @@ export default async function SearchPage({ searchParams }: Props) {
         </div>
       </form>
 
-      <section className="mt-10">
-        <h2 className="display text-3xl">
-          Cases {hasQuery ? `(${cases.length})` : ""}
-        </h2>
-        <ul className="mt-4 grid gap-3">
-          {cases.map((c) => (
-            <li key={c.id}>
-              <Link href={`/cases/${c.slug}`} className="card card-hover block p-5">
-                <p className="text-xs text-[var(--muted)] uppercase tracking-[0.12em]">
-                  {COUNTRY_LABELS[resolveCaseCountry(c)]} · {c.location} · {c.yearStart}
-                  {c.yearEnd ? `–${c.yearEnd}` : ""}
-                </p>
-                <h3 className="display mt-1 text-2xl">{c.name}</h3>
-                <p className="mt-2 text-[var(--ink-soft)]">{c.subtitle}</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  {c.crimeCategories.map((x) => CRIME_CATEGORY_LABELS[x]).join(" · ")}
-                </p>
-              </Link>
-            </li>
-          ))}
-          {!cases.length ? (
-            <li className="text-[var(--muted)]">No cases match these filters.</li>
-          ) : null}
-        </ul>
-      </section>
+      {!hasQuery ? (
+        <section className="card mt-10 p-8 text-center">
+          <h2 className="display text-2xl">Start with a filter</h2>
+          <p className="body-copy mt-3 text-[var(--ink-soft)]">
+            Advanced search covers psychological factors, theories, diagnosis, and document types
+            beyond the monitor. Or explore the map-first view.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href="/" className="btn btn-primary text-sm">
+              Open world monitor
+            </Link>
+            <Link href="/search?status=unsolved" className="btn btn-ghost text-sm">
+              Unsolved cases
+            </Link>
+            <Link href="/search?country=US" className="btn btn-ghost text-sm">
+              United States
+            </Link>
+            <Link href="/search?psychologicalFactor=psychopathy_traits" className="btn btn-ghost text-sm">
+              Psychopathy traits
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <>
+          <p className="mt-6 text-sm text-[var(--muted)]">
+            {cases.length} cases · {documents.length} documents ·{" "}
+            <Link href={monitorHref} className="text-[var(--accent)] hover:underline">
+              View on map
+            </Link>
+          </p>
 
-      <section className="mt-10">
-        <h2 className="display text-3xl">
-          Documents {hasQuery ? `(${documents.length})` : ""}
-        </h2>
-        <ul className="mt-4 grid gap-3">
-          {documents.map((d) => (
-            <li key={d.id} className="card p-5">
-              <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-[0.12em]">
-                {DOCUMENT_TYPE_LABELS[d.type]}
-              </p>
-              <h3 className="display mt-1 text-xl">{d.title}</h3>
-              <p className="mt-2 text-sm text-[var(--ink-soft)]">{d.summary}</p>
-              <Link
-                href={`/cases/${d.caseSlug}?tab=documents`}
-                className="mt-3 inline-block text-sm font-medium text-[var(--accent)] hover:underline"
-              >
-                View in case
-              </Link>
-            </li>
-          ))}
-          {!documents.length ? (
-            <li className="text-[var(--muted)]">No documents match these filters.</li>
-          ) : null}
-        </ul>
-      </section>
+          <section className="mt-8">
+            <h2 className="display text-3xl">Cases ({cases.length})</h2>
+            <ul className="mt-4 grid gap-3">
+              {cases.map((c) => (
+                <li key={c.id}>
+                  <div className="card card-hover p-5">
+                    <Link href={`/cases/${c.slug}`} className="block">
+                      <p className="text-xs text-[var(--muted)] uppercase tracking-[0.12em]">
+                        {COUNTRY_LABELS[resolveCaseCountry(c)]} · {c.location} · {c.yearStart}
+                        {c.yearEnd ? `–${c.yearEnd}` : ""}
+                      </p>
+                      <h3 className="display mt-1 text-2xl">{c.name}</h3>
+                      <p className="mt-2 text-[var(--ink-soft)]">{c.subtitle}</p>
+                      <p className="mt-2 text-sm text-[var(--muted)]">
+                        {c.crimeCategories.map((x) => CRIME_CATEGORY_LABELS[x]).join(" · ")}
+                      </p>
+                    </Link>
+                    <Link
+                      href={monitorUrlFromFilters({}, c.slug)}
+                      className="mt-3 inline-block text-sm font-medium text-[var(--accent)] hover:underline"
+                    >
+                      Plot on map
+                    </Link>
+                  </div>
+                </li>
+              ))}
+              {!cases.length ? (
+                <li className="text-[var(--muted)]">No cases match these filters.</li>
+              ) : null}
+            </ul>
+          </section>
+
+          <section className="mt-10">
+            <h2 className="display text-3xl">Documents ({documents.length})</h2>
+            <ul className="mt-4 grid gap-3">
+              {documents.map((d) => (
+                <li key={d.id} className="card p-5">
+                  <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-[0.12em]">
+                    {DOCUMENT_TYPE_LABELS[d.type]}
+                  </p>
+                  <h3 className="display mt-1 text-xl">{d.title}</h3>
+                  <p className="mt-2 text-sm text-[var(--ink-soft)]">{d.summary}</p>
+                  <Link
+                    href={`/cases/${d.caseSlug}?tab=documents`}
+                    className="mt-3 inline-block text-sm font-medium text-[var(--accent)] hover:underline"
+                  >
+                    View in case
+                  </Link>
+                </li>
+              ))}
+              {!documents.length ? (
+                <li className="text-[var(--muted)]">No documents match these filters.</li>
+              ) : null}
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   );
 }

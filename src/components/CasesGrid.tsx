@@ -102,7 +102,7 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
           <span className="text-right">Classification</span>
         </div>
         {filtered.map((c) => (
-          <Link key={c.id} href={`/cases/${c.id}`} className="index-row group">
+          <Link key={c.id} href={`/cases/${c.slug}`} className="index-row group">
             <span className="index-year">
               {c.yearStart}
               {c.yearEnd ? `–${c.yearEnd}` : ""}

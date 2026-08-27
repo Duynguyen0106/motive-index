@@ -53,8 +53,12 @@ curl -s -X POST "$BASE/api/reset" >/dev/null || true
 echo "-- Pages --"
 expect_200 "GET /" "$BASE/"
 expect_contains "Home brand" "$BASE/" "Motive Index"
+expect_contains "Home world monitor" "$BASE/" "World crime monitor"
 expect_contains "Home featured dossier" "$BASE/" "Featured dossier"
-expect_200 "GET /cases" "$BASE/cases"
+expect_200 "GET /archive" "$BASE/archive"
+expect_contains "Archive featured dossier" "$BASE/archive" "Featured dossier"
+code=$(http_code "$BASE/cases")
+if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /cases redirects" 1; else check "GET /cases redirects [got $code]" 0; fi
 expect_200 "GET /search" "$BASE/search"
 expect_200 "GET /documents" "$BASE/documents"
 expect_200 "GET /analyses" "$BASE/analyses"
@@ -65,7 +69,8 @@ expect_200 "GET /method" "$BASE/method"
 expect_200 "GET /live" "$BASE/live"
 expect_200 "GET /monitor" "$BASE/monitor"
 expect_200 "GET /api/monitor" "$BASE/api/monitor"
-expect_contains "Monitor filter country US" "$BASE/monitor?country=US" "Ted Bundy"
+expect_contains "Monitor filter country US" "$BASE/?country=US" "Ted Bundy"
+expect_contains "Live country filter" "$BASE/live?country=US" "United States"
 
 echo
 echo "-- Case dossiers & tabs --"

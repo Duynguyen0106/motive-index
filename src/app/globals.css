@@ -837,6 +837,33 @@ a.monitor-news-headline:hover {
   }
 }
 
+.monitor-discovery {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, var(--paper) 0%, var(--bg-subtle) 100%);
+}
+
+.monitor-case-dossier-link {
+  display: block;
+  padding: 0.35rem 0.75rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  border-left: 2px solid var(--accent);
+  margin-left: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.monitor-case-dossier-link:hover {
+  text-decoration: underline;
+}
+
+.nav-link.is-active {
+  color: var(--ink);
+}
+
 .monitor-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1058,6 +1085,15 @@ a.monitor-news-headline:hover {
 }
 
 @media (max-width: 1023px) {
+  .monitor-tab {
+    padding: 0.75rem 0.35rem;
+    min-height: 44px;
+  }
+
+  .monitor-panel-toggle {
+    min-height: 44px;
+  }
+
   .monitor-case-card {
     position: relative;
     top: auto;

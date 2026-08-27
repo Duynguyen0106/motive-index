@@ -1,13 +1,5 @@
 import Link from "next/link";
-
-const links = [
-  { href: "/", label: "Monitor" },
-  { href: "/archive", label: "Archive" },
-  { href: "/search", label: "Search" },
-  { href: "/live", label: "News" },
-  { href: "/documents", label: "Documents" },
-  { href: "/method", label: "Method" },
-];
+import { SiteNav } from "@/components/SiteNav";
 
 export function SiteHeader() {
   return (
@@ -20,26 +12,7 @@ export function SiteHeader() {
               Motive Index
             </p>
           </Link>
-          <nav
-            className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[var(--ink-soft)]"
-            aria-label="Primary"
-          >
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="border-b border-transparent pb-0.5 transition-colors hover:border-[var(--line-strong)] hover:text-[var(--ink)]"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <Link
-              href="/admin/moderation"
-              className="border-b border-transparent pb-0.5 text-[var(--muted)] transition-colors hover:border-[var(--line-strong)] hover:text-[var(--ink)]"
-            >
-              Admin
-            </Link>
-          </nav>
+          <SiteNav />
         </div>
       </div>
       <hr className="rule-double" />

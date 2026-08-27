@@ -9,7 +9,8 @@ export const CASE_TABS = [
 
 export type CaseTabId = (typeof CASE_TABS)[number]["id"];
 
-export function getActiveTab(tab: string | undefined): CaseTabId {
+export function getActiveTab(tab: string | undefined, opts?: { hasNarrative?: boolean }): CaseTabId {
   const ids = CASE_TABS.map((t) => t.id);
-  return ids.includes(tab as CaseTabId) ? (tab as CaseTabId) : "story";
+  if (tab && ids.includes(tab as CaseTabId)) return tab as CaseTabId;
+  return opts?.hasNarrative ? "story" : "overview";
 }

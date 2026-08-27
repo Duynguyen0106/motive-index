@@ -4,7 +4,7 @@ import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
 export function CaseRow({ crimeCase: c }: { crimeCase: CrimeCase }) {
   return (
-    <Link href={`/cases/${c.id}`} className="index-row group">
+    <Link href={`/cases/${c.slug}`} className="index-row group">
       <span className="index-year">
         {c.yearStart}
         {c.yearEnd ? `–${c.yearEnd}` : ""}

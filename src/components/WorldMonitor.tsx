@@ -15,6 +15,7 @@ import {
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
+import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { CountryCode, CrimeCategory, CrimeCase, LiveUpdate, SearchFilters } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
@@ -216,6 +217,36 @@ export function WorldMonitor({ initial }: Props) {
           </p>
         </div>
       </header>
+
+      {data.featuredCase ? (
+        <div className="monitor-discovery">
+          <p className="label mb-0">Featured dossier</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <Link
+                href={`/cases/${data.featuredCase.slug}`}
+                className="display text-lg text-[var(--ink)] hover:text-[var(--accent)]"
+              >
+                {data.featuredCase.name}
+              </Link>
+              <p className="mt-1 text-sm text-[var(--muted)] line-clamp-1">
+                {data.featuredCase.subtitle}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-sm">
+              <Link href={`/?case=${data.featuredCase.slug}`} className="btn btn-ghost text-xs">
+                Plot on map
+              </Link>
+              <Link href="/archive" className="btn btn-ghost text-xs">
+                Full archive
+              </Link>
+              <Link href="/live" className="btn btn-ghost text-xs">
+                World news
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="monitor-stats">
         <div className="monitor-stat">
@@ -438,7 +469,10 @@ export function WorldMonitor({ initial }: Props) {
                     </label>
                     <p className="text-xs text-[var(--muted)]">
                       Keyword search updates as you type.{" "}
-                      <Link href="/search" className="text-[var(--accent)] hover:underline">
+                      <Link
+                        href={searchUrlFromFilters(filters)}
+                        className="text-[var(--accent)] hover:underline"
+                      >
                         Advanced filters →
                       </Link>
                     </p>
@@ -536,6 +570,15 @@ export function WorldMonitor({ initial }: Props) {
                           <span className="monitor-case-pin monitor-case-pin-off" title="No coordinates" />
                         )}
                       </button>
+                      {active ? (
+                        <Link
+                          href={`/cases/${c.slug}`}
+                          className="monitor-case-dossier-link"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Open dossier →
+                        </Link>
+                      ) : null}
                     </li>
                   );
                 })}

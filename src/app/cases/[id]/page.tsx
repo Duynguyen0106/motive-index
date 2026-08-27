@@ -22,6 +22,9 @@ import {
   FRAMEWORK_LABELS,
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { resolveCaseCountry } from "@/lib/country";
+import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
+import type { SearchFilters } from "@/lib/types";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
   const key = decodeURIComponent(idOrSlug);
@@ -54,19 +57,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CasePage({ params, searchParams }: Props) {
   const { id } = await params;
   const sp = await searchParams;
-  const tab = getActiveTab(sp.tab);
   const crimeCase = getCaseByIdOrSlug(id);
   if (!crimeCase) notFound();
 
+  const narrative = crimeCase.narrative;
+  const tab = getActiveTab(sp.tab, { hasNarrative: Boolean(narrative) });
+
+  const country = resolveCaseCountry(crimeCase);
+  const searchSimilar: SearchFilters = {
+    country,
+    crimeCategory: crimeCase.crimeCategories[0] ?? "",
+  };
+
   const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
-  const narrative = crimeCase.narrative;
 
   return (
     <article className="pb-16">
       <header className="site-shell py-10 md:py-12">
-        <Link href="/cases" className="text-sm text-link">
-          ← Case index
+        <Link href="/archive" className="text-sm text-link">
+          ← Case archive
         </Link>
         <p className="label mt-5">
           {crimeCase.yearStart}
@@ -109,6 +119,20 @@ export default async function CasePage({ params, searchParams }: Props) {
         {!narrative ? (
           <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">{crimeCase.subtitle}</p>
         ) : null}
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link href={monitorUrlFromFilters({}, crimeCase.slug)} className="btn btn-ghost text-sm">
+            View on map
+          </Link>
+          <Link href={searchUrlFromFilters(searchSimilar)} className="btn btn-ghost text-sm">
+            Similar cases
+          </Link>
+          <Link href={`/live?country=${country}`} className="btn btn-ghost text-sm">
+            Regional news
+          </Link>
+          <Link href="/archive" className="btn btn-ghost text-sm">
+            Full archive
+          </Link>
+        </div>
         <div className="mt-5 flex flex-wrap gap-2">
           {crimeCase.crimeCategories.map((c) => (
             <span key={c} className="tag">
@@ -288,13 +312,16 @@ export default async function CasePage({ params, searchParams }: Props) {
                     Related cases
                   </h3>
                   <ul className="mt-3 space-y-2 text-sm">
-                    {crimeCase.relatedCaseSlugs.map((s) => (
-                      <li key={s}>
-                        <Link href={`/cases/${s}`} className="text-[var(--accent)] hover:underline">
-                          {s}
-                        </Link>
-                      </li>
-                    ))}
+                    {crimeCase.relatedCaseSlugs.map((s) => {
+                      const related = getCaseBySlug(s);
+                      return (
+                        <li key={s}>
+                          <Link href={`/cases/${s}`} className="text-[var(--accent)] hover:underline">
+                            {related?.name ?? s}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ) : null}
