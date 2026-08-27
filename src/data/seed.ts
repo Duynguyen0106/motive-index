@@ -1,4 +1,5 @@
 import type { ForensicAnalysis, LiveUpdate, TimelineEvent, BehaviorSignal, SourceRef, CaseStatus } from "@/lib/types";
+import { WORLD_NEWS_SEED } from "@/data/worldNewsSeed";
 import { worldSeedCases } from "@/data/worldCases";
 import { multilingualSeedCases } from "@/data/multilingualCases";
 
@@ -960,6 +961,22 @@ export const cases: SeedCase[] = [
 ];
 
 export const updates: LiveUpdate[] = [
+  ...WORLD_NEWS_SEED.slice(0, 8).map((n) => ({
+    id: n.id,
+    createdAt: n.createdAt,
+    headline: n.headline,
+    summary: n.summary,
+    caseSlug: n.caseSlug,
+    kind: "world_news" as const,
+    status: "published" as const,
+    country: n.country,
+    region: n.region,
+    sourceUrl: n.sourceUrl,
+    sourceName: n.sourceName,
+    language: n.language,
+    languageLabel: n.languageLabel,
+    originalHeadline: n.originalHeadline,
+  })),
   {
     id: "upd-1",
     createdAt: "2026-08-27T08:30:00.000Z",

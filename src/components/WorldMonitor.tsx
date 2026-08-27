@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
+import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { CountryCode, CrimeCategory, CrimeCase, LiveUpdate, SearchFilters } from "@/lib/types";
@@ -20,9 +21,9 @@ import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
 type Props = { initial: MonitorPayload };
-type SidebarTab = "overview" | "cases" | "signals";
+type SidebarTab = "overview" | "cases" | "news" | "signals";
 
-const TAB_IDS: SidebarTab[] = ["overview", "cases", "signals"];
+const TAB_IDS: SidebarTab[] = ["overview", "cases", "news", "signals"];
 
 function filtersToQuery(filters: SearchFilters, caseId?: string): string {
   const p = new URLSearchParams();
@@ -74,7 +75,7 @@ export function WorldMonitor({ initial }: Props) {
       const merged = { ...filters, ...next };
       const qs = filtersToQuery(merged, caseId ?? (selectedCaseId || undefined));
       startTransition(() => {
-        router.replace(qs ? `/monitor?${qs}` : "/monitor", { scroll: false });
+        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
       });
     },
     [filters, router, selectedCaseId],
@@ -89,14 +90,14 @@ export function WorldMonitor({ initial }: Props) {
         if (slug) {
           const qs = filtersToQuery(filters, slug);
           startTransition(() => {
-            router.replace(`/monitor?${qs}`, { scroll: false });
+            router.replace(`/?${qs}`, { scroll: false });
           });
         }
       }
       if (!id) {
         const qs = filtersToQuery(filters);
         startTransition(() => {
-          router.replace(qs ? `/monitor?${qs}` : "/monitor", { scroll: false });
+          router.replace(qs ? `/?${qs}` : "/", { scroll: false });
         });
       }
     },
@@ -201,8 +202,8 @@ export function WorldMonitor({ initial }: Props) {
           <p className="label">Live intelligence · forensic archive</p>
           <h1 className="display monitor-title">World crime monitor</h1>
           <p className="monitor-lede">
-            Plot {data.totalCases} archived cases on an OpenStreetMap basemap. Pan, zoom, and filter
-            by country, category, or period — click clusters to drill down.
+            Live global crime map with {data.totalCases} archived dossiers, regional news feeds in
+            English, and forensic filters — click clusters to drill down.
           </p>
         </div>
         <div className="monitor-hero-meta">
@@ -283,7 +284,7 @@ export function WorldMonitor({ initial }: Props) {
               {filters.period} <span aria-hidden>×</span>
             </button>
           ) : null}
-          <Link href="/monitor" className="monitor-chip monitor-chip-clear">
+          <Link href="/" className="monitor-chip monitor-chip-clear">
             Clear all
           </Link>
         </div>
@@ -320,7 +321,7 @@ export function WorldMonitor({ initial }: Props) {
               <p className="mt-1 text-sm text-[var(--ink-soft)]">
                 Try clearing filters or choose a different country.
               </p>
-              <Link href="/monitor" className="btn btn-ghost mt-3 text-sm">
+              <Link href="/" className="btn btn-ghost mt-3 text-sm">
                 Reset filters
               </Link>
             </div>
@@ -333,6 +334,7 @@ export function WorldMonitor({ initial }: Props) {
               [
                 ["overview", "Overview"],
                 ["cases", `Cases (${data.cases.length})`],
+                ["news", `News (${data.worldNews.items.length})`],
                 ["signals", "Signals"],
               ] as const
             ).map(([id, label]) => (
@@ -557,6 +559,29 @@ export function WorldMonitor({ initial }: Props) {
             </section>
           ) : null}
 
+          {sidebarTab === "news" ? (
+            <section
+              id="monitor-panel-news"
+              role="tabpanel"
+              aria-labelledby="monitor-tab-news"
+              className="monitor-panel monitor-panel-scroll"
+            >
+              <h2 className="display text-base">World crime news</h2>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Live RSS from 10 regions · English summaries · original headlines preserved
+              </p>
+              <WorldNewsFeed
+                initial={data.worldNews}
+                countryFilter={filters.country ?? ""}
+                onSelectCase={(slug) => {
+                  const id = caseIdFromSlug(data.cases, slug);
+                  if (id) selectCase(id, { switchTab: true });
+                  else window.open(`/cases/${slug}`, "_blank");
+                }}
+              />
+            </section>
+          ) : null}
+
           {sidebarTab === "signals" ? (
             <section
               id="monitor-panel-signals"
@@ -578,7 +603,7 @@ export function WorldMonitor({ initial }: Props) {
                     <span className="monitor-feed-kind">{u.kind.replaceAll("_", " ")}</span>
                     {u.caseSlug ? (
                       <Link
-                        href={`/monitor?case=${u.caseSlug}`}
+                        href={`/?case=${u.caseSlug}`}
                         className="monitor-feed-link"
                         onClick={() => {
                           const id = caseIdFromSlug(data.cases, u.caseSlug!);

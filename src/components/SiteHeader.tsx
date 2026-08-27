@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 const links = [
-  { href: "/", label: "Archive" },
-  { href: "/monitor", label: "Monitor" },
+  { href: "/", label: "Monitor" },
+  { href: "/archive", label: "Archive" },
   { href: "/search", label: "Search" },
+  { href: "/live", label: "News" },
   { href: "/documents", label: "Documents" },
-  { href: "/live", label: "Updates" },
-  { href: "/about", label: "About" },
+  { href: "/method", label: "Method" },
 ];
 
 export function SiteHeader() {
@@ -15,7 +15,7 @@ export function SiteHeader() {
       <div className="site-shell py-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <Link href="/" className="group">
-            <p className="brand-sub">Forensic case archive</p>
+            <p className="brand-sub">World crime monitor</p>
             <p className="brand-mark text-2xl text-[var(--ink)] md:text-[2.125rem]">
               Motive Index
             </p>

@@ -19,11 +19,11 @@ export function SiteFooter() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-[var(--ink-soft)]">
-            <Link href="/cases" className="text-link">
-              Case index
-            </Link>
-            <Link href="/monitor" className="text-link">
+            <Link href="/" className="text-link">
               World monitor
+            </Link>
+            <Link href="/archive" className="text-link">
+              Case archive
             </Link>
             <Link href="/search" className="text-link">
               Advanced search

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { runLiveUpdatePipeline } from "@/lib/pipeline/ingestWorker";
+import { runLiveUpdatePipeline, runWorldNewsPipeline } from "@/lib/pipeline/ingestWorker";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -17,18 +17,22 @@ export async function POST(req: Request) {
   const llmNarrative = body.llmNarrative === true;
 
   try {
-    const result = await runLiveUpdatePipeline({
-      limit,
-      analyze: body.analyze !== false,
-      generateNarrative: body.generateNarrative !== false,
-      llmNarrative,
-    });
+    const [result, worldNews] = await Promise.all([
+      runLiveUpdatePipeline({
+        limit,
+        analyze: body.analyze !== false,
+        generateNarrative: body.generateNarrative !== false,
+        llmNarrative,
+      }),
+      runWorldNewsPipeline(10),
+    ]);
 
     return NextResponse.json({
       ok: true,
       triggeredAt: new Date().toISOString(),
       triggeredBy: session.email,
       result,
+      worldNews,
     });
   } catch (err) {
     return NextResponse.json(

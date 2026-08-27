@@ -11,6 +11,6 @@ export async function GET(req: Request) {
     params[k] = v;
   });
 
-  const payload = buildMonitorPayload(params);
+  const payload = await buildMonitorPayload(params);
   return NextResponse.json(payload);
 }

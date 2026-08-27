@@ -4,6 +4,7 @@ import { spreadPins, toMonitorPin } from "@/lib/geo";
 import { parseSearchParams } from "@/lib/search";
 import type { CountryCode, CrimeCase, LiveUpdate, SearchFilters } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
+import { buildWorldNewsPayload, type WorldNewsPayload } from "@/lib/worldNewsService";
 
 export type CountryMonitorStat = {
   code: CountryCode;
@@ -33,6 +34,7 @@ export type MonitorPayload = {
   pins: ReturnType<typeof spreadPins>;
   cases: CrimeCase[];
   updates: LiveUpdate[];
+  worldNews: WorldNewsPayload;
 };
 
 function buildCountryStats(cases: CrimeCase[]): CountryMonitorStat[] {
@@ -63,10 +65,10 @@ function buildCountryStats(cases: CrimeCase[]): CountryMonitorStat[] {
     .sort((a, b) => b.caseCount - a.caseCount);
 }
 
-export function buildMonitorPayload(
+export async function buildMonitorPayload(
   params: Record<string, string | string[] | undefined>,
   updateLimit = 12,
-): MonitorPayload {
+): Promise<MonitorPayload> {
   const filters = parseSearchParams(params);
   const all = getAllCases();
   const cases = searchCases(filters);
@@ -87,6 +89,11 @@ export function buildMonitorPayload(
           : ("no_coordinates" as const),
     }));
 
+  const worldNews = await buildWorldNewsPayload({
+    limit: 24,
+    country: filters.country ?? "",
+  });
+
   return {
     generatedAt: new Date().toISOString(),
     filters,
@@ -99,5 +106,6 @@ export function buildMonitorPayload(
     pins: spreadPins(rawPins),
     cases,
     updates: getUpdates(updateLimit),
+    worldNews,
   };
 }

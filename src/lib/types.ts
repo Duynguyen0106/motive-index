@@ -337,8 +337,19 @@ export interface LiveUpdate {
   headline: string;
   summary: string;
   caseSlug?: string;
-  kind: "new_case" | "analysis_ready" | "source_added" | "revision";
+  kind: "new_case" | "analysis_ready" | "source_added" | "revision" | "world_news";
   status: "published" | "draft";
+  /** ISO country when the story is region-tagged. */
+  country?: CountryCode;
+  /** Human region label, e.g. "East Asia", "Latin America". */
+  region?: string;
+  sourceUrl?: string;
+  sourceName?: string;
+  /** ISO 639-1 when headline was translated for display. */
+  language?: string;
+  languageLabel?: string;
+  /** Headline in original publication language. */
+  originalHeadline?: string;
 }
 
 export interface GlossaryTerm {

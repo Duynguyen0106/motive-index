@@ -25,6 +25,15 @@ export function LiveTicker({ updates }: { updates: LiveUpdate[] }) {
                   <Link href={`/cases/${u.caseSlug}`} className="text-link text-sm leading-snug">
                     {u.headline}
                   </Link>
+                ) : u.kind === "world_news" && u.sourceUrl ? (
+                  <a
+                    href={u.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-link text-sm leading-snug"
+                  >
+                    {u.headline}
+                  </a>
                 ) : (
                   <span className="text-sm text-[var(--ink-soft)]">{u.headline}</span>
                 )}
@@ -32,7 +41,7 @@ export function LiveTicker({ updates }: { updates: LiveUpdate[] }) {
             ))}
           </ul>
           <Link href="/live" className="text-link shrink-0 text-sm">
-            All updates
+            World news
           </Link>
         </div>
       </div>
