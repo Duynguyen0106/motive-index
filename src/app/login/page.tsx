@@ -1,20 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useCallback, useState } from "react";
 
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/admin/upload";
+  const next = params.get("next") || "/admin/moderation";
   const [email, setEmail] = useState("admin@motiveindex.local");
   const [password, setPassword] = useState("motive-admin");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
+  const signIn = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -23,18 +21,22 @@ function LoginForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error || "Login failed");
         setLoading(false);
         return;
       }
-      router.push(next);
-      router.refresh();
+      window.location.href = next;
     } catch {
       setError("Network error");
       setLoading(false);
     }
+  }, [email, password, next]);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    await signIn();
   }
 
   return (
@@ -48,6 +50,8 @@ function LoginForm() {
         <span className="font-medium">Email</span>
         <input
           type="email"
+          name="email"
+          autoComplete="username"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -58,6 +62,8 @@ function LoginForm() {
         <span className="font-medium">Password</span>
         <input
           type="password"
+          name="password"
+          autoComplete="current-password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -66,8 +72,9 @@ function LoginForm() {
       </label>
       {error ? <p className="text-sm text-[var(--maroon)]">{error}</p> : null}
       <button
-        type="submit"
+        type="button"
         disabled={loading}
+        onClick={() => void signIn()}
         className="w-full rounded bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
       >
         {loading ? "Signing in…" : "Sign in"}
