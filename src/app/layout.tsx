@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
+import { IBM_Plex_Sans, Literata } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-});
-
-const sourceSans = Source_Sans_3({
-  variable: "--font-source-sans",
+const literata = Literata({
+  variable: "--font-literata",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const plex = IBM_Plex_Sans({
+  variable: "--font-plex",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -22,16 +22,16 @@ export const metadata: Metadata = {
     template: "%s · Motive Index",
   },
   description:
-    "Live-updated archive analyzing the behavioral psychology behind famous crime cases—with evidence, confidence, and explicit unknowns.",
+    "Educational archive of historical crime cases with forensic psychological analysis—evidence, confidence, and explicit unknowns.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${sourceSerif.variable} ${sourceSans.variable} h-full antialiased`}
+      className={`${literata.variable} ${plex.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-white text-[var(--ink)]">
+      <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--ink)]">
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
+import { PageHeader } from "@/components/PageHeader";
 
 export const metadata: Metadata = {
   title: "About & ethics",
@@ -10,20 +11,16 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="site-shell py-12 md:py-14">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-        About
-      </p>
-      <h1 className="display mt-3 text-4xl md:text-5xl">Purpose & ethics</h1>
-      <p className="body-copy mt-5 max-w-2xl text-lg text-[var(--ink-soft)]">
-        Motive Index is a centralized, searchable educational repository of
-        historical crime case files, document pointers, and forensic
-        psychological analyses focused on offender behavior, motivation, and
-        mental-state concepts.
-      </p>
+    <div className="py-12 md:py-14">
+      <PageHeader
+        label="About"
+        title="Purpose & ethics"
+        description="A searchable educational repository of historical case files, document pointers, and forensic psychological analyses focused on offender behavior, motivation, and mental-state concepts."
+      />
 
-      <section className="card mt-8 p-6 md:p-8">
-        <h2 className="display text-2xl">Target audience</h2>
+      <div className="site-shell mt-10 space-y-10">
+        <section className="panel p-6 md:p-8">
+          <h2 className="display text-2xl">Target audience</h2>
         <ul className="mt-4 space-y-2 text-[var(--ink-soft)]">
           <li>Forensic psychology students and academics</li>
           <li>Researchers in criminology, psychology, and sociology</li>
@@ -99,6 +96,7 @@ export default function AboutPage() {
           and <Link href="/contribute" className="text-[var(--accent)] hover:underline">Contribute</Link>.
         </p>
       </section>
+      </div>
     </div>
   );
 }

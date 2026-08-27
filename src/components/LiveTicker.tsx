@@ -5,44 +5,36 @@ import { formatDate } from "@/lib/utils";
 export function LiveTicker({ updates }: { updates: LiveUpdate[] }) {
   const latest = updates.slice(0, 4);
 
+  if (!latest.length) return null;
+
   return (
-    <section
-      aria-label="Live updates"
-      className="border-b border-[var(--line)] bg-[var(--bg-subtle)] py-5"
-    >
-      <div className="site-shell flex flex-col gap-3 md:flex-row md:items-start md:gap-10">
-        <div className="flex shrink-0 items-center gap-2 pt-1 text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-          <span className="pulse-live inline-block h-2 w-2 rounded-full bg-[var(--accent)]" />
-          Live
+    <section aria-label="Recent updates" className="border-b border-[var(--line)] bg-[var(--bg-subtle)]">
+      <div className="site-shell py-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-8">
+          <p className="label shrink-0 pt-0.5 md:w-28">Recent edits</p>
+          <ul className="flex flex-1 flex-col gap-2">
+            {latest.map((u) => (
+              <li
+                key={u.id}
+                className="grid gap-1 md:grid-cols-[7rem_1fr] md:items-baseline md:gap-4"
+              >
+                <time className="text-xs tabular-nums text-[var(--muted)]">
+                  {formatDate(u.createdAt)}
+                </time>
+                {u.caseSlug ? (
+                  <Link href={`/cases/${u.caseSlug}`} className="text-link text-sm leading-snug">
+                    {u.headline}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-[var(--ink-soft)]">{u.headline}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <Link href="/live" className="text-link shrink-0 text-sm">
+            All updates
+          </Link>
         </div>
-        <ul className="flex flex-1 flex-col gap-2">
-          {latest.map((u) => (
-            <li
-              key={u.id}
-              className="flex flex-col gap-0.5 md:flex-row md:items-baseline md:gap-4"
-            >
-              <time className="shrink-0 text-xs text-[var(--muted)] tabular-nums">
-                {formatDate(u.createdAt)}
-              </time>
-              {u.caseSlug ? (
-                <Link
-                  href={`/cases/${u.caseSlug}`}
-                  className="body-copy text-[var(--ink)] transition-colors hover:text-[var(--accent)]"
-                >
-                  {u.headline}
-                </Link>
-              ) : (
-                <span className="body-copy text-[var(--ink)]">{u.headline}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-        <Link
-          href="/live"
-          className="shrink-0 text-sm font-medium text-[var(--accent)] underline-offset-4 hover:underline"
-        >
-          Full feed
-        </Link>
       </div>
     </section>
   );

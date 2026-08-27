@@ -10,9 +10,9 @@ export function CaseTabs({ slug }: { slug: string }) {
   const active = searchParams.get("tab") ?? "overview";
 
   return (
-    <div className="border-b border-[var(--line)]">
+    <div className="border-b border-[var(--line-strong)] bg-[var(--paper)]">
       <nav
-        className="site-shell flex gap-1 overflow-x-auto py-0"
+        className="site-shell flex gap-0 overflow-x-auto"
         aria-label="Case sections"
       >
         {CASE_TABS.map((tab) => {
@@ -23,10 +23,10 @@ export function CaseTabs({ slug }: { slug: string }) {
               key={tab.id}
               href={href}
               scroll={false}
-              className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors md:px-4 ${
+              className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm transition-colors md:px-4 ${
                 isActive
-                  ? "border-[var(--accent)] text-[var(--accent)]"
-                  : "border-transparent text-[var(--ink-soft)] hover:text-[var(--ink)]"
+                  ? "border-[var(--ink)] font-medium text-[var(--ink)]"
+                  : "border-transparent text-[var(--muted)] hover:text-[var(--ink-soft)]"
               }`}
             >
               {tab.label}

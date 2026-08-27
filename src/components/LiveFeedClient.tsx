@@ -30,30 +30,23 @@ export function LiveFeedClient({ initial }: { initial: LiveUpdate[] }) {
   }, []);
 
   return (
-    <ul className="grid gap-3">
+    <ul className="divide-y divide-[var(--line)]">
       {updates.map((u) => (
-        <li key={u.id} className="card p-5 md:p-6">
-          <div className="grid gap-2 md:grid-cols-[120px_110px_1fr] md:gap-6">
-            <time className="text-sm text-[var(--muted)] tabular-nums">
+        <li key={u.id} className="py-5 md:py-6">
+          <div className="grid gap-2 md:grid-cols-[7rem_6rem_1fr] md:gap-6 md:items-baseline">
+            <time className="text-xs tabular-nums text-[var(--muted)]">
               {formatDate(u.createdAt)}
             </time>
-            <span className="text-xs font-semibold tracking-[0.12em] text-[var(--accent)] uppercase">
-              {u.kind.replaceAll("_", " ")}
-            </span>
+            <span className="label normal-case">{u.kind.replaceAll("_", " ")}</span>
             <div>
               {u.caseSlug ? (
-                <Link
-                  href={`/cases/${u.caseSlug}`}
-                  className="display text-xl text-[var(--ink)] transition-colors hover:text-[var(--accent)] md:text-2xl"
-                >
+                <Link href={`/cases/${u.caseSlug}`} className="text-link display text-xl md:text-2xl">
                   {u.headline}
                 </Link>
               ) : (
-                <p className="display text-xl text-[var(--ink)] md:text-2xl">
-                  {u.headline}
-                </p>
+                <p className="display text-xl text-[var(--ink)] md:text-2xl">{u.headline}</p>
               )}
-              <p className="body-copy mt-2 text-[var(--ink-soft)]">{u.summary}</p>
+              <p className="body-copy mt-2 text-sm text-[var(--ink-soft)]">{u.summary}</p>
             </div>
           </div>
         </li>

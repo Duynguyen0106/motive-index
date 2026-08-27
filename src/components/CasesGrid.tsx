@@ -24,24 +24,24 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
   return (
     <div>
       <form
-        className="card mb-6 grid gap-3 p-4 md:grid-cols-[1fr_220px_auto] md:items-end"
+        className="mb-8 grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-4 md:grid-cols-[1fr_220px_auto] md:items-end"
         onSubmit={(e) => e.preventDefault()}
       >
         <label className="block text-sm">
-          <span className="font-medium text-[var(--ink)]">Search cases</span>
+          <span className="label mb-1 block normal-case tracking-normal">Keyword</span>
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Name, location, keyword…"
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            placeholder="Name, place, motif…"
+            className="field mt-1"
           />
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-[var(--ink)]">Crime type</span>
+          <span className="label mb-1 block normal-case tracking-normal">Crime type</span>
           <select
             value={crimeType}
             onChange={(e) => setCrimeType(e.target.value as CrimeCategory | "")}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">All types</option>
             {(Object.keys(CRIME_CATEGORY_LABELS) as CrimeCategory[]).map((k) => (
@@ -57,36 +57,43 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
             setQ("");
             setCrimeType("");
           }}
-          className="rounded border border-[var(--line)] px-4 py-2 text-sm font-semibold text-[var(--ink-soft)]"
+          className="btn btn-ghost"
         >
-          Reset
+          Clear
         </button>
       </form>
 
-      <p className="mb-4 text-sm text-[var(--muted)]">
-        Showing {filtered.length} of {cases.length} cases
+      <p className="mb-3 text-sm text-[var(--muted)]">
+        {filtered.length} of {cases.length} shown
       </p>
 
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="index-table">
+        <div className="index-head">
+          <span>Year</span>
+          <span>Case</span>
+          <span className="text-right">Classification</span>
+        </div>
         {filtered.map((c) => (
-          <li key={c.id}>
-            <Link href={`/cases/${c.id}`} className="card card-hover block h-full p-5">
-              <p className="text-xs font-medium tracking-[0.12em] text-[var(--muted)] uppercase">
-                {c.yearStart}
-                {c.yearEnd ? `–${c.yearEnd}` : ""} · {c.status}
-              </p>
-              <h2 className="display mt-2 text-2xl text-[var(--ink)]">{c.name}</h2>
-              <p className="mt-2 text-sm text-[var(--ink-soft)] line-clamp-3">{c.subtitle}</p>
-              <p className="mt-3 text-xs text-[var(--muted)]">
-                {c.crimeCategories.map((x) => CRIME_CATEGORY_LABELS[x]).join(" · ")}
-              </p>
-            </Link>
-          </li>
+          <Link key={c.id} href={`/cases/${c.id}`} className="index-row group">
+            <span className="index-year">
+              {c.yearStart}
+              {c.yearEnd ? `–${c.yearEnd}` : ""}
+            </span>
+            <span>
+              <span className="index-title group-hover:text-[var(--accent)]">{c.name}</span>
+              <span className="mt-1 block text-sm text-[var(--ink-soft)] line-clamp-2">
+                {c.subtitle}
+              </span>
+            </span>
+            <span className="index-meta">
+              {c.crimeCategories.slice(0, 2).map((x) => CRIME_CATEGORY_LABELS[x]).join(" · ")}
+            </span>
+          </Link>
         ))}
-      </ul>
+      </div>
 
       {!filtered.length ? (
-        <p className="mt-6 text-[var(--muted)]">No cases match this search.</p>
+        <p className="mt-8 text-[var(--muted)]">No records match this filter.</p>
       ) : null}
     </div>
   );

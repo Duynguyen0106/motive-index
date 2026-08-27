@@ -2,19 +2,11 @@ import type { PsychConstruct } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/types";
 import { formatConfidence } from "@/lib/utils";
 
-export function ConfidenceBar({ value }: { value: number }) {
+export function ConfidenceLabel({ value }: { value: number }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--line)]">
-        <div
-          className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-700"
-          style={{ width: `${Math.round(value * 100)}%` }}
-        />
-      </div>
-      <span className="w-10 text-right text-xs tabular-nums text-[var(--muted)]">
-        {formatConfidence(value)}
-      </span>
-    </div>
+    <span className="confidence" title={`Confidence ${formatConfidence(value)}`}>
+      Confidence {formatConfidence(value)}
+    </span>
   );
 }
 
@@ -28,48 +20,37 @@ export function PsychMap({ constructs }: { constructs: PsychConstruct[] }) {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="divide-y divide-[var(--line)] border-y border-[var(--line-strong)]">
       {constructs.map((c) => (
-        <article key={c.id} className="card p-5 md:p-6">
-          <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+        <article key={c.id} className="py-6 md:py-8">
+          <div className="grid gap-6 md:grid-cols-[11rem_1fr]">
             <div>
-              <p className="text-xs font-medium tracking-[0.14em] text-[var(--muted)] uppercase">
-                {DIMENSION_LABELS[c.dimension]}
-              </p>
-              <h3 className="display mt-2 text-xl text-[var(--ink)] md:text-2xl">
-                {c.label}
-              </h3>
-              <div className="mt-4">
-                <ConfidenceBar value={c.confidence} />
+              <p className="label">{DIMENSION_LABELS[c.dimension]}</p>
+              <h3 className="display mt-2 text-xl text-[var(--ink)] md:text-2xl">{c.label}</h3>
+              <div className="mt-3">
+                <ConfidenceLabel value={c.confidence} />
               </div>
             </div>
-            <div className="space-y-4">
-              <p className="body-copy text-[var(--ink-soft)] md:text-lg">
+            <div className="space-y-5">
+              <p className="body-copy text-[var(--ink-soft)] md:text-[1.0625rem]">
                 {c.hypothesis}
               </p>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div>
-                  <p className="mb-2 text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
-                    Evidence
-                  </p>
+                  <p className="label mb-2">Supporting evidence</p>
                   <ul className="space-y-2 text-sm text-[var(--ink-soft)]">
                     {c.evidence.map((e) => (
-                      <li
-                        key={e}
-                        className="border-l-2 border-[var(--accent)] pl-3"
-                      >
+                      <li key={e} className="pl-3" style={{ borderLeft: "2px solid var(--line-strong)" }}>
                         {e}
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div>
-                  <p className="mb-2 text-xs font-semibold tracking-[0.14em] text-[var(--muted)] uppercase">
-                    Counter-evidence
-                  </p>
+                  <p className="label mb-2">Counter-evidence</p>
                   <ul className="space-y-2 text-sm text-[var(--muted)]">
                     {c.counterEvidence.map((e) => (
-                      <li key={e} className="border-l-2 border-[var(--line)] pl-3">
+                      <li key={e} className="pl-3" style={{ borderLeft: "2px solid var(--line)" }}>
                         {e}
                       </li>
                     ))}

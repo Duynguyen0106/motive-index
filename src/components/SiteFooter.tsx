@@ -2,40 +2,42 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-[var(--line)] bg-[var(--bg-subtle)]">
-      <div className="site-shell flex flex-col gap-6 py-10 md:flex-row md:justify-between">
-        <div>
-          <p className="brand-mark text-lg text-[var(--ink)]">Motive Index</p>
-          <p className="mt-2 max-w-md text-sm text-[var(--muted)]">
-            Educational repository for historical crime case files and forensic
-            psychological analysis. Not clinical or legal advice.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm text-[var(--ink-soft)]">
-          <Link href="/cases" className="hover:text-[var(--accent)]">
-            Browse cases
-          </Link>
-          <Link href="/search" className="hover:text-[var(--accent)]">
-            Advanced search
-          </Link>
-          <Link href="/documents" className="hover:text-[var(--accent)]">
-            Document library
-          </Link>
-          <Link href="/resources" className="hover:text-[var(--accent)]">
-            Educational resources
-          </Link>
-          <Link href="/contribute" className="hover:text-[var(--accent)]">
-            Contribute
-          </Link>
-          <Link href="/about" className="hover:text-[var(--accent)]">
-            Ethics & about
-          </Link>
-          <Link href="/method" className="hover:text-[var(--accent)]">
-            Method
-          </Link>
-          <Link href="/live" className="hover:text-[var(--accent)]">
-            Live feed
-          </Link>
+    <footer className="mt-auto border-t border-[var(--line-strong)] bg-[var(--bg-subtle)]">
+      <div className="site-shell py-10">
+        <div className="grid gap-8 md:grid-cols-[1.4fr_1fr]">
+          <div>
+            <p className="brand-mark text-lg text-[var(--ink)]">Motive Index</p>
+            <p className="body-copy mt-3 max-w-md text-sm text-[var(--muted)]">
+              A working repository for historical case files and forensic
+              psychological commentary. For education and research—not clinical
+              or legal advice.
+            </p>
+            <p className="label mt-6">Colophon</p>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Public-source citations · Human-reviewed analysis · Content warnings
+              on sensitive dossiers
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-[var(--ink-soft)]">
+            <Link href="/cases" className="text-link">
+              Case index
+            </Link>
+            <Link href="/search" className="text-link">
+              Advanced search
+            </Link>
+            <Link href="/resources" className="text-link">
+              Glossary & theories
+            </Link>
+            <Link href="/contribute" className="text-link">
+              Contribute
+            </Link>
+            <Link href="/method" className="text-link">
+              Method
+            </Link>
+            <Link href="/about" className="text-link">
+              Ethics
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

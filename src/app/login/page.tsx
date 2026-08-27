@@ -40,14 +40,14 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card mx-auto mt-8 max-w-md space-y-4 p-6">
-      <h1 className="display text-3xl">Admin login</h1>
+    <form onSubmit={onSubmit} className="panel mx-auto mt-8 max-w-md space-y-4 p-6">
+      <h1 className="display text-3xl">Admin sign-in</h1>
       <p className="text-sm text-[var(--ink-soft)]">
-        Email/password authentication protects admin pages. With Supabase env
-        vars set, Supabase Auth is used; otherwise local admin credentials apply.
+        Protects moderation, uploads, and case creation. Uses Supabase Auth when
+        configured; otherwise local credentials.
       </p>
       <label className="block text-sm">
-        <span className="font-medium">Email</span>
+        <span className="label mb-1 block normal-case tracking-normal">Email</span>
         <input
           type="email"
           name="email"
@@ -55,11 +55,11 @@ function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+          className="field mt-1"
         />
       </label>
       <label className="block text-sm">
-        <span className="font-medium">Password</span>
+        <span className="label mb-1 block normal-case tracking-normal">Password</span>
         <input
           type="password"
           name="password"
@@ -67,22 +67,14 @@ function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+          className="field mt-1"
         />
       </label>
       {error ? <p className="text-sm text-[var(--maroon)]">{error}</p> : null}
-      <button
-        type="button"
-        disabled={loading}
-        onClick={() => void signIn()}
-        className="w-full rounded bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-      >
+      <button type="button" disabled={loading} onClick={() => void signIn()} className="btn btn-primary w-full">
         {loading ? "Signing in…" : "Sign in"}
       </button>
-      <p className="text-xs text-[var(--muted)]">
-        Default local login: admin@motiveindex.local / motive-admin
-      </p>
-      <Link href="/" className="block text-sm text-[var(--accent)] hover:underline">
+      <Link href="/" className="block text-sm text-link">
         ← Back to archive
       </Link>
     </form>
