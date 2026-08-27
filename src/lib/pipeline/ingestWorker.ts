@@ -5,6 +5,7 @@ import { addUpdate, getAllCases, getCaseBySlug, upsertCase } from "@/lib/data";
 import {
   applyNarrativeToCase,
   generateCaseNarrative,
+  heuristicNarrativeFromSources,
 } from "@/lib/narrativeGenerate";
 import { syncCaseToSupabase } from "@/lib/repository";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
@@ -257,6 +258,8 @@ export async function runLiveUpdatePipeline(options?: {
   limit?: number;
   analyze?: boolean;
   generateNarrative?: boolean;
+  /** When false (default), uses fast template narratives — LLM only if true. */
+  llmNarrative?: boolean;
 }): Promise<PipelineResult> {
   const feeds =
     options?.feeds ??
@@ -266,6 +269,7 @@ export async function runLiveUpdatePipeline(options?: {
   const limit = options?.limit ?? Number(process.env.LIVE_UPDATE_LIMIT ?? 8);
   const analyze = options?.analyze ?? true;
   const generateNarrative = options?.generateNarrative ?? true;
+  const llmNarrative = options?.llmNarrative ?? false;
 
   const result: PipelineResult = {
     fetched: 0,
@@ -318,14 +322,27 @@ export async function runLiveUpdatePipeline(options?: {
 
       if (generateNarrative) {
         try {
-          const narrativeResult = await generateCaseNarrative({
-            caseName: draft.name,
-            overview: item.summary,
-            subtitle: draft.subtitle,
-            sourceTitle: item.title,
-            sourceUrl: item.link,
-            yearStart: draft.yearStart,
-          });
+          const narrativeResult = llmNarrative
+            ? await generateCaseNarrative({
+                caseName: draft.name,
+                overview: item.summary,
+                subtitle: draft.subtitle,
+                sourceTitle: item.title,
+                sourceUrl: item.link,
+                yearStart: draft.yearStart,
+              })
+            : {
+                narrative: heuristicNarrativeFromSources({
+                  caseName: draft.name,
+                  overview: item.summary,
+                  subtitle: draft.subtitle,
+                  sourceTitle: item.title,
+                  sourceUrl: item.link,
+                  yearStart: draft.yearStart,
+                }),
+                provider: "heuristic" as const,
+                note: "Fast template narrative — use Regenerate story for LLM.",
+              };
           draft = applyNarrativeToCase(draft, narrativeResult, item.title);
           result.narrativesGenerated += 1;
         } catch (err) {

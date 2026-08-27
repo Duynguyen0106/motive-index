@@ -9,6 +9,7 @@ import {
 import { syncCaseToSupabase } from "@/lib/repository";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const bodySchema = z.object({
   slug: z.string().min(1),
@@ -32,34 +33,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
 
-  const sourceTitle = existing.sources[0]?.title ?? existing.name;
-  const narrativeResult = await generateCaseNarrative({
-    caseName: existing.name,
-    overview: existing.overview,
-    subtitle: existing.subtitle,
-    sourceTitle,
-    sourceUrl: existing.sources[0]?.url,
-    yearStart: existing.yearStart,
-  });
+  try {
+    const sourceTitle = existing.sources[0]?.title ?? existing.name;
+    const narrativeResult = await generateCaseNarrative({
+      caseName: existing.name,
+      overview: existing.overview,
+      subtitle: existing.subtitle,
+      sourceTitle,
+      sourceUrl: existing.sources[0]?.url,
+      yearStart: existing.yearStart,
+    });
 
-  const updated = applyNarrativeToCase(existing, narrativeResult, sourceTitle);
-  upsertCase(updated);
-  await syncCaseToSupabase(updated);
+    const updated = applyNarrativeToCase(existing, narrativeResult, sourceTitle);
+    upsertCase(updated);
+    await syncCaseToSupabase(updated);
 
-  addUpdate({
-    id: `upd-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    headline: `Narrative regenerated: ${updated.name}`,
-    summary: `Provider: ${narrativeResult.provider}. ${narrativeResult.note ?? "Review before publish."}`,
-    caseSlug: updated.slug,
-    kind: "revision",
-    status: "draft",
-  });
+    addUpdate({
+      id: `upd-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      headline: `Narrative regenerated: ${updated.name}`,
+      summary: `Provider: ${narrativeResult.provider}. ${narrativeResult.note ?? "Review before publish."}`,
+      caseSlug: updated.slug,
+      kind: "revision",
+      status: "draft",
+    });
 
-  return NextResponse.json({
-    case: updated,
-    provider: narrativeResult.provider,
-    note: narrativeResult.note,
-    chapterCount: updated.narrative?.chapters.length ?? 0,
-  });
+    return NextResponse.json({
+      case: updated,
+      provider: narrativeResult.provider,
+      note: narrativeResult.note,
+      chapterCount: updated.narrative?.chapters.length ?? 0,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Narrative generation failed" },
+      { status: 500 },
+    );
+  }
 }

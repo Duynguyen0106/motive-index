@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { adminFetchInit, readJsonResponse } from "@/lib/clientFetch";
 import type { CrimeCase } from "@/lib/types";
 import { DOCUMENT_TYPE_LABELS, type DocumentType } from "@/lib/types";
 
@@ -19,8 +20,16 @@ export function UploadForm({ cases }: { cases: Array<Pick<CrimeCase, "id" | "slu
     const form = e.currentTarget;
     const data = new FormData(form);
     try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: data });
-      const json = await res.json();
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: data,
+        credentials: "same-origin",
+      });
+      const json = await readJsonResponse<{
+        error?: string;
+        document?: { id: string };
+        storage?: string;
+      }>(res);
       if (!res.ok) throw new Error(json.error || "Upload failed");
       setStatus("done");
       setMessage(`Saved document ${json.document?.id ?? ""} (${json.storage ?? "local"})`);

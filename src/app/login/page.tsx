@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useCallback, useState } from "react";
+import { adminFetchInit, readJsonResponse } from "@/lib/clientFetch";
 
 function LoginForm() {
   const params = useSearchParams();
@@ -17,19 +18,19 @@ function LoginForm() {
     setError("");
     try {
       const res = await fetch("/api/auth/login", {
+        ...adminFetchInit,
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json().catch(() => ({}));
+      const data = await readJsonResponse<{ error?: string }>(res);
       if (!res.ok) {
         setError(data.error || "Login failed");
         setLoading(false);
         return;
       }
       window.location.href = next;
-    } catch {
-      setError("Network error");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
       setLoading(false);
     }
   }, [email, password, next]);
