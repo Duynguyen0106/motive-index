@@ -396,24 +396,60 @@ a {
   position: relative;
 }
 
-.monitor-map-svg {
-  display: block;
+.monitor-leaflet-map {
   width: 100%;
-  height: auto;
-  aspect-ratio: 2 / 1;
+  height: min(62vh, 520px);
+  min-height: 360px;
+  background: var(--bg-subtle);
+  z-index: 0;
+}
+
+.monitor-leaflet-map .leaflet-control-zoom a {
+  color: var(--ink) !important;
+  background: var(--paper) !important;
+  border-color: var(--line) !important;
+}
+
+.monitor-leaflet-map .leaflet-control-attribution {
+  font-size: 10px !important;
+  background: rgb(250 248 244 / 85%) !important;
+  color: var(--muted) !important;
+}
+
+.monitor-leaflet-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.monitor-leaflet-marker {
+  display: block;
+  position: relative;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  box-shadow: 0 1px 4px rgb(26 24 20 / 25%);
+}
+
+.monitor-map-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.monitor-map-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.monitor-map-svg {
+  display: none;
 }
 
 .monitor-map-zone-label {
-  font-family: var(--font-plex), sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  fill: var(--ink);
-}
-
-.monitor-map-zone-count {
-  font-family: var(--font-plex), sans-serif;
-  font-size: 10px;
-  fill: var(--muted);
+  display: none;
 }
 
 .monitor-map-legend {

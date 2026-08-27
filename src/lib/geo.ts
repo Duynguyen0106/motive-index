@@ -5,13 +5,13 @@ export type GeoPoint = { lat: number; lng: number };
 
 /** Approximate coordinates for catalog cases (city-level where known). */
 const SLUG_COORDS: Record<string, GeoPoint> = {
-  "ted-bundy": { lat: 47.6062, lng: -122.3321 }, // Seattle — origin region
-  "dennis-rader-btk": { lat: 37.6872, lng: -97.3301 }, // Wichita
-  "ted-kaczynski": { lat: 46.8797, lng: -110.3626 }, // Montana wilderness
-  "aileen-wuornos": { lat: 28.5383, lng: -81.3792 }, // Florida
-  "zodiac-killer": { lat: 38.5816, lng: -121.4944 }, // Sacramento area
-  "charles-manson": { lat: 34.0522, lng: -118.2437 }, // Los Angeles
-  "harold-shipman": { lat: 53.4478, lng: -2.0809 }, // Hyde, Greater Manchester
+  "ted-bundy": { lat: 47.6062, lng: -122.3321 },
+  "dennis-rader-btk": { lat: 37.6872, lng: -97.3301 },
+  "ted-kaczynski": { lat: 46.8797, lng: -110.3626 },
+  "aileen-wuornos": { lat: 28.5383, lng: -81.3792 },
+  "zodiac-killer": { lat: 38.5816, lng: -121.4944 },
+  "charles-manson": { lat: 34.0522, lng: -118.2437 },
+  "harold-shipman": { lat: 53.4478, lng: -2.0809 },
 };
 
 /** Country centroids when city-level coords are unavailable. */
@@ -22,27 +22,6 @@ export const COUNTRY_CENTROIDS: Record<CountryCode, GeoPoint> = {
   AU: { lat: -25.2744, lng: 133.7751 },
   OTHER: { lat: 20, lng: 0 },
 };
-
-/** ISO 3166-1 alpha-2 for map region matching. */
-export const COUNTRY_ISO: Record<CountryCode, string | null> = {
-  US: "US",
-  GB: "GB",
-  CA: "CA",
-  AU: "AU",
-  OTHER: null,
-};
-
-/** Equirectangular projection to percentage coords on a world map viewBox. */
-export function projectLatLng(
-  lat: number,
-  lng: number,
-  width = 800,
-  height = 400,
-): { x: number; y: number } {
-  const x = ((lng + 180) / 360) * width;
-  const y = ((90 - lat) / 180) * height;
-  return { x, y };
-}
 
 export function resolveCaseCoordinates(
   c: Pick<CrimeCase, "slug" | "location" | "jurisdiction" | "country" | "lat" | "lng">,
@@ -81,14 +60,11 @@ export type MonitorCasePin = {
   yearEnd?: number;
   lat: number;
   lng: number;
-  x: number;
-  y: number;
 };
 
-export function toMonitorPin(c: CrimeCase, width = 800, height = 400): MonitorCasePin | null {
+export function toMonitorPin(c: CrimeCase): MonitorCasePin | null {
   const coords = resolveCaseCoordinates(c);
   if (!coords) return null;
-  const { x, y } = projectLatLng(coords.lat, coords.lng, width, height);
   return {
     id: c.id,
     slug: c.slug,
@@ -101,27 +77,25 @@ export function toMonitorPin(c: CrimeCase, width = 800, height = 400): MonitorCa
     yearEnd: c.yearEnd,
     lat: coords.lat,
     lng: coords.lng,
-    x,
-    y,
   };
 }
 
-/** Spread overlapping pins so clusters remain readable. */
-export function spreadPins(pins: MonitorCasePin[], minDist = 14): MonitorCasePin[] {
+/** Offset overlapping pins in geographic space so clusters stay readable when zoomed in. */
+export function spreadPins(pins: MonitorCasePin[], minDistDeg = 0.35): MonitorCasePin[] {
   const out = pins.map((p) => ({ ...p }));
   for (let i = 0; i < out.length; i++) {
     for (let j = 0; j < i; j++) {
-      const dx = out[i].x - out[j].x;
-      const dy = out[i].y - out[j].y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < minDist && dist > 0) {
-        const push = (minDist - dist) / 2;
-        const nx = dx / dist;
-        const ny = dy / dist;
-        out[i].x += nx * push;
-        out[i].y += ny * push;
-        out[j].x -= nx * push;
-        out[j].y -= ny * push;
+      const dLat = out[i].lat - out[j].lat;
+      const dLng = out[i].lng - out[j].lng;
+      const dist = Math.hypot(dLat, dLng);
+      if (dist < minDistDeg && dist > 0) {
+        const push = (minDistDeg - dist) / 2;
+        const nx = dLat / dist;
+        const ny = dLng / dist;
+        out[i].lat += nx * push;
+        out[i].lng += ny * push;
+        out[j].lat -= nx * push;
+        out[j].lng -= ny * push;
       }
     }
   }

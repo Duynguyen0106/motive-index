@@ -1,11 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
+import {
+  COUNTRY_BOUNDS,
+  COUNTRY_ISO3,
+  DEFAULT_MAP_CENTER,
+  DEFAULT_MAP_ZOOM,
+  ISO3_TO_COUNTRY,
+  MAP_TILE_ATTRIBUTION,
+  MAP_TILE_URL,
+  MAX_MAP_ZOOM,
+  MIN_MAP_ZOOM,
+  WORLD_GEOJSON_URL,
+} from "@/lib/mapConstants";
 import type { CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
+import type { GeoJSON as GeoJSONType, Layer, Map as LeafletMap, Path } from "leaflet";
 
 type Props = {
   pins: MonitorCasePin[];
@@ -15,27 +28,24 @@ type Props = {
   onSelectCase?: (id: string) => void;
 };
 
-const MAP_W = 800;
-const MAP_H = 400;
+function featureIso3(feature: GeoJSON.Feature | undefined): string | undefined {
+  if (!feature || feature.type !== "Feature") return undefined;
+  const id = feature.id;
+  return typeof id === "string" ? id : undefined;
+}
 
-/** Simplified equirectangular landmass paths (approximate, for backdrop). */
-const LAND_PATHS = [
-  "M 120,120 L 200,100 L 260,130 L 280,180 L 240,220 L 160,210 Z", // North America
-  "M 380,110 L 480,95 L 540,120 L 520,170 L 430,185 L 370,150 Z", // Europe
-  "M 430,180 L 520,170 L 560,220 L 540,280 L 460,270 L 420,220 Z", // Africa
-  "M 540,120 L 720,110 L 760,160 L 740,220 L 620,210 L 560,160 Z", // Asia
-  "M 620,260 L 740,250 L 760,320 L 700,350 L 640,330 Z", // Australia
-  "M 260,280 L 320,270 L 340,320 L 300,350 L 250,330 Z", // South America
-];
+function layerFeature(layer: Layer): GeoJSON.Feature | undefined {
+  return (layer as Layer & { feature?: GeoJSON.Feature }).feature;
+}
 
-const COUNTRY_ZONES: Partial<
-  Record<CountryCode, { x: number; y: number; w: number; h: number; label: string }>
-> = {
-  US: { x: 95, y: 95, w: 210, h: 130, label: "US" },
-  GB: { x: 395, y: 95, w: 45, h: 55, label: "GB" },
-  CA: { x: 95, y: 55, w: 210, h: 50, label: "CA" },
-  AU: { x: 620, y: 255, w: 130, h: 95, label: "AU" },
-};
+function markerHtml(active: boolean, unsolved: boolean): string {
+  const size = active ? 14 : 10;
+  const color = unsolved ? "var(--maroon)" : "var(--accent)";
+  const ring = active
+    ? `<span style="position:absolute;inset:-6px;border:2px solid var(--accent);border-radius:50%;opacity:0.55"></span>`
+    : "";
+  return `<span class="monitor-leaflet-marker" style="width:${size}px;height:${size}px;background:${color}">${ring}</span>`;
+}
 
 export function CaseWorldMap({
   pins,
@@ -44,109 +54,232 @@ export function CaseWorldMap({
   onSelectCountry,
   onSelectCase,
 }: Props) {
-  const countsByCountry = useMemo(() => {
-    const m = new Map<CountryCode, number>();
-    for (const p of pins) {
-      m.set(p.country, (m.get(p.country) ?? 0) + 1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const markersRef = useRef<Layer[]>([]);
+  const highlightRef = useRef<Layer | null>(null);
+  const geoJsonRef = useRef<GeoJSONType | null>(null);
+  const onSelectCountryRef = useRef(onSelectCountry);
+  const selectedCountryRef = useRef(selectedCountry);
+  const [ready, setReady] = useState(false);
+  const [hint, setHint] = useState("Loading map…");
+
+  useEffect(() => {
+    onSelectCountryRef.current = onSelectCountry;
+    selectedCountryRef.current = selectedCountry;
+  }, [onSelectCountry, selectedCountry]);
+
+  // Init Leaflet map once
+  useEffect(() => {
+    let cancelled = false;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
+
+    (async () => {
+      const L = (await import("leaflet")).default;
+      await import("leaflet/dist/leaflet.css");
+
+      if (cancelled || !containerRef.current) return;
+
+      const map = L.map(containerRef.current, {
+        center: DEFAULT_MAP_CENTER,
+        zoom: DEFAULT_MAP_ZOOM,
+        minZoom: MIN_MAP_ZOOM,
+        maxZoom: MAX_MAP_ZOOM,
+        worldCopyJump: true,
+        scrollWheelZoom: true,
+        zoomControl: true,
+      });
+
+      L.tileLayer(MAP_TILE_URL, {
+        attribution: MAP_TILE_ATTRIBUTION,
+        subdomains: "abcd",
+        maxZoom: MAX_MAP_ZOOM,
+      }).addTo(map);
+
+      mapRef.current = map;
+      setReady(true);
+      setHint("Drag to pan · Scroll or pinch to zoom");
+
+      // Load official country boundaries
+      try {
+        const res = await fetch(WORLD_GEOJSON_URL);
+        const data = await res.json();
+        if (cancelled || !mapRef.current) return;
+
+        const layer = L.geoJSON(data, {
+          style: (feature) => {
+            const iso3 = featureIso3(feature);
+            const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
+            const active = selectedCountry && code === selectedCountry;
+            return {
+              color: active ? "var(--accent)" : "var(--line-strong)",
+              weight: active ? 2 : 0.6,
+              fillColor: active ? "var(--accent)" : "var(--line)",
+              fillOpacity: active ? 0.12 : 0.03,
+            };
+          },
+          onEachFeature: (feature, featureLayer) => {
+            const iso3 = featureIso3(feature);
+            const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
+            if (!code) return;
+            featureLayer.on({
+              click: () => {
+                onSelectCountry?.(selectedCountry === code ? "" : code);
+              },
+            });
+          },
+        });
+        layer.addTo(map);
+        geoJsonRef.current = layer;
+      } catch {
+        setHint("Map loaded · country boundaries unavailable");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      mapRef.current?.remove();
+      mapRef.current = null;
+      geoJsonRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- init once
+  }, []);
+
+  // Sync markers when pins / selection change
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+
+    (async () => {
+      const L = (await import("leaflet")).default;
+      const map = mapRef.current!;
+
+      for (const layer of markersRef.current) {
+        map.removeLayer(layer);
+      }
+      markersRef.current = [];
+
+      for (const pin of pins) {
+        const active = selectedCaseId === pin.id;
+        const unsolved = pin.status === "unsolved";
+        const marker = L.marker([pin.lat, pin.lng], {
+          icon: L.divIcon({
+            className: "monitor-leaflet-icon",
+            html: markerHtml(active, unsolved),
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          }),
+        });
+
+        marker.bindTooltip(pin.name, {
+          direction: "top",
+          offset: [0, -8],
+          opacity: 0.95,
+        });
+
+        marker.on("click", () => {
+          onSelectCase?.(pin.id);
+          map.flyTo([pin.lat, pin.lng], Math.max(map.getZoom(), 5), { duration: 0.6 });
+        });
+
+        marker.addTo(map);
+        markersRef.current.push(marker);
+      }
+    })();
+  }, [pins, ready, selectedCaseId, onSelectCase]);
+
+  // Highlight country + fly to bounds
+  useEffect(() => {
+    if (!ready || !geoJsonRef.current) return;
+
+    (async () => {
+      const L = (await import("leaflet")).default;
+      const map = mapRef.current!;
+
+      if (highlightRef.current) {
+        map.removeLayer(highlightRef.current);
+        highlightRef.current = null;
+      }
+
+      geoJsonRef.current?.eachLayer((layer) => {
+        const feature = layerFeature(layer);
+        const iso3 = featureIso3(feature);
+        const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
+        const active = selectedCountry && code === selectedCountry;
+        (layer as Path).setStyle({
+          color: active ? "var(--accent)" : "var(--line-strong)",
+          weight: active ? 2 : 0.6,
+          fillColor: active ? "var(--accent)" : "var(--line)",
+          fillOpacity: active ? 0.15 : 0.03,
+        });
+      });
+
+      if (selectedCountry) {
+        const iso3 = COUNTRY_ISO3[selectedCountry];
+        if (iso3 && geoJsonRef.current) {
+          const match = geoJsonRef.current.getLayers().find((l) => {
+            return featureIso3(layerFeature(l)) === iso3;
+          });
+          if (match) {
+            highlightRef.current = match;
+          }
+        }
+        const bounds = COUNTRY_BOUNDS[selectedCountry];
+        if (bounds) {
+          map.flyToBounds(bounds, { padding: [24, 24], duration: 0.8, maxZoom: 5 });
+        }
+      } else if (pins.length) {
+        const latLngs = pins.map((p) => [p.lat, p.lng] as [number, number]);
+        if (latLngs.length === 1) {
+          map.flyTo(latLngs[0], 4, { duration: 0.6 });
+        } else {
+          map.flyToBounds(L.latLngBounds(latLngs), { padding: [32, 32], duration: 0.8, maxZoom: 4 });
+        }
+      }
+    })();
+  }, [selectedCountry, ready, pins]);
+
+  // Fly to selected case
+  useEffect(() => {
+    if (!ready || !selectedCaseId || !mapRef.current) return;
+    const pin = pins.find((p) => p.id === selectedCaseId);
+    if (pin) {
+      mapRef.current.flyTo([pin.lat, pin.lng], Math.max(mapRef.current.getZoom(), 6), {
+        duration: 0.6,
+      });
     }
-    return m;
-  }, [pins]);
+  }, [selectedCaseId, pins, ready]);
+
+  function resetView() {
+    if (!mapRef.current) return;
+    void (async () => {
+      const L = (await import("leaflet")).default;
+      if (!mapRef.current) return;
+      if (pins.length) {
+        const latLngs = pins.map((p) => [p.lat, p.lng] as [number, number]);
+        if (latLngs.length === 1) {
+          mapRef.current.setView(latLngs[0], 3);
+        } else {
+          mapRef.current.fitBounds(L.latLngBounds(latLngs), {
+            padding: [32, 32],
+            maxZoom: 4,
+          });
+        }
+      } else {
+        mapRef.current.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+      }
+    })();
+  }
 
   return (
     <div className="monitor-map-wrap">
-      <svg
-        viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-        className="monitor-map-svg"
-        role="img"
-        aria-label="World map showing forensic case locations"
-      >
-        <defs>
-          <pattern id="monitor-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path
-              d="M 40 0 L 0 0 0 40"
-              fill="none"
-              stroke="var(--line)"
-              strokeWidth="0.5"
-              opacity="0.35"
-            />
-          </pattern>
-        </defs>
-
-        <rect width={MAP_W} height={MAP_H} fill="url(#monitor-grid)" />
-        <rect width={MAP_W} height={MAP_H} fill="var(--bg-subtle)" opacity="0.85" />
-
-        {LAND_PATHS.map((d, i) => (
-          <path key={i} d={d} fill="var(--line)" opacity="0.45" stroke="var(--line-strong)" strokeWidth="1" />
-        ))}
-
-        {(Object.entries(COUNTRY_ZONES) as [CountryCode, NonNullable<(typeof COUNTRY_ZONES)[CountryCode]>][]).map(
-          ([code, zone]) => {
-            const count = countsByCountry.get(code) ?? 0;
-            const active = selectedCountry === code;
-            if (!count && !active) return null;
-            return (
-              <g key={code}>
-                <rect
-                  x={zone.x}
-                  y={zone.y}
-                  width={zone.w}
-                  height={zone.h}
-                  rx={2}
-                  fill={active ? "var(--accent-soft)" : "var(--paper)"}
-                  stroke={active ? "var(--accent)" : "var(--line)"}
-                  strokeWidth={active ? 2 : 1}
-                  opacity={count ? 0.9 : 0.4}
-                  className="cursor-pointer transition-opacity hover:opacity-100"
-                  onClick={() => onSelectCountry?.(active ? "" : code)}
-                />
-                <text
-                  x={zone.x + zone.w / 2}
-                  y={zone.y + zone.h / 2 - 4}
-                  textAnchor="middle"
-                  className="monitor-map-zone-label"
-                >
-                  {COUNTRY_LABELS[code]}
-                </text>
-                <text
-                  x={zone.x + zone.w / 2}
-                  y={zone.y + zone.h / 2 + 14}
-                  textAnchor="middle"
-                  className="monitor-map-zone-count"
-                >
-                  {count} case{count === 1 ? "" : "s"}
-                </text>
-              </g>
-            );
-          },
-        )}
-
-        {pins.map((pin) => {
-          const active = selectedCaseId === pin.id;
-          const unsolved = pin.status === "unsolved";
-          return (
-            <g
-              key={pin.id}
-              transform={`translate(${pin.x}, ${pin.y})`}
-              className="cursor-pointer"
-              onClick={() => onSelectCase?.(pin.id)}
-            >
-              {active ? (
-                <circle r={14} fill="none" stroke="var(--accent)" strokeWidth={2} opacity={0.6} />
-              ) : null}
-              <circle
-                r={active ? 7 : 5}
-                fill={unsolved ? "var(--maroon)" : "var(--accent)"}
-                stroke="var(--paper)"
-                strokeWidth={2}
-              />
-              <title>
-                {pin.name} — {COUNTRY_LABELS[pin.country]}
-              </title>
-            </g>
-          );
-        })}
-      </svg>
-
+      <div ref={containerRef} className="monitor-leaflet-map" aria-label="Interactive world map" />
+      <div className="monitor-map-toolbar">
+        <span className="monitor-map-hint">{hint}</span>
+        <button type="button" className="btn btn-ghost text-xs" onClick={resetView}>
+          Reset view
+        </button>
+      </div>
       <div className="monitor-map-legend">
         <span className="monitor-legend-item">
           <span className="monitor-dot monitor-dot-closed" /> Closed / historical
@@ -154,7 +287,9 @@ export function CaseWorldMap({
         <span className="monitor-legend-item">
           <span className="monitor-dot monitor-dot-unsolved" /> Unsolved
         </span>
-        <span className="monitor-legend-meta">{pins.length} plotted</span>
+        <span className="monitor-legend-meta">
+          {pins.length} plotted · OpenStreetMap
+        </span>
       </div>
     </div>
   );
@@ -171,9 +306,16 @@ export function MonitorCaseCard({
   return (
     <div className="monitor-case-card">
       <div className="flex items-start justify-between gap-2">
-        <p className="label">{pin.status.replaceAll("_", " ")} · {pin.yearStart}{pin.yearEnd ? `–${pin.yearEnd}` : ""}</p>
+        <p className="label">
+          {pin.status.replaceAll("_", " ")} · {pin.yearStart}
+          {pin.yearEnd ? `–${pin.yearEnd}` : ""}
+        </p>
         {onClose ? (
-          <button type="button" onClick={onClose} className="text-xs text-[var(--muted)] hover:text-[var(--ink)]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-[var(--muted)] hover:text-[var(--ink)]"
+          >
             ×
           </button>
         ) : null}
@@ -181,7 +323,11 @@ export function MonitorCaseCard({
       <h3 className="display mt-1 text-xl">{pin.name}</h3>
       <p className="mt-1 text-sm text-[var(--ink-soft)]">{pin.subtitle}</p>
       <p className="mt-2 text-xs text-[var(--muted)]">
-        {COUNTRY_LABELS[pin.country]} · {pin.crimeCategories.map((c) => CRIME_CATEGORY_LABELS[c]).join(" · ")}
+        {COUNTRY_LABELS[pin.country]} ·{" "}
+        {pin.crimeCategories.map((c) => CRIME_CATEGORY_LABELS[c]).join(" · ")}
+      </p>
+      <p className="mt-1 text-xs tabular-nums text-[var(--muted)]">
+        {pin.lat.toFixed(2)}°, {pin.lng.toFixed(2)}°
       </p>
       <Link href={`/cases/${pin.slug}`} className="btn btn-primary mt-3 inline-block text-sm">
         Open dossier
