@@ -15,6 +15,7 @@ import type {
   BehavioralProfile,
   LegalOutcome,
 } from "@/lib/types";
+import { getCaseNarrative } from "@/data/narratives";
 
 export interface CaseEnrichment {
   aliases?: string[];
@@ -68,7 +69,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
         known: true,
         sex: "male",
         ageAtOffense: "20s–30s",
-        background: "Law student / public-facing conventional presentation in periods of offending.",
+        background:
+          "Born Theodore Robert Cowell in Vermont (1946); raised believing his mother was his sister until adolescence. Law student, crisis-line volunteer, and campaign worker who presented as upwardly mobile and conventionally respectable.",
       },
     ],
     victims: [
@@ -152,7 +154,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
         role: "offender",
         known: true,
         sex: "male",
-        background: "Community roles concurrent with long concealment.",
+        background:
+          "Kansas native (1945); married with two children; served as church council president and municipal compliance officer while maintaining the BTK persona in private writings.",
       },
     ],
     victims: [
@@ -226,7 +229,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
         role: "offender",
         known: true,
         sex: "male",
-        background: "Former academic; long-term isolated cabin living.",
+        background:
+          "Harvard-educated mathematician; former UC Berkeley assistant professor who abandoned academia for isolated cabin life in Montana from 1971.",
       },
     ],
     victims: [
@@ -283,7 +287,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
         role: "offender",
         known: true,
         sex: "female",
-        background: "Severe adversity and marginalization documented in biographies.",
+        background:
+          "Severe childhood abuse and abandonment documented in court records; years of homelessness and survival sex work along Florida highways before the 1989–1990 series.",
       },
     ],
     victims: [
@@ -402,7 +407,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
         role: "offender",
         known: true,
         sex: "male",
-        background: "Charismatic leader within a dependent follower circle.",
+        background:
+          "Charismatic ex-convict who assembled the 'Manson Family' commune at Spahn Ranch; blended Beatles apocalyptic interpretation with total control over isolated followers.",
       },
     ],
     victims: [
@@ -461,7 +467,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
         role: "offender",
         known: true,
         sex: "male",
-        background: "General practitioner with prolonged access to vulnerable patients.",
+        background:
+          "Qualified GP in Hyde, Greater Manchester; mother's cancer death during his medical training frequently cited in biographical accounts; prior pethidine fraud conviction.",
       },
     ],
     victims: [
@@ -895,6 +902,7 @@ export function applyEnrichment(
       contentLevel: base.contentLevel ?? "standard",
       documentIds: base.documentIds ?? [],
       references: base.references ?? [],
+      narrative: getCaseNarrative(base.slug),
       analysis: {
         ...base.analysis,
         expertCommentary: base.analysis.expertCommentary ?? [],
@@ -923,6 +931,7 @@ export function applyEnrichment(
     documentIds: e.documentIds,
     references: e.references,
     caseOfWeek: e.caseOfWeek,
+    narrative: getCaseNarrative(base.slug),
     analysis: {
       ...base.analysis,
       expertCommentary: e.expertCommentary ?? [],

@@ -31,15 +31,31 @@ export const cases: SeedCase[] = [
     tags: ["organized", "instrumental", "impression management"],
     warning: "Public-record behavioral analysis. Minimal graphic detail.",
     overview:
-      "A widely documented series of abductions and murders. Public records emphasize high social presentation skill, planning, and a double life that delayed detection—core material for studying organized, instrumental offending patterns.",
+      "Theodore Robert Bundy exploited trust across multiple states in the 1970s—posing as injured, authoritative, or romantically available while abducting and murdering young women. His case defines organized, instrumental predation paired with exceptional impression management: law school, politics, and even search-party participation while victims remained missing.",
     featured: true,
     timeline: [
+      {
+        id: "tb-0",
+        date: "1946",
+        label: "Birth and hidden parentage",
+        detail:
+          "Born in Vermont; raised by grandparents who initially presented as parents. Later learned his 'sister' was his mother.",
+        behavioralNote: "Identity and secrecy themes in biographical accounts—not deterministic causation.",
+      },
+      {
+        id: "tb-0b",
+        date: "1960s",
+        label: "College and broken engagement",
+        detail:
+          "University of Washington student; painful breakup with Stephanie Brooks coincides with dropout and drift in some accounts.",
+        behavioralNote: "Narcissistic injury hypotheses appear in literature; evidence is correlational.",
+      },
       {
         id: "tb-1",
         date: "1974–1978",
         label: "Escalating multi-state pattern",
         detail:
-          "Offenses spanned jurisdictions; victim approach often involved deception and a staged vulnerability.",
+          "Confirmed and attributed abductions and murders across Washington, Utah, Colorado, and other states; deceptive approaches in parking lots and campuses.",
         behavioralNote: "Suggests rehearsal, mobility, and adaptive targeting.",
       },
       {
@@ -179,7 +195,7 @@ export const cases: SeedCase[] = [
     tags: ["organized", "power-control", "double life"],
     warning: "Public-record analysis. Communications discussed without graphic detail.",
     overview:
-      "Rader maintained a conventional public identity while committing a long series of murders and sending taunting communications. The case is a classic study of compartmentalization and power/control motivation inferred from behavior and letters.",
+      "Dennis Rader murdered ten people in Kansas between 1974 and 1991 while maintaining a public life as husband, father, church leader, and city compliance officer. He branded himself BTK in taunting letters and resurfaced in 2004—leading to capture when metadata on a floppy disk traced back to him.",
     featured: true,
     timeline: [
       {
@@ -309,7 +325,7 @@ export const cases: SeedCase[] = [
     tags: ["ideological", "isolated", "manifesto-driven"],
     warning: "Focuses on ideology and lifestyle pattern, not bomb-making detail.",
     overview:
-      "Kaczynski conducted a long bombing campaign framed by a written anti-technology manifesto. The case is central to studying how ideological narrative, social withdrawal, and instrumental violence can interlock.",
+      "Ted Kaczynski's eighteen-year bombing campaign targeted universities, airlines, and technology figures while he lived in a Montana cabin writing an anti-industrial manifesto. Family recognition of his prose after publication led to arrest—one of the most studied cases of ideology fused with instrumental terror.",
     featured: true,
     timeline: [
       {

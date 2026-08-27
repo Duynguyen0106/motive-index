@@ -53,7 +53,7 @@ curl -s -X POST "$BASE/api/reset" >/dev/null || true
 echo "-- Pages --"
 expect_200 "GET /" "$BASE/"
 expect_contains "Home brand" "$BASE/" "Motive Index"
-expect_contains "Home case of week" "$BASE/" "Case of the week"
+expect_contains "Home featured dossier" "$BASE/" "Featured dossier"
 expect_200 "GET /cases" "$BASE/cases"
 expect_200 "GET /search" "$BASE/search"
 expect_200 "GET /documents" "$BASE/documents"
@@ -69,6 +69,7 @@ echo "-- Case dossiers & tabs --"
 for slug in ted-bundy dennis-rader-btk ted-kaczynski aileen-wuornos zodiac-killer charles-manson harold-shipman contemporary-draft-example; do
   expect_200 "GET /cases/$slug" "$BASE/cases/$slug"
 done
+expect_contains "Tab story" "$BASE/cases/ted-bundy?tab=story" "Origins"
 expect_contains "Tab overview content" "$BASE/cases/ted-bundy?tab=overview" "Legal outcome"
 expect_contains "Tab timeline" "$BASE/cases/ted-bundy?tab=timeline" "Behavioral timeline"
 expect_contains "Tab analysis" "$BASE/cases/ted-bundy?tab=analysis" "Psychological map"

@@ -173,6 +173,33 @@ export interface CaseReference {
   url?: string;
 }
 
+export type DossierChapterId =
+  | "origins"
+  | "formation"
+  | "escalation"
+  | "method"
+  | "motivation"
+  | "investigation"
+  | "aftermath";
+
+/** Documentary-style chapter in a case dossier. */
+export interface DossierChapter {
+  id: DossierChapterId;
+  title: string;
+  period?: string;
+  /** Opening line for the chapter — documentary hook. */
+  lead?: string;
+  paragraphs: string[];
+  /** Forensic-psychology marginalia (hypothesis, not diagnosis). */
+  psychNote?: string;
+}
+
+export interface CaseNarrative {
+  /** One-sentence documentary cold open. */
+  hook: string;
+  chapters: DossierChapter[];
+}
+
 export interface CrimeCase {
   id: string;
   slug: string;
@@ -200,6 +227,8 @@ export interface CrimeCase {
   warning: string;
   contentLevel: "standard" | "restricted";
   overview: string;
+  /** Full documentary narrative (childhood → crime → motive → aftermath). */
+  narrative?: CaseNarrative;
   timeline: TimelineEvent[];
   signals: BehaviorSignal[];
   documentIds: string[];

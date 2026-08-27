@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CaseTabs } from "@/components/CaseTabs";
+import { CaseNarrativeView } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PsychMap } from "@/components/PsychMap";
@@ -59,38 +60,36 @@ export default async function CasePage({ params, searchParams }: Props) {
 
   const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
+  const narrative = crimeCase.narrative;
 
   return (
     <article className="pb-16">
       <header className="site-shell py-10 md:py-12">
-        <Link
-          href="/cases"
-          className="text-sm font-medium text-[var(--muted)] hover:text-[var(--accent)]"
-        >
-          ← Browse cases
+        <Link href="/cases" className="text-sm text-link">
+          ← Case index
         </Link>
-        <p className="mt-5 text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
+        <p className="label mt-5">
           {crimeCase.yearStart}
           {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location} ·{" "}
           {crimeCase.status}
         </p>
-        <h1 className="display mt-3 max-w-4xl text-[clamp(2.4rem,6vw,3.75rem)] text-[var(--ink)]">
+        <h1 className="display mt-2 max-w-4xl text-[clamp(2.4rem,6vw,3.75rem)] text-[var(--ink)]">
           {crimeCase.name}
         </h1>
         {crimeCase.aliases?.length ? (
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Aliases: {crimeCase.aliases.join(" · ")}
+            Also known as: {crimeCase.aliases.join(" · ")}
           </p>
         ) : null}
-        <p className="body-copy mt-4 max-w-2xl text-lg text-[var(--ink-soft)]">
-          {crimeCase.subtitle}
+        <p className="lede mt-4 max-w-3xl">
+          {narrative?.hook ?? crimeCase.subtitle}
         </p>
+        {!narrative ? (
+          <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">{crimeCase.subtitle}</p>
+        ) : null}
         <div className="mt-5 flex flex-wrap gap-2">
           {crimeCase.crimeCategories.map((c) => (
-            <span
-              key={c}
-              className="rounded border border-[var(--line)] bg-[var(--bg-subtle)] px-2.5 py-1 text-xs font-medium text-[var(--ink-soft)]"
-            >
+            <span key={c} className="tag">
               {CRIME_CATEGORY_LABELS[c]}
             </span>
           ))}
@@ -112,6 +111,16 @@ export default async function CasePage({ params, searchParams }: Props) {
       </Suspense>
 
       <div className="site-shell py-8">
+        {tab === "story" && narrative ? (
+          <CaseNarrativeView narrative={narrative} />
+        ) : null}
+
+        {tab === "story" && !narrative ? (
+          <p className="text-[var(--muted)]">
+            Full narrative pending for this record. See Overview and Timeline tabs.
+          </p>
+        ) : null}
+
         {tab === "overview" ? (
           <div className="grid gap-6 md:grid-cols-[1.25fr_0.75fr]">
             <div className="space-y-6">
