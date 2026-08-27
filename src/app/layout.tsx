@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
-import { Figtree, Literata, Syne } from "next/font/google";
+import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["400", "600", "700"],
 });
 
-const literata = Literata({
-  variable: "--font-literata",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-
-const figtree = Figtree({
-  variable: "--font-figtree",
+const sourceSans = Source_Sans_3({
+  variable: "--font-source-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -35,9 +29,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${literata.variable} ${figtree.variable} h-full antialiased`}
+      className={`${sourceSerif.variable} ${sourceSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col bg-white text-[var(--ink)]">
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

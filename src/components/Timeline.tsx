@@ -2,17 +2,16 @@ import type { TimelineEvent } from "@/lib/types";
 
 export function Timeline({ events }: { events: TimelineEvent[] }) {
   return (
-    <ol className="relative space-y-8 border-l border-[var(--line)] pl-6">
+    <ol className="relative space-y-4">
       {events.map((e) => (
-        <li key={e.id} className="relative">
-          <span className="absolute top-1.5 -left-[1.91rem] h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
-          <p className="text-xs tracking-[0.14em] text-[var(--muted)] uppercase">
+        <li key={e.id} className="card relative p-5 md:p-6">
+          <p className="text-xs font-medium tracking-[0.14em] text-[var(--muted)] uppercase">
             {e.date}
           </p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">{e.label}</h3>
-          <p className="mt-2 serif text-[var(--ink-soft)]">{e.detail}</p>
+          <h3 className="display mt-1 text-xl text-[var(--ink)]">{e.label}</h3>
+          <p className="body-copy mt-2 text-[var(--ink-soft)]">{e.detail}</p>
           {e.behavioralNote ? (
-            <p className="mt-2 text-sm text-[var(--accent)]">
+            <p className="mt-3 border-t border-[var(--line)] pt-3 text-sm text-[var(--accent)]">
               Behavioral note: {e.behavioralNote}
             </p>
           ) : null}
