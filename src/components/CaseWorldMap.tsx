@@ -125,7 +125,8 @@ export function CaseWorldMap({
             if (!code) return;
             featureLayer.on({
               click: () => {
-                onSelectCountry?.(selectedCountry === code ? "" : code);
+                const current = selectedCountryRef.current;
+                onSelectCountryRef.current?.(current === code ? "" : code);
               },
             });
           },
@@ -274,11 +275,13 @@ export function CaseWorldMap({
   return (
     <div className="monitor-map-wrap">
       <div ref={containerRef} className="monitor-leaflet-map" aria-label="Interactive world map" />
+      <div className="monitor-map-float-controls">
+        <button type="button" className="monitor-map-btn" onClick={resetView} title="Reset view">
+          ⟲
+        </button>
+      </div>
       <div className="monitor-map-toolbar">
         <span className="monitor-map-hint">{hint}</span>
-        <button type="button" className="btn btn-ghost text-xs" onClick={resetView}>
-          Reset view
-        </button>
       </div>
       <div className="monitor-map-legend">
         <span className="monitor-legend-item">
@@ -303,34 +306,40 @@ export function MonitorCaseCard({
   pin: MonitorCasePin;
   onClose?: () => void;
 }) {
+  const unsolved = pin.status === "unsolved";
   return (
-    <div className="monitor-case-card">
+    <div className="monitor-case-card" role="dialog" aria-label={`Case: ${pin.name}`}>
+      <div className="monitor-case-card-accent" data-status={pin.status} />
       <div className="flex items-start justify-between gap-2">
-        <p className="label">
-          {pin.status.replaceAll("_", " ")} · {pin.yearStart}
-          {pin.yearEnd ? `–${pin.yearEnd}` : ""}
-        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="label mb-0">
+            {pin.yearStart}
+            {pin.yearEnd ? `–${pin.yearEnd}` : ""}
+          </p>
+          {unsolved ? <span className="monitor-pill monitor-pill-open">unsolved</span> : null}
+        </div>
         {onClose ? (
           <button
             type="button"
             onClick={onClose}
-            className="text-xs text-[var(--muted)] hover:text-[var(--ink)]"
+            className="monitor-case-close"
+            aria-label="Close"
           >
             ×
           </button>
         ) : null}
       </div>
-      <h3 className="display mt-1 text-xl">{pin.name}</h3>
-      <p className="mt-1 text-sm text-[var(--ink-soft)]">{pin.subtitle}</p>
-      <p className="mt-2 text-xs text-[var(--muted)]">
+      <h3 className="display mt-2 text-xl leading-tight">{pin.name}</h3>
+      <p className="mt-1.5 text-sm leading-snug text-[var(--ink-soft)]">{pin.subtitle}</p>
+      <p className="mt-3 text-xs text-[var(--muted)]">
         {COUNTRY_LABELS[pin.country]} ·{" "}
         {pin.crimeCategories.map((c) => CRIME_CATEGORY_LABELS[c]).join(" · ")}
       </p>
-      <p className="mt-1 text-xs tabular-nums text-[var(--muted)]">
+      <p className="mt-1 font-mono text-[10px] text-[var(--muted)]">
         {pin.lat.toFixed(2)}°, {pin.lng.toFixed(2)}°
       </p>
-      <Link href={`/cases/${pin.slug}`} className="btn btn-primary mt-3 inline-block text-sm">
-        Open dossier
+      <Link href={`/cases/${pin.slug}`} className="btn btn-primary mt-4 block text-center text-sm">
+        Open dossier →
       </Link>
     </div>
   );
