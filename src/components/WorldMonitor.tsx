@@ -724,7 +724,7 @@ export function WorldMonitor({ initial }: Props) {
             >
               <h2 className="display text-base">World crime news</h2>
               <p className="mt-1 text-xs text-[var(--muted)]">
-                Live RSS from 10 regions · English summaries · original headlines preserved
+                Live RSS from 17 regions · English summaries · original headlines preserved
               </p>
               <WorldNewsFeed
                 initial={data.worldNews}
