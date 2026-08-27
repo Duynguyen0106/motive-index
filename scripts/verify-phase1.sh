@@ -28,7 +28,7 @@ expect_200() {
   local url="$2"
   local code
   code=$(http_code "$url")
-  if [[ "$code" == "200" ]]; then check "$name" 1; else check "$name (got $code)" 0; fi
+  if [[ "$code" == "200" ]]; then check "$name" 1; else check "$name [got $code]" 0; fi
 }
 
 expect_contains() {
@@ -40,7 +40,7 @@ expect_contains() {
   if [[ "$code" == "200" ]] && grep -q "$needle" /tmp/mi_body.txt; then
     check "$name" 1
   else
-    check "$name (code=$code missing='$needle')" 0
+    check "$name [code=$code missing=$needle]" 0
   fi
 }
 
@@ -130,7 +130,7 @@ if echo "$analyze_body" | grep -q '"slug":"contemporary-draft-example"'; then ch
 
 # Protect published analyses
 code=$(curl -s -o /tmp/mi_body.txt -w "%{http_code}" -X POST "$BASE/api/analyze" -H 'content-type: application/json' -d '{"slug":"ted-bundy"}')
-if [[ "$code" == "409" ]]; then check "POST /api/analyze protects published" 1; else check "POST /api/analyze protects published (got $code)" 0; fi
+if [[ "$code" == "409" ]]; then check "POST /api/analyze protects published" 1; else check "POST /api/analyze protects published [got $code]" 0; fi
 
 # Contribute
 contrib_body=$(curl -s -X POST "$BASE/api/contribute" -H 'content-type: application/json' \
@@ -139,11 +139,11 @@ if echo "$contrib_body" | grep -q '"status":"pending"'; then check "POST /api/co
 
 # Contribute invalid
 code=$(curl -s -o /tmp/mi_body.txt -w "%{http_code}" -X POST "$BASE/api/contribute" -H 'content-type: application/json' -d '{"kind":"analysis"}')
-if [[ "$code" == "400" ]]; then check "POST /api/contribute rejects bad body" 1; else check "POST /api/contribute rejects bad body (got $code)" 0; fi
+if [[ "$code" == "400" ]]; then check "POST /api/contribute rejects bad body" 1; else check "POST /api/contribute rejects bad body [got $code]" 0; fi
 
 # Analyze missing
 code=$(curl -s -o /tmp/mi_body.txt -w "%{http_code}" -X POST "$BASE/api/analyze" -H 'content-type: application/json' -d '{"slug":"does-not-exist"}')
-if [[ "$code" == "404" ]]; then check "POST /api/analyze 404 unknown slug" 1; else check "POST /api/analyze 404 unknown slug (got $code)" 0; fi
+if [[ "$code" == "404" ]]; then check "POST /api/analyze 404 unknown slug" 1; else check "POST /api/analyze 404 unknown slug [got $code]" 0; fi
 
 echo
 echo "-- Nav / ethics copy --"
