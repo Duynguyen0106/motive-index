@@ -499,17 +499,26 @@ export function WorldMonitor({ initial }: Props) {
       <div className="monitor-top">
       <header className="monitor-hero">
         <div className="monitor-hero-main">
-          <p className="label">Live intelligence · forensic archive</p>
-          <h1 className="display monitor-title">World crime monitor</h1>
+          <p className="label monitor-desktop-only">Live intelligence · forensic archive</p>
+          <div className="monitor-hero-title-row">
+            <h1 className="display monitor-title">World crime monitor</h1>
+            <div className="monitor-live-badge monitor-mobile-only">
+              <span
+                className={`monitor-live-dot ${liveStatus === "syncing" ? "is-syncing" : ""} ${liveStatus === "stale" ? "is-stale" : ""}`}
+              />
+              {liveStatus === "syncing" ? "Syncing" : liveStatus === "stale" ? "Stale" : "Live"}
+            </div>
+          </div>
           <p className="monitor-lede monitor-desktop-only">
             Live global crime map with {data.totalCases} archived dossiers, regional news feeds in
             English, and forensic filters — click clusters to drill down.
           </p>
           <p className="monitor-lede-compact monitor-mobile-only">
-            {data.filteredCount} cases · {data.plottedCount} on map · {unsolvedCount} unsolved
+            {data.filteredCount.toLocaleString()} cases · {visiblePins.length.toLocaleString()} on
+            map · {visibleUnsolved || unsolvedCount} unsolved
           </p>
         </div>
-        <div className="monitor-hero-meta">
+        <div className="monitor-hero-meta monitor-desktop-only">
           <div className="monitor-live-badge">
             <span
               className={`monitor-live-dot ${liveStatus === "syncing" ? "is-syncing" : ""} ${liveStatus === "stale" ? "is-stale" : ""}`}
@@ -552,7 +561,7 @@ export function WorldMonitor({ initial }: Props) {
         </div>
       ) : null}
 
-      <div className="monitor-stats">
+      <div className="monitor-stats monitor-desktop-only">
         <div className="monitor-stat">
           <span className="monitor-stat-value">{data.filteredCount}</span>
           <span className="monitor-stat-label">Cases shown</span>
@@ -586,27 +595,42 @@ export function WorldMonitor({ initial }: Props) {
       />
 
       {unplottedCount > 0 ? (
-        <div className="monitor-notice" role="status">
-          <p className="text-sm text-[var(--ink-soft)]">
-            <strong>{unplottedCount}</strong> filtered{" "}
-            {unplottedCount === 1 ? "case lacks" : "cases lack"} map coordinates
-            {unplottedCount <= 4
-              ? `: ${data.unplottedCases.map((c) => c.name).join(", ")}`
-              : ""}
-            .{" "}
-            <button
-              type="button"
-              className="text-[var(--accent)] hover:underline"
-              onClick={() => updateMapView({ showGhostPins: true })}
-            >
-              Show country estimates on map
-            </button>
-            {" · "}
-            <Link href="/search" className="text-[var(--accent)] hover:underline">
-              Search full archive
-            </Link>
-          </p>
-        </div>
+        <>
+          <div className="monitor-notice monitor-notice-mobile monitor-mobile-only" role="status">
+            <p className="text-xs text-[var(--ink-soft)]">
+              <strong>{unplottedCount.toLocaleString()}</strong> filtered cases lack coordinates
+              {" · "}
+              <button
+                type="button"
+                className="text-[var(--accent)] hover:underline"
+                onClick={() => updateMapView({ showGhostPins: true })}
+              >
+                Show estimates
+              </button>
+            </p>
+          </div>
+          <div className="monitor-notice monitor-desktop-only" role="status">
+            <p className="text-sm text-[var(--ink-soft)]">
+              <strong>{unplottedCount}</strong> filtered{" "}
+              {unplottedCount === 1 ? "case lacks" : "cases lack"} map coordinates
+              {unplottedCount <= 4
+                ? `: ${data.unplottedCases.map((c) => c.name).join(", ")}`
+                : ""}
+              .{" "}
+              <button
+                type="button"
+                className="text-[var(--accent)] hover:underline"
+                onClick={() => updateMapView({ showGhostPins: true })}
+              >
+                Show country estimates on map
+              </button>
+              {" · "}
+              <Link href="/search" className="text-[var(--accent)] hover:underline">
+                Search full archive
+              </Link>
+            </p>
+          </div>
+        </>
       ) : null}
 
       {activeFilterCount(filters) > 0 ||
@@ -697,7 +721,7 @@ export function WorldMonitor({ initial }: Props) {
           {isPending ? <div className="monitor-map-loading" aria-hidden /> : null}
           <div className="monitor-map-header">
             <h2 className="display text-lg">Global map</h2>
-            <span className="text-xs text-[var(--muted)]">
+            <span className="monitor-map-header-meta text-xs text-[var(--muted)]">
               {visiblePins.length ? (
                 <>
                   <strong className="text-[var(--ink)]">{visiblePins.length.toLocaleString()}</strong>

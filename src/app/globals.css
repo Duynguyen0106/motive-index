@@ -1095,6 +1095,13 @@ body.has-hot-news-ticker .site-header {
   color: var(--ink-soft);
 }
 
+.monitor-hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .monitor-hero-meta {
   display: flex;
   flex-direction: column;

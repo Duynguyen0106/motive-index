@@ -169,42 +169,67 @@
     display: block;
   }
 
-  .monitor-dashboard.is-mobile {
+  .monitor-dashboard {
+    width: min(1440px, calc(100% - 1rem));
+    padding-top: 0.35rem;
     padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
   }
 
-  .monitor-dashboard {
-    width: min(1440px, calc(100% - 1rem));
-    padding-top: 0.75rem;
+  .monitor-top {
+    margin-bottom: 0.35rem;
+  }
+
+  .monitor-workspace {
+    margin-top: 0;
   }
 
   .monitor-hero {
-    margin-bottom: 0.75rem;
-    padding: 0.85rem 1rem 1rem;
+    margin-bottom: 0.35rem;
+    padding: 0.6rem 0.75rem 0.65rem;
+    box-shadow: none;
   }
 
-  .monitor-title {
-    font-size: 1.5rem;
-  }
-
-  .monitor-lede-compact {
-    margin-top: 0.35rem;
-    font-size: 0.875rem;
-    line-height: 1.45;
-    color: var(--ink-soft);
-  }
-
-  .monitor-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .monitor-hero-title-row {
     gap: 0.5rem;
   }
 
-  .monitor-stat {
-    padding: 0.65rem 0.75rem;
+  .monitor-hero-title-row .monitor-live-badge {
+    flex-shrink: 0;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.625rem;
   }
 
-  .monitor-stat-value {
-    font-size: 1.35rem;
+  .monitor-title {
+    font-size: 1.2rem;
+    line-height: 1.15;
+  }
+
+  .monitor-lede-compact {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+
+  .monitor-notice-mobile {
+    margin-bottom: 0.35rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .monitor-map-header {
+    padding: 0.55rem 0.75rem;
+  }
+
+  .monitor-map-header-meta {
+    display: none;
+  }
+
+  .monitor-map-header .display {
+    font-size: 1rem;
+  }
+
+  .monitor-chips {
+    margin-bottom: 0.5rem;
   }
 
   .monitor-desktop-only-fab {
@@ -239,8 +264,8 @@
   }
 
   .monitor-leaflet-map {
-    min-height: 280px;
-    height: min(52vh, 420px);
+    min-height: 300px;
+    height: min(58vh, 460px);
     touch-action: pan-x pan-y;
   }
 
