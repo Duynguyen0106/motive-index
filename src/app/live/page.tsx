@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { LivePageSync } from "@/components/LivePageSync";
 import { LiveRegionFilter } from "@/components/LiveRegionFilter";
@@ -9,6 +10,7 @@ import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
 import { getAllCases, getUpdates } from "@/lib/data";
 import { buildWorldNewsPayload } from "@/lib/worldNewsService";
 import { WORLD_NEWS_FEED_COUNT } from "@/lib/worldNews";
+import { parseNewsFilter } from "@/lib/newsFeedUtils";
 import type { CountryCode } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -23,6 +25,9 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function LivePage({ searchParams }: Props) {
   const raw = await searchParams;
   const countryParam = typeof raw.country === "string" ? raw.country : "";
+  const newsFilter = parseNewsFilter(
+    typeof raw.newsFilter === "string" ? raw.newsFilter : null,
+  );
   const countryOptions = listCountryOptions(getAllCases());
   const country =
     countryParam && countryOptions.includes(countryParam as CountryCode)
@@ -34,7 +39,11 @@ export default async function LivePage({ searchParams }: Props) {
     Promise.resolve(getUpdates(30)),
   ]);
 
-  const monitorHref = country ? `/?country=${country}&tab=news` : "/?tab=news";
+  const monitorNewsQs = new URLSearchParams();
+  if (country) monitorNewsQs.set("country", country);
+  monitorNewsQs.set("tab", "news");
+  if (newsFilter !== "all") monitorNewsQs.set("newsFilter", newsFilter);
+  const monitorHref = `/?${monitorNewsQs.toString()}`;
   const monitorCasesHref = country ? `/?country=${country}` : "/";
 
   return (
@@ -60,7 +69,9 @@ export default async function LivePage({ searchParams }: Props) {
         <Link href="/" className="text-link text-sm">
           ← Back to monitor
         </Link>
-        <LiveRegionFilter country={country} countryOptions={countryOptions} />
+        <Suspense fallback={<span className="text-sm text-[var(--muted)]">Loading filters…</span>}>
+          <LiveRegionFilter country={country} countryOptions={countryOptions} />
+        </Suspense>
       </div>
 
       {country ? (
@@ -76,11 +87,20 @@ export default async function LivePage({ searchParams }: Props) {
         </p>
       ) : null}
 
-      <LivePageSync
-        initialNews={initialNews}
-        initialUpdates={archiveUpdates}
-        country={country}
-      />
+      <Suspense
+        fallback={
+          <div className="mt-10 card p-6" role="status">
+            <p className="text-sm text-[var(--muted)]">Loading live feed…</p>
+          </div>
+        }
+      >
+        <LivePageSync
+          initialNews={initialNews}
+          initialUpdates={archiveUpdates}
+          country={country}
+          initialNewsFilter={newsFilter}
+        />
+      </Suspense>
     </div>
   );
 }

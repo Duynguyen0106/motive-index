@@ -1454,6 +1454,21 @@ body.has-hot-news-ticker .site-header {
   font-weight: 500;
 }
 
+.monitor-news-linked-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.monitor-news-linked-btn:hover {
+  color: var(--ink);
+}
+
 .monitor-news-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2033,6 +2048,37 @@ a.monitor-news-headline:hover {
 .monitor-keyboard-hint-collapsed {
   margin: 0;
   padding-bottom: 0.15rem;
+}
+
+.monitor-mobile-regions {
+  margin-top: 0.35rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+}
+
+.monitor-mobile-regions-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.monitor-mobile-regions-summary::-webkit-details-marker {
+  display: none;
+}
+
+.monitor-mobile-regions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0 0.65rem 0.65rem;
+}
+
+.monitor-mobile-regions-hint {
+  margin: 0;
+  padding: 0 0.65rem 0.65rem;
 }
 
 .monitor-controls-section {

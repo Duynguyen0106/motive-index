@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { LiveFeedClient } from "@/components/LiveFeedClient";
 import { LivePageHotNews } from "@/components/LivePageHotNews";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { readJsonResponse } from "@/lib/clientFetch";
 import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
+import { parseNewsFilter, type NewsFeedFilter } from "@/lib/newsFeedUtils";
 import type { CountryCode, LiveUpdate } from "@/lib/types";
 import type { WorldNewsPayload } from "@/lib/worldNewsService";
 
@@ -13,16 +15,41 @@ type Props = {
   initialNews: WorldNewsPayload;
   initialUpdates: LiveUpdate[];
   country?: string;
+  initialNewsFilter?: NewsFeedFilter;
 };
 
-export function LivePageSync({ initialNews, initialUpdates, country = "" }: Props) {
+export function LivePageSync({
+  initialNews,
+  initialUpdates,
+  country = "",
+  initialNewsFilter = "all",
+}: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [news, setNews] = useState(initialNews);
   const [updates, setUpdates] = useState(initialUpdates);
+  const [newsFilter, setNewsFilter] = useState<NewsFeedFilter>(initialNewsFilter);
 
   useEffect(() => {
     setNews(initialNews);
     setUpdates(initialUpdates);
   }, [initialNews, initialUpdates]);
+
+  useEffect(() => {
+    setNewsFilter(parseNewsFilter(searchParams.get("newsFilter")));
+  }, [searchParams]);
+
+  const handleNewsFilterChange = useCallback(
+    (next: NewsFeedFilter) => {
+      setNewsFilter(next);
+      const p = new URLSearchParams(searchParams.toString());
+      if (next === "all") p.delete("newsFilter");
+      else p.set("newsFilter", next);
+      const qs = p.toString();
+      router.replace(qs ? `/live?${qs}` : "/live", { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +98,8 @@ export function LivePageSync({ initialNews, initialUpdates, country = "" }: Prop
             countryFilter={(country as CountryCode) || ""}
             showFullPageLink={false}
             disablePolling
+            filter={newsFilter}
+            onFilterChange={handleNewsFilterChange}
           />
         </div>
       </section>

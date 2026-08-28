@@ -12,6 +12,7 @@ const SHORTCUTS = [
   { keys: "g a", action: "Go to case archive" },
   { keys: "g n", action: "Go to world crime news" },
   { keys: "g s", action: "Go to advanced search" },
+  { keys: "[ ]", action: "Cycle monitor sidebar tabs (on home)" },
   { keys: "Esc", action: "Close overlay / deselect map case" },
   { keys: "← →", action: "Cycle case tabs (on dossier pages)" },
 ] as const;
@@ -140,7 +141,8 @@ export function KeyboardShortcuts() {
             </ul>
             <p className="mt-6 text-xs text-[var(--muted)]">
               Shortcuts are disabled while typing in form fields. On the monitor,{" "}
-              <kbd className="keyboard-kbd inline">Esc</kbd> clears the selected map case.
+              <kbd className="keyboard-kbd inline">Esc</kbd> clears the selected map case,{" "}
+              <kbd className="keyboard-kbd inline">[</kbd>/<kbd className="keyboard-kbd inline">]</kbd> cycle sidebar tabs.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/" className="btn btn-ghost text-sm" onClick={close}>

@@ -149,8 +149,29 @@ export function MonitorMapControls({
 
       {collapsed ? (
         <p className="monitor-keyboard-hint monitor-keyboard-hint-collapsed text-xs text-[var(--muted)]">
-          <kbd>N</kbd>/<kbd>P</kbd> cycle · <kbd>E</kbd> explore · <kbd>F</kbd> fullscreen
+          <kbd>[</kbd>/<kbd>]</kbd> panels · <kbd>N</kbd>/<kbd>P</kbd> cycle · <kbd>E</kbd> explore · <kbd>F</kbd> fullscreen
         </p>
+      ) : null}
+
+      {collapsed && coarsePointer ? (
+        <details className="monitor-mobile-regions">
+          <summary className="monitor-mobile-regions-summary">Jump to region</summary>
+          <div className="monitor-mobile-regions-grid" role="group" aria-label="Map region presets">
+            {REGION_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className="monitor-map-quick-btn"
+                onClick={() => onRegionPreset(p)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <p className="monitor-mobile-regions-hint text-xs text-[var(--muted)]">
+            Area draw needs a mouse — use region jumps or country filters on touch devices.
+          </p>
+        </details>
       ) : null}
 
       {!collapsed ? (

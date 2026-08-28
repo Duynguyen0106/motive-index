@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { EmptyState } from "@/components/ui";
 import { COUNTRY_LABELS } from "@/lib/country";
 import {
   filterUpdatesByKind,
@@ -220,11 +221,26 @@ export function MonitorSignalsPanel({
             );
           })}
           {!visibleUpdates.length ? (
-            <li className="monitor-signals-feed-empty">
-              No signals for this filter.{" "}
+            <li className="monitor-signals-feed-empty list-none">
+              <EmptyState
+                title={kindFilter ? `No ${SIGNAL_KIND_META[kindFilter].label.toLowerCase()} signals` : "No archive activity yet"}
+                description={
+                  kindFilter
+                    ? "Try another signal type or open the full activity log."
+                    : "Ingest events and revisions appear here. Crime news lives in the News tab."
+                }
+                actions={[
+                  { href: "/live#archive-activity", label: "Activity log", primary: true },
+                  { href: "/?tab=news", label: "Crime news" },
+                ]}
+              />
               {kindFilter ? (
-                <button type="button" className="text-[var(--accent)] hover:underline" onClick={() => setKindFilter("")}>
-                  Show all
+                <button
+                  type="button"
+                  className="btn btn-ghost mt-3 text-xs"
+                  onClick={() => setKindFilter("")}
+                >
+                  Show all signal types
                 </button>
               ) : null}
             </li>

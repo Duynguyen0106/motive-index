@@ -3,6 +3,11 @@ import type { WorldNewsItem } from "@/lib/worldNews";
 
 export type NewsFeedFilter = "all" | "hot" | "linked" | "live";
 
+export function parseNewsFilter(value: string | null): NewsFeedFilter {
+  if (value === "hot" || value === "linked" || value === "live") return value;
+  return "all";
+}
+
 export function isLiveRssItem(item: WorldNewsItem): boolean {
   return item.id.startsWith("wn-live");
 }

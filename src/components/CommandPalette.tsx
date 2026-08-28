@@ -15,6 +15,8 @@ type CaseHit = {
 
 const ROUTES = [
   { href: "/", label: "World monitor", hint: "Map & filters" },
+  { href: "/?tab=news", label: "Monitor · News tab", hint: "Crime RSS feed" },
+  { href: "/?tab=signals", label: "Monitor · Signals tab", hint: "Archive activity" },
   { href: "/archive", label: "Case archive", hint: "Browse dossiers" },
   { href: "/search", label: "Advanced search", hint: "Deep filters" },
   { href: "/stats", label: "Archive stats", hint: "Catalog analytics" },

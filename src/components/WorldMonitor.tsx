@@ -24,7 +24,7 @@ import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters, paginateCases, DEFAULT_ARCHIVE_PAGE_SIZE } from "@/lib/search";
 import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
-import type { NewsFeedFilter } from "@/lib/newsFeedUtils";
+import { parseNewsFilter, type NewsFeedFilter } from "@/lib/newsFeedUtils";
 import type { MonitorDeltaPayload, MonitorPayload } from "@/lib/monitor";
 import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
@@ -80,11 +80,6 @@ function activeFilterCount(filters: SearchFilters): number {
 
 function caseIdFromSlug(cases: MonitorCaseSummary[], slug: string): string {
   return cases.find((c) => c.slug === slug || c.id === slug)?.id ?? "";
-}
-
-function parseNewsFilter(value: string | null): NewsFeedFilter {
-  if (value === "hot" || value === "linked" || value === "live") return value;
-  return "all";
 }
 
 const MONITOR_CASES_PAGE_SIZE = DEFAULT_ARCHIVE_PAGE_SIZE;
@@ -177,10 +172,6 @@ export function WorldMonitor({ initial }: Props) {
   const pinsByCaseId = useMemo(
     () => new Map(data.pins.map((p) => [p.id, p])),
     [data.pins],
-  );
-  const slugToId = useMemo(
-    () => new Map(data.cases.map((c) => [c.slug, c.id])),
-    [data.cases],
   );
   const slugToName = useMemo(
     () => Object.fromEntries(data.cases.map((c) => [c.slug, c.name])),
@@ -485,11 +476,21 @@ export function WorldMonitor({ initial }: Props) {
       if (e.key === "n" || e.key === "N" || e.key === "p" || e.key === "P") {
         e.preventDefault();
         cycleCase(e.key.toLowerCase() === "n" ? 1 : -1);
+        return;
+      }
+      if (e.key === "[" || e.key === "]") {
+        e.preventDefault();
+        const idx = TAB_IDS.indexOf(sidebarTab);
+        const next =
+          e.key === "]"
+            ? (idx + 1) % TAB_IDS.length
+            : (idx - 1 + TAB_IDS.length) % TAB_IDS.length;
+        selectTab(TAB_IDS[next]);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectCase, isFullscreen, exploreRandom, cycleCase]);
+  }, [selectCase, isFullscreen, exploreRandom, cycleCase, sidebarTab, selectTab]);
 
   useEffect(() => {
     if (!isPlayingTimeline) return;
