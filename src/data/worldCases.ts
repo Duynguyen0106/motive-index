@@ -14,6 +14,10 @@ import type {
   PsychologicalFactor,
   TheoreticalFramework,
 } from "@/lib/types";
+import {
+  mergeProvenanceTags,
+  resolveProvenanceTier,
+} from "@/lib/validation/caseProvenance";
 
 export type WorldCaseDef = {
   slug: string;
@@ -87,6 +91,14 @@ function toSeed(d: WorldCaseDef): SeedCase {
   const id = `case-${d.slug}`;
   const input = worldDeepInput(d);
   const deep = buildWorldDeep(input);
+  const tier = resolveProvenanceTier({
+    slug: d.slug,
+    tags: d.tags,
+    references: deep.enrichmentPatch.references,
+    offenderName: d.offenderName,
+    name: d.name,
+  });
+  const isComposite = d.tags?.includes("composite-dossier") === true;
   return {
     id,
     slug: d.slug,
@@ -95,15 +107,15 @@ function toSeed(d: WorldCaseDef): SeedCase {
     jurisdiction: d.jurisdiction,
     era: d.era,
     status: d.status,
-    tags: [
-      ...(d.tags ?? []),
-      "world-catalog",
-      "deep-dossier",
-      ...(d.tags?.includes("composite-dossier") ? [] : ["public-record"]),
-    ],
-    warning: d.tags?.includes("composite-dossier")
+    tags: mergeProvenanceTags(
+      [...(d.tags ?? []), "world-catalog", "deep-dossier"],
+      tier,
+    ),
+    warning: isComposite
       ? "Synthetic composite dossier for forensic-psychology instruction. Subject identifiers (CS-####) are not real people. Not legal or clinical advice."
-      : "Public-record behavioral analysis. Minimal graphic detail. Not legal or clinical advice.",
+      : tier === "verified"
+        ? "Public-record behavioral analysis. Minimal graphic detail. Not legal or clinical advice."
+        : "Curated dossier pending full primary-source bibliography. Verify against court and press records before citation. Not legal or clinical advice.",
     overview: deep.expandedOverview,
     featured: d.featured ?? false,
     timeline: deep.timeline,

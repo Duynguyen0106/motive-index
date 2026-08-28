@@ -1,104 +1,63 @@
 #!/usr/bin/env node
 /**
  * Source-accuracy validation for curated catalog entries.
- * Flags wrong-person slugs, synthetic-only references, and slug/offender mismatches.
+ * Uses shared provenance framework — flags fabricated or unverified cases.
  */
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Slugs retired for factual inaccuracy — must not reappear. */
-const RETIRED_INACCURATE_SLUGS = new Set([
-  "abdul-latif-rashid",
-  "mira-bare",
-  "volkmar-heinrich",
-  "andres-bustamante",
-  "gheorghe-solovan",
-  "mehmet-oktas",
-  "nguyen-thanh-vu",
-  "werner-fischer",
-  "pedro-lopez",
-  "javed-iqbal",
-  "saeed-hanaei",
-  "yishai-schlissel",
-  "dimitris-papageorgiou",
-  "dimitris-papageorgiou-el",
-  "lucjan-staniak",
-  "nguyen-tien-dung",
-  "laszlo-pandy",
-]);
-
-const SYNTHETIC_CITATION_MARKERS = [
-  "superior court proceedings:",
-  "Peer-reviewed case study literature:",
-  "Official inquiry, commission report",
-];
-
-function normalizeName(s) {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function slugMatchesOffender(slug, offenderName) {
-  if (!offenderName || offenderName === "Unknown") return true;
-  const parts = normalizeName(offenderName).split(" ").filter(Boolean);
-  if (parts.length === 0) return true;
-  const slugNorm = slug.replace(/-/g, " ");
-  const last = parts[parts.length - 1];
-  const first = parts[0];
-  return slugNorm.includes(last) || slugNorm.includes(first);
+async function useFreshSeed() {
+  const { resetStore } = await import(join(root, "src/lib/data.ts"));
+  resetStore();
 }
 
 async function main() {
+  await useFreshSeed();
   const { getAllCases } = await import(join(root, "src/lib/data.ts"));
   const { isCompositeCase } = await import(join(root, "src/lib/caseSummaries.ts"));
   const { CASE_REFERENCE_OVERRIDES } = await import(join(root, "src/data/caseReferenceCatalog.ts"));
+  const {
+    validateProvenance,
+    isSyntheticReference,
+    PROVENANCE_TAG,
+  } = await import(join(root, "src/lib/validation/caseProvenance.ts"));
 
   const cases = getAllCases();
   const errors = [];
   const warnings = [];
 
-  for (const slug of RETIRED_INACCURATE_SLUGS) {
-    if (cases.some((c) => c.slug === slug)) {
-      errors.push(`Retired inaccurate slug still in catalog: ${slug}`);
-    }
-  }
-
   for (const c of cases) {
     if (isCompositeCase(c)) continue;
+
+    const violations = validateProvenance({
+      slug: c.slug,
+      tags: c.tags,
+      references: c.references,
+      offenderName: c.offenders?.[0]?.name,
+      name: c.name,
+      analysisStatus: c.analysis?.status,
+    });
+
+    for (const v of violations) {
+      if (v.level === "error") errors.push(v.message);
+      else warnings.push(v.message);
+    }
+
     if (c.tags.includes("draft")) continue;
 
-    const offender = c.offenders?.[0]?.name ?? "";
-    if (!slugMatchesOffender(c.slug, offender) && !c.tags.includes("multilingual-source")) {
-      warnings.push(`Slug/offender mismatch: ${c.slug} vs "${offender}"`);
-    }
-
     const refs = c.references ?? [];
-    const hasVerified = refs.some(
-      (r) => !r.synthetic && !r.citation.startsWith("[Template]") && r.kind !== "journal",
-    );
     const hasOverride = Boolean(CASE_REFERENCE_OVERRIDES[c.slug]?.length);
     const onlySynthetic =
-      refs.length > 0 &&
-      refs.every((r) => r.synthetic || r.citation.startsWith("[Template]"));
+      refs.length > 0 && refs.every(isSyntheticReference);
 
-    if (c.tags.includes("public-record") && !hasOverride && onlySynthetic) {
-      warnings.push(`Curated case has only template references: ${c.slug}`);
-    }
-
-    for (const r of refs) {
-      if (
-        !r.synthetic &&
-        SYNTHETIC_CITATION_MARKERS.some((m) => r.citation.includes(m))
-      ) {
-        errors.push(`Reference looks synthetic but not flagged: ${c.slug} -> ${r.id}`);
-      }
+    if (
+      c.tags.includes(PROVENANCE_TAG.curated) &&
+      !hasOverride &&
+      onlySynthetic
+    ) {
+      warnings.push(`Curated tier with only template references: ${c.slug}`);
     }
 
     if (c.slug === "louay-al-taei") {

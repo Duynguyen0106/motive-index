@@ -31,6 +31,31 @@ applyEnrichment() in src/data/catalog.ts
 
 **Adding cases:** add a `WorldCaseDef` to `WORLD_CASE_DEFS` (or `MultilingualCaseDef`) with `slug`, coords (`lat`/`lng`), overview, and optional `relatedCaseSlugs`. Then reseed (below).
 
+### Anti-fabrication framework
+
+Curated cases are gated by `src/lib/validation/caseProvenance.ts`:
+
+| Tier | Tag | Requirements |
+|------|-----|--------------|
+| **verified** | `provenance-verified`, `public-record` | Entry in `CASE_REFERENCE_OVERRIDES` or multilingual primary sources |
+| **curated** | `provenance-curated` | Real person/case; no `public-record` until verified |
+| **composite** | `provenance-composite` | Bulk CS-#### teaching dossiers only |
+| **draft** | `provenance-draft` | Ingest/admin stubs |
+
+Before committing catalog changes:
+
+```bash
+npm run validate:catalog   # defs + audit + sources — no server required
+```
+
+Rules enforced:
+
+- Retired slugs (`src/lib/validation/retiredSlugs.ts`) cannot re-enter the catalog
+- Multilingual defs must include original-language `sources[]` and `references[]`
+- World defs without overrides ship as `provenance-curated`, not `public-record`
+- Composite cases cannot be tagged `public-record`
+- `publishCase()` rejects cases failing provenance gates
+
 ## Local development
 
 - Data is seeded from `src/data/seed.ts` and catalog enrichments on first run.

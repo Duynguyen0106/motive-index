@@ -18,21 +18,23 @@ const FLAGSHIP_SLUG_IDS = new Set([
   "case-shipman",
 ]);
 
-/** World entries removed in favor of richer multilingual dossiers. */
-const RETIRED_WORLD_SLUGS = new Set([
-  "javed-iqbal",
-  "saeed-hanaei",
-  "pedro-lopez",
-  "yishai-schlissel",
-  "dimitris-papageorgiou",
-]);
+/** Fresh seed — ignore stale .data/store.json from dev/verify runs. */
+async function useFreshSeed() {
+  const { resetStore } = await import(join(root, "src/lib/data.ts"));
+  resetStore();
+}
 
 async function main() {
+  await useFreshSeed();
   const { getAllCases } = await import(join(root, "src/lib/data.ts"));
   const { isCompositeCase } = await import(join(root, "src/lib/caseSummaries.ts"));
   const { resolveCaseCountry } = await import(join(root, "src/lib/country.ts"));
   const { getCatalogCoords } = await import(join(root, "src/lib/geo.ts"));
   const { WORLD_CASE_DEFS } = await import(join(root, "src/data/worldCases.ts"));
+  const { RETIRED_WORLD_SLUGS } = await import(join(root, "src/lib/validation/retiredSlugs.ts"));
+  const { validateProvenance, COMPOSITE_NAME_PREFIXES } = await import(
+    join(root, "src/lib/validation/caseProvenance.ts")
+  );
 
   const cases = getAllCases();
   const errors = [];
@@ -81,9 +83,12 @@ async function main() {
     if (!/^CS-\d{4}$/.test(c.name.split(": ").pop()?.trim() ?? "")) {
       errors.push(`Composite subject id format invalid: ${c.slug} -> ${c.name}`);
     }
-    if (c.tags.includes("public-record")) {
-      errors.push(`Composite case tagged public-record: ${c.slug}`);
-    }
+    const compositeViolations = validateProvenance({
+      slug: c.slug,
+      tags: c.tags,
+      name: c.name,
+    }).filter((v) => v.level === "error");
+    for (const v of compositeViolations) errors.push(v.message);
     if (c.featured) {
       errors.push(`Composite case marked featured: ${c.slug}`);
     }
@@ -96,8 +101,19 @@ async function main() {
     if (c.tags.includes("bulk-catalog")) {
       errors.push(`Curated case has bulk-catalog tag: ${c.slug}`);
     }
-    if (c.name.startsWith("Archival prosecution:") || c.name.startsWith("Unsolved matter:")) {
+    if (COMPOSITE_NAME_PREFIXES.some((p) => c.name.startsWith(p))) {
       errors.push(`Curated case uses composite name prefix: ${c.slug}`);
+    }
+    const provenanceErrors = validateProvenance({
+      slug: c.slug,
+      tags: c.tags,
+      references: c.references,
+      offenderName: c.offenders?.[0]?.name,
+      name: c.name,
+      analysisStatus: c.analysis?.status,
+    }).filter((v) => v.level === "error");
+    for (const v of provenanceErrors) {
+      if (!v.message.includes("Slug/offender")) errors.push(v.message);
     }
   }
 

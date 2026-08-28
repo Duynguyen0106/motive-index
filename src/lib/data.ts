@@ -25,6 +25,8 @@ import {
 } from "@/lib/types";
 import { resolveCaseCountry } from "@/lib/country";
 import { matchesCatalogTier } from "@/lib/caseSummaries";
+import { assertPublishableCase } from "@/lib/validation/caseProvenance";
+import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
 
 type Store = {
   cases: CrimeCase[];
@@ -282,6 +284,9 @@ export function searchDocuments(filters: SearchFilters): CaseDocument[] {
 }
 
 export function upsertCase(next: CrimeCase): CrimeCase {
+  if (isRetiredSlug(next.slug)) {
+    throw new Error(`Cannot upsert retired slug: ${next.slug}`);
+  }
   const store = getStore();
   const idx = store.cases.findIndex((c) => c.id === next.id || c.slug === next.slug);
   if (idx >= 0) store.cases[idx] = next;
@@ -329,6 +334,21 @@ export function getModerationQueue(): CrimeCase[] {
 export function publishCase(slug: string, reviewerEmail: string): CrimeCase | undefined {
   const existing = getCaseBySlug(slug);
   if (!existing) return undefined;
+
+  assertPublishableCase({
+    slug: existing.slug,
+    tags: existing.tags.filter(
+      (t) =>
+        !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(
+          t,
+        ),
+    ),
+    references: existing.references,
+    offenderName: existing.offenders?.[0]?.name,
+    name: existing.name,
+    analysisStatus: "published",
+  });
+
   const tags = existing.tags.filter(
     (t) =>
       !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(

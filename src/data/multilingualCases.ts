@@ -19,6 +19,10 @@ import type {
   SourceRef,
   TheoreticalFramework,
 } from "@/lib/types";
+import {
+  mergeProvenanceTags,
+  resolveProvenanceTier,
+} from "@/lib/validation/caseProvenance";
 
 export type MultilingualSource = SourceRef & {
   originalTitle: string;
@@ -117,6 +121,13 @@ function multilingualDeepInput(d: MultilingualCaseDef) {
 function toSeed(d: MultilingualCaseDef): SeedCase {
   const input = multilingualDeepInput(d);
   const deep = buildMultilingualDeep(input);
+  const tier = resolveProvenanceTier({
+    slug: d.slug,
+    tags: [...(d.tags ?? []), "multilingual-source"],
+    references: d.references,
+    offenderName: d.offenderName,
+    name: d.name,
+  });
   return {
     id: `case-${d.slug}`,
     slug: d.slug,
@@ -126,9 +137,14 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
     jurisdiction: d.jurisdiction,
     era: d.era,
     status: d.status,
-    tags: [...(d.tags ?? []), "multilingual-source", "translated-en", "deep-dossier"],
+    tags: mergeProvenanceTags(
+      [...(d.tags ?? []), "multilingual-source", "translated-en", "deep-dossier"],
+      tier,
+    ),
     warning:
-      "English summary translated from non-English public sources. Consult original-language citations. Not legal or clinical advice.",
+      tier === "verified"
+        ? "English summary translated from non-English public sources. Consult original-language citations. Not legal or clinical advice."
+        : "Translated dossier — primary sources not yet fully verified. Consult original-language citations before citation. Not legal or clinical advice.",
     overview: deep.expandedOverview,
     primarySourceLanguage: d.primarySourceLanguage,
     primarySourceLanguageLabel: d.primarySourceLanguageLabel,

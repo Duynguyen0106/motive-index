@@ -228,6 +228,15 @@ expect_contains "Method breadcrumbs" "$BASE/method" "Behavior first"
 expect_contains "Documents library" "$BASE/documents" "Shipman Inquiry"
 
 echo
+echo "-- Catalog validation (no server) --"
+if node scripts/validate-catalog.mjs >/tmp/mi_catalog.txt 2>&1; then
+  check "Catalog validation clean" 1
+else
+  check "Catalog validation clean" 0
+  tail -30 /tmp/mi_catalog.txt
+fi
+
+echo
 echo "-- Database audit --"
 if npx tsx scripts/audit-database.mjs >/tmp/mi_audit.txt 2>&1; then
   check "Database audit clean" 1
