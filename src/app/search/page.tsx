@@ -16,11 +16,14 @@ import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/co
 import { getAllCases } from "@/lib/data";
 import {
   DEFAULT_ARCHIVE_PAGE_SIZE,
+  DEFAULT_DOC_PAGE_SIZE,
   paginateCases,
+  parseArchiveSort,
   parseSearchParams,
   hasActiveFilters,
   monitorUrlFromFilters,
   searchUrlFromFilters,
+  sortArchiveCases,
 } from "@/lib/search";
 import { runSearch } from "@/lib/searchServer";
 
@@ -34,14 +37,24 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function SearchPage({ searchParams }: Props) {
   const raw = await searchParams;
   const filters = parseSearchParams(raw);
-  const { cases: allMatchingCases, documents } = runSearch(filters);
+  const { cases: allMatchingCases, documents: allDocuments } = runSearch(filters);
+  const sort = parseArchiveSort(typeof raw.sort === "string" ? raw.sort : undefined);
+  const sortedCases = sortArchiveCases(allMatchingCases, sort);
   const page = Math.max(1, Number(raw.page) || 1);
   const pageSize = Math.min(
     100,
     Math.max(10, Number(raw.pageSize) || DEFAULT_ARCHIVE_PAGE_SIZE),
   );
-  const paginated = paginateCases(allMatchingCases, page, pageSize);
+  const docPage = Math.max(1, Number(raw.docPage) || 1);
+  const docPageSize = Math.min(
+    100,
+    Math.max(10, Number(raw.docPageSize) || DEFAULT_DOC_PAGE_SIZE),
+  );
+  const paginated = paginateCases(sortedCases, page, pageSize);
+  const paginatedDocs = paginateCases(allDocuments, docPage, docPageSize);
   const cases = paginated.items;
+  const documents = paginatedDocs.items;
+  const searchOpts = { pageSize, sort, docPage, docPageSize };
   const countryOptions = listCountryOptions(getAllCases());
   const hasQuery = hasActiveFilters(filters);
   const focusSearch = raw.focus === "1" || raw.focus === "true";
@@ -248,6 +261,25 @@ export default async function SearchPage({ searchParams }: Props) {
           </select>
         </label>
 
+        <label className="block text-sm">
+          <span className="font-medium">Sort results</span>
+          <select name="sort" defaultValue={sort} className="field mt-1">
+            <option value="featured">Featured first</option>
+            <option value="year-desc">Newest year</option>
+            <option value="year-asc">Oldest year</option>
+            <option value="name-asc">Name A–Z</option>
+          </select>
+        </label>
+
+        <label className="block text-sm">
+          <span className="font-medium">Cases per page</span>
+          <select name="pageSize" defaultValue={String(pageSize)} className="field mt-1">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+
           </div>
         </details>
 
@@ -288,13 +320,28 @@ export default async function SearchPage({ searchParams }: Props) {
       ) : (
         <>
           <p className="mt-6 text-sm text-[var(--muted)]">
-            {paginated.total.toLocaleString()} cases · {documents.length} documents ·{" "}
+            {paginated.total.toLocaleString()} cases · {paginatedDocs.total.toLocaleString()} documents ·{" "}
             <Link href={monitorHref} className="text-[var(--accent)] hover:underline">
               View on map
             </Link>
           </p>
 
-          <section className="mt-8">
+          {(paginated.total > 0 || paginatedDocs.total > 0) ? (
+            <nav className="search-result-jumps mt-4 flex flex-wrap gap-2" aria-label="Jump to result sections">
+              {paginated.total > 0 ? (
+                <a href="#search-cases" className="filter-chip">
+                  Cases ({paginated.total.toLocaleString()})
+                </a>
+              ) : null}
+              {paginatedDocs.total > 0 ? (
+                <a href="#search-documents" className="filter-chip">
+                  Documents ({paginatedDocs.total.toLocaleString()})
+                </a>
+              ) : null}
+            </nav>
+          ) : null}
+
+          <section id="search-cases" className="mt-8 scroll-mt-24">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="display text-3xl">Cases ({paginated.total.toLocaleString()})</h2>
               {paginated.totalPages > 1 ? (
@@ -360,7 +407,7 @@ export default async function SearchPage({ searchParams }: Props) {
                 <div className="flex flex-wrap gap-2">
                   {paginated.page > 1 ? (
                     <Link
-                      href={searchUrlFromFilters(filters, { page: paginated.page - 1, pageSize })}
+                      href={searchUrlFromFilters(filters, { ...searchOpts, page: paginated.page - 1 })}
                       className="btn btn-ghost text-sm"
                     >
                       ← Previous
@@ -372,7 +419,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   )}
                   {paginated.page < paginated.totalPages ? (
                     <Link
-                      href={searchUrlFromFilters(filters, { page: paginated.page + 1, pageSize })}
+                      href={searchUrlFromFilters(filters, { ...searchOpts, page: paginated.page + 1 })}
                       className="btn btn-ghost text-sm"
                     >
                       Next →
@@ -392,8 +439,15 @@ export default async function SearchPage({ searchParams }: Props) {
             ) : null}
           </section>
 
-          <section className="mt-10">
-            <h2 className="display text-3xl">Documents ({documents.length})</h2>
+          <section id="search-documents" className="mt-10 scroll-mt-24">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="display text-3xl">Documents ({paginatedDocs.total.toLocaleString()})</h2>
+              {paginatedDocs.totalPages > 1 ? (
+                <p className="text-sm text-[var(--muted)]">
+                  Page {paginatedDocs.page} of {paginatedDocs.totalPages}
+                </p>
+              ) : null}
+            </div>
             <ul className="mt-4 grid gap-3">
               {documents.map((d) => (
                 <li key={d.id} className="card p-5">
@@ -414,6 +468,50 @@ export default async function SearchPage({ searchParams }: Props) {
                 <li className="text-[var(--muted)]">No documents match these filters.</li>
               ) : null}
             </ul>
+            {paginatedDocs.totalPages > 1 ? (
+              <nav
+                className="archive-pagination mt-8 flex flex-wrap items-center justify-between gap-4"
+                aria-label="Document result pages"
+              >
+                <div className="flex flex-wrap gap-2">
+                  {paginatedDocs.page > 1 ? (
+                    <Link
+                      href={searchUrlFromFilters(filters, {
+                        ...searchOpts,
+                        docPage: paginatedDocs.page - 1,
+                      })}
+                      className="btn btn-ghost text-sm"
+                    >
+                      ← Previous
+                    </Link>
+                  ) : (
+                    <span className="btn btn-ghost text-sm opacity-40 pointer-events-none">
+                      ← Previous
+                    </span>
+                  )}
+                  {paginatedDocs.page < paginatedDocs.totalPages ? (
+                    <Link
+                      href={searchUrlFromFilters(filters, {
+                        ...searchOpts,
+                        docPage: paginatedDocs.page + 1,
+                      })}
+                      className="btn btn-ghost text-sm"
+                    >
+                      Next →
+                    </Link>
+                  ) : (
+                    <span className="btn btn-ghost text-sm opacity-40 pointer-events-none">
+                      Next →
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-[var(--muted)]">
+                  Showing {(paginatedDocs.page - 1) * paginatedDocs.pageSize + 1}–
+                  {Math.min(paginatedDocs.page * paginatedDocs.pageSize, paginatedDocs.total)} of{" "}
+                  {paginatedDocs.total.toLocaleString()}
+                </p>
+              </nav>
+            ) : null}
           </section>
         </>
       )}

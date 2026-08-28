@@ -56,6 +56,10 @@ export function CaseTabs({
         })}
         <span className="sr-only">Case: {slug}</span>
       </nav>
+      <p className="dossier-tab-hint mobile-hide site-shell py-1.5 text-xs text-[var(--muted)]">
+        <kbd className="keyboard-kbd">←</kbd> <kbd className="keyboard-kbd">→</kbd> cycle tabs ·{" "}
+        <kbd className="keyboard-kbd">?</kbd> all shortcuts
+      </p>
     </div>
   );
 }

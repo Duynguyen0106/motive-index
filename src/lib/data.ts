@@ -125,6 +125,10 @@ export function getUpdates(limit = 20): LiveUpdate[] {
     .slice(0, limit);
 }
 
+export function getUpdatesTotal(): number {
+  return getStore().updates.length;
+}
+
 export function getAllDocuments(): CaseDocument[] {
   return getStore().documents.slice();
 }

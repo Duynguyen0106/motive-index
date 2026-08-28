@@ -140,7 +140,7 @@ export function SiteNav() {
                 window.dispatchEvent(new Event("command-palette:open"));
               }}
             >
-              Quick jump (⌘K)
+              Quick jump
             </button>
             <Link
               href="/search"

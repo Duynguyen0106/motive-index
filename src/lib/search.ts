@@ -51,20 +51,34 @@ export function monitorUrlFromFilters(filters: SearchFilters, caseSlug?: string)
   return qs ? `/?${qs}` : "/";
 }
 
+export type SearchUrlOpts = {
+  page?: number;
+  pageSize?: number;
+  sort?: ArchiveSort;
+  docPage?: number;
+  docPageSize?: number;
+};
+
 export function searchUrlFromFilters(
   filters: SearchFilters,
-  opts?: { page?: number; pageSize?: number },
+  opts?: SearchUrlOpts,
 ): string {
   const p = new URLSearchParams(filtersToQueryString(filters));
   if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
   if (opts?.pageSize && opts.pageSize !== DEFAULT_ARCHIVE_PAGE_SIZE) {
     p.set("pageSize", String(opts.pageSize));
   }
+  if (opts?.sort && opts.sort !== "featured") p.set("sort", opts.sort);
+  if (opts?.docPage && opts.docPage > 1) p.set("docPage", String(opts.docPage));
+  if (opts?.docPageSize && opts.docPageSize !== DEFAULT_DOC_PAGE_SIZE) {
+    p.set("docPageSize", String(opts.docPageSize));
+  }
   const qs = p.toString();
   return qs ? `/search?${qs}` : "/search";
 }
 
 export const DEFAULT_ARCHIVE_PAGE_SIZE = 50;
+export const DEFAULT_DOC_PAGE_SIZE = 25;
 
 export type ArchiveSort = "featured" | "year-desc" | "year-asc" | "name-asc";
 
@@ -110,6 +124,37 @@ export function paginateCases<T>(
     pageSize,
     total,
     totalPages,
+  };
+}
+
+export function documentsUrlFromParams(opts?: {
+  q?: string;
+  type?: string;
+  page?: number;
+  pageSize?: number;
+}): string {
+  const p = new URLSearchParams();
+  if (opts?.q?.trim()) p.set("q", opts.q.trim());
+  if (opts?.type) p.set("type", opts.type);
+  if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
+  if (opts?.pageSize && opts.pageSize !== DEFAULT_DOC_PAGE_SIZE) {
+    p.set("pageSize", String(opts.pageSize));
+  }
+  const qs = p.toString();
+  return qs ? `/documents?${qs}` : "/documents";
+}
+
+export function getAdjacentCases<T extends { slug: string; featured?: boolean; yearStart: number; name: string }>(
+  slug: string,
+  allCases: T[],
+  sort: ArchiveSort = "featured",
+): { prev?: T; next?: T } {
+  const sorted = sortArchiveCases(allCases, sort);
+  const idx = sorted.findIndex((c) => c.slug === slug);
+  if (idx < 0) return {};
+  return {
+    prev: idx > 0 ? sorted[idx - 1] : undefined,
+    next: idx < sorted.length - 1 ? sorted[idx + 1] : undefined,
   };
 }
 

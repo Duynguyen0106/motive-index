@@ -11,6 +11,7 @@ import { CaseNarrativeView } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { DossierActionBar } from "@/components/DossierActionBar";
+import { DossierNeighborNav } from "@/components/DossierNeighborNav";
 import { ForensicAnalysisView } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
 import { RelatedCases } from "@/components/RelatedCases";
@@ -31,7 +32,7 @@ import {
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { resolveCaseCountry } from "@/lib/country";
-import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
+import { monitorUrlFromFilters, searchUrlFromFilters, getAdjacentCases } from "@/lib/search";
 import { getSiteUrl } from "@/lib/seo";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
 import type { SearchFilters } from "@/lib/types";
@@ -117,6 +118,7 @@ export default async function CasePage({ params, searchParams }: Props) {
   const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
   const allCases = getAllCases();
+  const { prev: prevCase, next: nextCase } = getAdjacentCases(crimeCase.slug, allCases);
   const dossierUrl = dossierShareUrl(crimeCase.slug, tab, {
     hasNarrative: Boolean(narrative),
     siteOrigin: getSiteUrl(),
@@ -253,6 +255,8 @@ export default async function CasePage({ params, searchParams }: Props) {
           country={country}
           hasNarrative={Boolean(narrative)}
           siteOrigin={getSiteUrl()}
+          prevCase={prevCase ? { slug: prevCase.slug, name: prevCase.name } : undefined}
+          nextCase={nextCase ? { slug: nextCase.slug, name: nextCase.name } : undefined}
         />
       </div>
 
@@ -692,6 +696,12 @@ export default async function CasePage({ params, searchParams }: Props) {
         {tab !== "overview" ? (
           <RelatedCases crimeCase={crimeCase} allCases={allCases} />
         ) : null}
+
+        <DossierNeighborNav
+          prev={prevCase ? { slug: prevCase.slug, name: prevCase.name } : undefined}
+          next={nextCase ? { slug: nextCase.slug, name: nextCase.name } : undefined}
+          tab={tab}
+        />
       </div>
     </article>
   );

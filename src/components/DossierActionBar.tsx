@@ -15,6 +15,8 @@ type Props = {
   country: string;
   hasNarrative?: boolean;
   siteOrigin?: string;
+  prevCase?: { slug: string; name: string };
+  nextCase?: { slug: string; name: string };
 };
 
 const NEXT_TAB: Record<string, { tab: string; label: string }> = {
@@ -33,11 +35,16 @@ export function DossierActionBar({
   country,
   hasNarrative = false,
   siteOrigin = "",
+  prevCase,
+  nextCase,
 }: Props) {
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const activeTab = searchParams.get("tab") ?? (hasNarrative ? "story" : "overview");
   const next = NEXT_TAB[activeTab] ?? NEXT_TAB.overview;
+  const tabQs = activeTab && activeTab !== (hasNarrative ? "story" : "overview")
+    ? `?tab=${encodeURIComponent(activeTab)}`
+    : "";
 
   const shareUrl = useMemo(
     () => dossierShareUrl(slug, activeTab, { hasNarrative, siteOrigin: siteOrigin || undefined }),
@@ -58,7 +65,27 @@ export function DossierActionBar({
   return (
     <div className="dossier-action-bar" role="region" aria-label="Quick case actions">
       <div className="site-shell flex items-center justify-between gap-3 py-2.5">
-        <p className="truncate text-sm font-medium text-[var(--ink)]">{name}</p>
+        <div className="flex min-w-0 items-center gap-2">
+          {prevCase ? (
+            <Link
+              href={`/cases/${prevCase.slug}${tabQs}`}
+              className="btn btn-ghost dossier-action-secondary shrink-0 px-2 py-1 text-xs"
+              title={prevCase.name}
+            >
+              ←
+            </Link>
+          ) : null}
+          <p className="truncate text-sm font-medium text-[var(--ink)]">{name}</p>
+          {nextCase ? (
+            <Link
+              href={`/cases/${nextCase.slug}${tabQs}`}
+              className="btn btn-ghost dossier-action-secondary shrink-0 px-2 py-1 text-xs"
+              title={nextCase.name}
+            >
+              →
+            </Link>
+          ) : null}
+        </div>
         <div className="dossier-action-buttons flex shrink-0 flex-wrap justify-end gap-1.5">
           <Link href={monitorUrlFromFilters({}, slug)} className="btn btn-ghost px-2.5 py-1 text-xs">
             Map

@@ -16,7 +16,7 @@ import {
 } from "@/lib/newsFeedUtils";
 import type { CountryCode } from "@/lib/types";
 import type { WorldNewsPayload } from "@/lib/worldNewsService";
-import { formatNewsRegion, type WorldNewsItem } from "@/lib/worldNews";
+import { formatNewsRegion, WORLD_NEWS_DISPLAY_LIMIT, type WorldNewsItem } from "@/lib/worldNews";
 import { formatDate, formatNewsAge } from "@/lib/utils";
 
 type Props = {
@@ -197,7 +197,9 @@ export function WorldNewsFeed({
 
   const fetchNews = useCallback(async () => {
     setStatus("syncing");
-    const qs = countryFilter ? `?country=${countryFilter}&limit=24` : "?limit=24";
+    const qs = countryFilter
+      ? `?country=${countryFilter}&limit=${WORLD_NEWS_DISPLAY_LIMIT}`
+      : `?limit=${WORLD_NEWS_DISPLAY_LIMIT}`;
     const res = await fetch(`/api/world-news${qs}`, { cache: "no-store" });
     if (!res.ok) throw new Error("News fetch failed");
     return readJsonResponse<WorldNewsPayload>(res);

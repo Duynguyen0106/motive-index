@@ -161,6 +161,7 @@ export const WORLD_NEWS_FEEDS: WorldNewsFeed[] = [
 ];
 
 export const WORLD_NEWS_FEED_COUNT = WORLD_NEWS_FEEDS.length;
+export const WORLD_NEWS_DISPLAY_LIMIT = 40;
 
 export type WorldNewsItem = LiveUpdate & {
   kind: "world_news";

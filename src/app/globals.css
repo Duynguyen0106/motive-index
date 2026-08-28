@@ -3193,6 +3193,20 @@ a.monitor-news-headline:hover {
   align-items: flex-start;
 }
 
+.dossier-tab-hint {
+  border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+
+.dossier-neighbor-link:hover .font-medium,
+.dossier-neighbor-link:hover span:last-child {
+  color: var(--cs-signal);
+}
+
+.command-palette-trigger-desktop,
+.command-palette-trigger-mobile {
+  white-space: nowrap;
+}
+
 .monitor-skeleton .monitor-hero {
   border: none;
   padding: 0;

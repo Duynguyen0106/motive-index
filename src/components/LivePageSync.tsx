@@ -10,10 +10,12 @@ import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
 import { parseNewsFilter, type NewsFeedFilter } from "@/lib/newsFeedUtils";
 import type { CountryCode, LiveUpdate } from "@/lib/types";
 import type { WorldNewsPayload } from "@/lib/worldNewsService";
+import { WORLD_NEWS_DISPLAY_LIMIT } from "@/lib/worldNews";
 
 type Props = {
   initialNews: WorldNewsPayload;
   initialUpdates: LiveUpdate[];
+  initialUpdatesTotal?: number;
   country?: string;
   initialNewsFilter?: NewsFeedFilter;
 };
@@ -21,6 +23,7 @@ type Props = {
 export function LivePageSync({
   initialNews,
   initialUpdates,
+  initialUpdatesTotal,
   country = "",
   initialNewsFilter = "all",
 }: Props) {
@@ -56,20 +59,13 @@ export function LivePageSync({
 
     async function poll() {
       try {
-        const newsQs = country ? `?country=${country}&limit=40` : "?limit=40";
-        const [newsRes, updatesRes] = await Promise.all([
-          fetch(`/api/world-news${newsQs}`, { cache: "no-store" }),
-          fetch("/api/updates", { cache: "no-store" }),
-        ]);
-        if (!newsRes.ok || !updatesRes.ok) return;
-        const [newsJson, updatesJson] = await Promise.all([
-          readJsonResponse<WorldNewsPayload>(newsRes),
-          readJsonResponse<{ updates: LiveUpdate[] }>(updatesRes),
-        ]);
-        if (!cancelled) {
-          setNews(newsJson);
-          setUpdates(updatesJson.updates);
-        }
+        const newsQs = country
+          ? `?country=${country}&limit=${WORLD_NEWS_DISPLAY_LIMIT}`
+          : `?limit=${WORLD_NEWS_DISPLAY_LIMIT}`;
+        const newsRes = await fetch(`/api/world-news${newsQs}`, { cache: "no-store" });
+        if (!newsRes.ok) return;
+        const newsJson = await readJsonResponse<WorldNewsPayload>(newsRes);
+        if (!cancelled) setNews(newsJson);
       } catch {
         /* ignore transient poll errors */
       }
@@ -109,7 +105,11 @@ export function LivePageSync({
           Ingest events, analysis drafts, and human-reviewed revisions — not RSS crime news.
         </p>
         <div className="mt-6 border-t border-[var(--line-strong)]">
-          <LiveFeedClient initial={archiveUpdates} disablePolling />
+          <LiveFeedClient
+            initial={archiveUpdates}
+            initialTotal={initialUpdatesTotal}
+            disablePolling
+          />
         </div>
       </section>
     </>

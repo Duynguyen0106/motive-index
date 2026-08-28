@@ -7,9 +7,9 @@ import { LiveRegionFilter } from "@/components/LiveRegionFilter";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
-import { getAllCases, getUpdates } from "@/lib/data";
+import { getAllCases, getUpdates, getUpdatesTotal } from "@/lib/data";
 import { buildWorldNewsPayload } from "@/lib/worldNewsService";
-import { WORLD_NEWS_FEED_COUNT } from "@/lib/worldNews";
+import { WORLD_NEWS_DISPLAY_LIMIT, WORLD_NEWS_FEED_COUNT } from "@/lib/worldNews";
 import { parseNewsFilter } from "@/lib/newsFeedUtils";
 import type { CountryCode } from "@/lib/types";
 
@@ -34,9 +34,10 @@ export default async function LivePage({ searchParams }: Props) {
       ? (countryParam as CountryCode)
       : "";
 
-  const [initialNews, archiveUpdates] = await Promise.all([
-    buildWorldNewsPayload({ limit: 40, country }),
+  const [initialNews, archiveUpdates, updatesTotal] = await Promise.all([
+    buildWorldNewsPayload({ limit: WORLD_NEWS_DISPLAY_LIMIT, country }),
     Promise.resolve(getUpdates(30)),
+    Promise.resolve(getUpdatesTotal()),
   ]);
 
   const monitorNewsQs = new URLSearchParams();
@@ -97,6 +98,7 @@ export default async function LivePage({ searchParams }: Props) {
         <LivePageSync
           initialNews={initialNews}
           initialUpdates={archiveUpdates}
+          initialUpdatesTotal={updatesTotal}
           country={country}
           initialNewsFilter={newsFilter}
         />

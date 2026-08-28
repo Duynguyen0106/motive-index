@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
+import { CommandPaletteTrigger } from "@/components/CommandPaletteTrigger";
 import { SiteSearch } from "@/components/SiteSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -17,7 +18,16 @@ export function SiteHeader() {
           </p>
         </Link>
         <div className="header-tools shrink-0">
+          <CommandPaletteTrigger
+            className="command-palette-trigger-mobile md:hidden btn btn-ghost px-2 py-1.5 text-xs"
+            label="Jump"
+            ariaLabel="Quick jump to dossier or page"
+          />
           <SiteSearch />
+          <CommandPaletteTrigger
+            className="command-palette-trigger-desktop mobile-hide btn btn-ghost px-2.5 py-1.5 text-xs"
+            label="Jump… ⌘K"
+          />
           <span className="mobile-hide">
             <ThemeToggle />
           </span>
