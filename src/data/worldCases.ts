@@ -5,6 +5,7 @@
 import type { CaseEnrichment } from "@/data/catalog";
 import type { SeedCase } from "@/data/seed";
 import bulkCaseDefs from "@/data/bulkCaseDefs.generated.json";
+import importedWikidataCases from "@/data/imported/wikidataCases.generated.json";
 import { buildWorldDeep } from "@/lib/deepContentBuilder";
 import { buildDeepForensicAnalysis } from "@/lib/deepAnalysis";
 import type {
@@ -1640,11 +1641,17 @@ export const WORLD_CASE_DEFS: WorldCaseDef[] = [
   },
 ];
 
-/** Procedurally generated composite archive dossiers (bulk catalog). */
+/** Wikidata/Wikipedia public-record imports (replaces synthetic bulk archive). */
+export const IMPORTED_WIKIDATA_DEFS = importedWikidataCases as WorldCaseDef[];
+
+/** Legacy composite teaching dossiers — kept for reference, not loaded in catalog. */
 export const BULK_CASE_DEFS = bulkCaseDefs as WorldCaseDef[];
 
-/** Curated + bulk world catalog entries. */
-export const ALL_WORLD_CASE_DEFS: WorldCaseDef[] = [...WORLD_CASE_DEFS, ...BULK_CASE_DEFS];
+/** Curated hand-authored + imported public-record catalog entries. */
+export const ALL_WORLD_CASE_DEFS: WorldCaseDef[] = [
+  ...WORLD_CASE_DEFS,
+  ...IMPORTED_WIKIDATA_DEFS,
+];
 
 export const worldSeedCases: SeedCase[] = ALL_WORLD_CASE_DEFS.map(toSeed);
 

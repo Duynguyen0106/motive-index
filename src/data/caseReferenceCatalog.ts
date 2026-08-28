@@ -3,8 +3,9 @@
  * Each entry includes relevance notes for forensic psychology study.
  */
 import type { CaseReference } from "@/lib/types";
+import importedWikidataRefs from "@/data/imported/wikidataReferences.generated.json";
 
-export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
+const HAND_CURATED_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
   "ted-bundy": [
     {
       id: "ref-bundy-fl-trial",
@@ -1180,4 +1181,10 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       note: "Confession under Nazi police; victim count and culpability disputed by historians.",
     },
   ],
+};
+
+/** Hand-curated + Wikidata/Wikipedia-sourced import references. */
+export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
+  ...HAND_CURATED_REFERENCE_OVERRIDES,
+  ...(importedWikidataRefs as Record<string, CaseReference[]>),
 };

@@ -2,18 +2,25 @@
 
 Motive Index uses a **local JSON store** (`.data/store.json`) for development and an optional **Supabase Postgres** backend for production.
 
-## Case catalog (1000 dossiers)
+## Case catalog (10,000+ public-record dossiers)
 
 Cases are defined in TypeScript seed modules and merged at runtime:
 
 | Source | File | Count (approx.) |
 |--------|------|-----------------|
 | Flagship seed | `src/data/seed.ts` | 7 hand-authored + 1 draft stub |
-| World catalog | `src/data/worldCases.ts` | 75 curated public-record cases |
-| Bulk archive | `src/data/bulkCaseDefs.generated.json` | 879 composite teaching dossiers |
+| World catalog | `src/data/worldCases.ts` | 75 hand-curated public-record cases |
+| Wikidata import | `src/data/imported/wikidataCases.generated.json` | 9,000+ Wikipedia-sourced cases |
 | Multilingual | `src/data/multilingualCases.ts` | 38+ translated-source cases |
+| Legacy bulk (retired) | `src/data/bulkCaseDefs.generated.json` | Not loaded — synthetic teaching stubs |
 
-Regenerate bulk defs:
+Regenerate Wikidata import (requires network; respects Wikidata rate limits):
+
+```bash
+npm run db:import-wikidata
+```
+
+Legacy bulk generator (synthetic only — do not use for real cases):
 
 ```bash
 npm run db:generate-bulk
@@ -22,14 +29,16 @@ npm run db:generate-bulk
 Pipeline:
 
 ```
-WORLD_CASE_DEFS / MULTILINGUAL_CASE_DEFS / seed.ts
+WORLD_CASE_DEFS / MULTILINGUAL_CASE_DEFS / wikidataCases.generated.json / seed.ts
         ↓
 applyEnrichment() in src/data/catalog.ts
         ↓
 .data/store.json  →  (optional) Supabase cases.payload
 ```
 
-**Adding cases:** add a `WorldCaseDef` to `WORLD_CASE_DEFS` (or `MultilingualCaseDef`) with `slug`, coords (`lat`/`lng`), overview, and optional `relatedCaseSlugs`. Then reseed (below).
+**Adding hand-curated cases:** add a `WorldCaseDef` to `WORLD_CASE_DEFS` (or `MultilingualCaseDef`) with `slug`, coords (`lat`/`lng`), overview, and a `CASE_REFERENCE_OVERRIDES` entry. Then reseed (below).
+
+**Adding bulk public-record cases:** extend `scripts/import-wikidata-cases.mjs` query profiles or re-run `npm run db:import-wikidata`. Each imported case links to a specific English Wikipedia article — never procedurally fabricated identities.
 
 ### Anti-fabrication framework
 

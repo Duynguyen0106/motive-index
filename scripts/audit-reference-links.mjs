@@ -31,7 +31,7 @@ function collectUrls(CASE_REFERENCE_OVERRIDES, MULTILINGUAL_CASE_DEFS) {
           refId: r.id,
           citation: r.citation,
           url: r.url.trim(),
-          source: "override",
+          source: r.id.endsWith("-wiki") ? "wikidata-import" : "override",
         });
       }
     }
@@ -168,10 +168,20 @@ async function main() {
   }
   const list = [...unique.values()];
 
-  console.log("=== Motive Index Reference Link Audit ===\n");
-  console.log(`URLs to check: ${list.length}\n`);
+  const handCurated = list.filter((e) => e.source !== "wikidata-import");
+  const imported = list.filter((e) => e.source === "wikidata-import");
+  const IMPORT_SAMPLE = Number(process.env.REFERENCE_AUDIT_IMPORT_SAMPLE ?? 150);
+  const importedSample =
+    imported.length <= IMPORT_SAMPLE
+      ? imported
+      : imported.sort(() => Math.random() - 0.5).slice(0, IMPORT_SAMPLE);
+  const auditList = [...handCurated, ...importedSample];
 
-  const results = await runPool(list, checkUrl, CONCURRENCY);
+  console.log("=== Motive Index Reference Link Audit ===\n");
+  console.log(`URLs total: ${list.length} (hand-curated ${handCurated.length}, imported ${imported.length})`);
+  console.log(`URLs to check: ${auditList.length}${imported.length > IMPORT_SAMPLE ? ` (sampled ${IMPORT_SAMPLE} imported)` : ""}\n`);
+
+  const results = await runPool(auditList, checkUrl, CONCURRENCY);
   const broken = results.filter((r) => !r.ok);
   const mismatches = results
     .map((r) => ({ ...r, mismatch: citationMismatch(r) }))

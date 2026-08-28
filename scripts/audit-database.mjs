@@ -30,7 +30,7 @@ async function main() {
   const { isCompositeCase } = await import(join(root, "src/lib/caseSummaries.ts"));
   const { resolveCaseCountry } = await import(join(root, "src/lib/country.ts"));
   const { getCatalogCoords } = await import(join(root, "src/lib/geo.ts"));
-  const { WORLD_CASE_DEFS } = await import(join(root, "src/data/worldCases.ts"));
+  const { WORLD_CASE_DEFS, IMPORTED_WIKIDATA_DEFS } = await import(join(root, "src/data/worldCases.ts"));
   const { RETIRED_WORLD_SLUGS } = await import(join(root, "src/lib/validation/retiredSlugs.ts"));
   const { validateProvenance, COMPOSITE_NAME_PREFIXES } = await import(
     join(root, "src/lib/validation/caseProvenance.ts")
@@ -179,9 +179,12 @@ async function main() {
   console.log(`Total cases: ${cases.length}`);
   console.log(`Curated: ${curated.length}`);
   console.log(`Composite: ${composite.length}`);
-  console.log(`World curated defs: ${WORLD_CASE_DEFS.length}`);
-  console.log(`Bulk JSON entries: ${bulkSlugs.size}`);
-  console.log(`Expected total: ${8 + WORLD_CASE_DEFS.length + bulkSlugs.size + 38} (flagship+draft + world + bulk + multilingual)`);
+  console.log(`World hand-curated defs: ${WORLD_CASE_DEFS.length}`);
+  console.log(`Wikidata imported defs: ${IMPORTED_WIKIDATA_DEFS.length}`);
+  console.log(`Bulk JSON (retired, not loaded): ${bulkSlugs.size}`);
+  console.log(
+    `Expected total: ${8 + WORLD_CASE_DEFS.length + IMPORTED_WIKIDATA_DEFS.length + 38} (flagship+draft + world + import + multilingual)`,
+  );
   console.log();
 
   console.log(`ERRORS: ${errors.length}`);

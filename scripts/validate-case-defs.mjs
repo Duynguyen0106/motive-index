@@ -16,7 +16,7 @@ async function useFreshSeed() {
 async function main() {
   await useFreshSeed();
   const { validateCaseDef } = await import(join(root, "src/lib/validation/caseProvenance.ts"));
-  const { WORLD_CASE_DEFS } = await import(join(root, "src/data/worldCases.ts"));
+  const { WORLD_CASE_DEFS, IMPORTED_WIKIDATA_DEFS } = await import(join(root, "src/data/worldCases.ts"));
   const { MULTILINGUAL_CASE_DEFS } = await import(join(root, "src/data/multilingualCases.ts"));
   const { CASE_REFERENCE_OVERRIDES } = await import(join(root, "src/data/caseReferenceCatalog.ts"));
 
@@ -32,6 +32,25 @@ async function main() {
   }
 
   for (const d of WORLD_CASE_DEFS) {
+    slugSet.set(d.slug, (slugSet.get(d.slug) ?? 0) + 1);
+    collect(
+      d.slug,
+      validateCaseDef(
+        {
+          slug: d.slug,
+          name: d.name,
+          offenderName: d.offenderName,
+          yearStart: d.yearStart,
+          yearEnd: d.yearEnd,
+          overview: d.overview,
+          tags: d.tags,
+        },
+        { multilingual: false },
+      ),
+    );
+  }
+
+  for (const d of IMPORTED_WIKIDATA_DEFS) {
     slugSet.set(d.slug, (slugSet.get(d.slug) ?? 0) + 1);
     collect(
       d.slug,
@@ -89,6 +108,7 @@ async function main() {
 
   console.log("=== Motive Index Case Definition Validation ===\n");
   console.log(`World defs: ${WORLD_CASE_DEFS.length}`);
+  console.log(`Imported Wikidata defs: ${IMPORTED_WIKIDATA_DEFS.length}`);
   console.log(`Multilingual defs: ${MULTILINGUAL_CASE_DEFS.length}`);
   console.log(`Reference overrides: ${Object.keys(CASE_REFERENCE_OVERRIDES).length}`);
   console.log();
