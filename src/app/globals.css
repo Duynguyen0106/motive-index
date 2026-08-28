@@ -1266,6 +1266,221 @@ body.has-hot-news-ticker .site-header {
   border-bottom: none;
 }
 
+.monitor-news-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.monitor-news-feed-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.monitor-news-feed-status {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.monitor-news-feed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.monitor-news-toolbar-btn {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+
+.monitor-news-toolbar-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.monitor-news-toolbar-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.monitor-news-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.monitor-news-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--line);
+  background: var(--bg-subtle);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.monitor-news-filter.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.monitor-news-filter.has-hot:not(.is-active) {
+  border-color: color-mix(in srgb, var(--cs-signal) 35%, var(--line));
+}
+
+.monitor-news-filter-count {
+  font-size: 0.625rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.monitor-news-card {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  padding-left: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.monitor-news-card.is-hot {
+  border-left-color: var(--cs-signal);
+  background: color-mix(in srgb, var(--cs-signal) 5%, transparent);
+  padding-inline: 0.5rem;
+  margin-inline: -0.5rem;
+  border-radius: 2px;
+}
+
+.monitor-news-card.is-breaking {
+  border-left-color: var(--maroon);
+  background: color-mix(in srgb, var(--maroon) 8%, transparent);
+}
+
+.monitor-news-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.monitor-news-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.monitor-news-age {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.monitor-news-live-badge {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.3rem;
+  border: 1px solid var(--line);
+  color: var(--accent);
+}
+
+.monitor-news-hot-badge.is-breaking {
+  border-color: var(--maroon);
+  color: var(--maroon);
+  background: color-mix(in srgb, var(--maroon) 12%, transparent);
+}
+
+.monitor-news-source {
+  font-size: 0.625rem;
+  color: var(--muted);
+}
+
+.monitor-news-summary-wrap {
+  margin-top: 0.35rem;
+}
+
+.monitor-news-summary {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.monitor-news-summary.is-expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+.monitor-news-expand {
+  margin-top: 0.2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.6875rem;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.monitor-news-linked {
+  margin-top: 0.35rem;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.monitor-news-linked-name {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.monitor-news-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.monitor-news-action {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.monitor-news-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.monitor-news-filter-reset {
+  display: block;
+  margin-inline: auto;
+}
+
 .monitor-news-headline {
   display: block;
   margin-top: 0.35rem;

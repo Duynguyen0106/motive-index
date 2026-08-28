@@ -75,7 +75,12 @@ export default async function LivePage({ searchParams }: Props) {
         <h2 className="display text-2xl">Global feed</h2>
         <p className="mt-2 text-sm text-[var(--muted)]">Refreshes every 60 seconds</p>
         <div className="mt-6 card p-5">
-          <WorldNewsFeed initial={initialNews} countryFilter={country} />
+          <WorldNewsFeed
+            initial={initialNews}
+            countryFilter={country}
+            updates={archiveUpdates}
+            showFullPageLink={false}
+          />
         </div>
       </section>
 

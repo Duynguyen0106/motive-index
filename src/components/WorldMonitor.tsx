@@ -1218,11 +1218,19 @@ export function WorldMonitor({ initial }: Props) {
             >
               <h2 className="display text-base">World crime news</h2>
               <p className="mt-1 text-xs text-[var(--muted)]">
-                Live RSS from 17 regions · English summaries · original headlines preserved
+                AI-scored hot alerts · 17 regional RSS feeds · dossier links
               </p>
               <WorldNewsFeed
                 initial={data.worldNews}
+                updates={data.updates}
                 countryFilter={filters.country ?? ""}
+                caseNames={Object.fromEntries(data.cases.map((c) => [c.slug, c.name]))}
+                showFullPageLink
+                onShowNewsLayer={() => updateMapView({ contentLayer: "both" })}
+                onPlotOnMap={(slug) => {
+                  const id = caseIdFromSlug(data.cases, slug);
+                  if (id) selectCase(id, { switchTab: false, syncUrl: true });
+                }}
                 onSelectCase={(slug) => {
                   const id = caseIdFromSlug(data.cases, slug);
                   if (id) selectCase(id, { switchTab: true });
