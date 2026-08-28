@@ -134,10 +134,19 @@ export function buildBehaviorHighlights(
   cases: CrimeCase[],
   limit = 8,
 ): BehaviorSignalHighlight[] {
+  const pool =
+    cases.length > 240
+      ? [
+          ...cases.filter((c) => c.featured),
+          ...cases.filter((c) => !c.featured && !c.tags.includes("wikidata-import")).slice(0, 120),
+          ...cases.filter((c) => c.tags.includes("wikidata-import")).slice(0, 40),
+        ]
+      : cases;
+
   const prioritized = [
-    ...cases.filter((c) => c.featured),
-    ...cases.filter((c) => !c.tags.includes("wikidata-import") && !c.featured),
-    ...cases.filter((c) => c.tags.includes("wikidata-import")),
+    ...pool.filter((c) => c.featured),
+    ...pool.filter((c) => !c.tags.includes("wikidata-import") && !c.featured),
+    ...pool.filter((c) => c.tags.includes("wikidata-import")),
   ];
 
   const seen = new Set<string>();

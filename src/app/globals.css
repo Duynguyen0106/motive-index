@@ -832,7 +832,8 @@ a {
   min-height: calc(100dvh - var(--site-header-height));
 }
 
-body.has-hot-news-ticker .monitor-page {
+body.has-hot-news-ticker .monitor-page,
+body.has-hot-news-ticker .page-scroll-safe {
   padding-top: var(--hot-ticker-height);
 }
 

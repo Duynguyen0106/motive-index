@@ -37,6 +37,8 @@ type Props = {
   onPlayTimeline?: () => void;
   isPlayingTimeline?: boolean;
   shareCopied?: boolean;
+  mapFiltersActive?: boolean;
+  onClearMapFilters?: () => void;
 };
 
 export function MonitorMapControls({
@@ -62,6 +64,8 @@ export function MonitorMapControls({
   onPlayTimeline,
   isPlayingTimeline,
   shareCopied,
+  mapFiltersActive = false,
+  onClearMapFilters,
 }: Props) {
   const decades = decadeMarkers(view.timelineMinYear, view.timelineMaxYear);
   const filtered = visibleCount !== caseCount;
@@ -132,6 +136,11 @@ export function MonitorMapControls({
           <button type="button" className="monitor-map-quick-btn" onClick={onExplore}>
             Explore
           </button>
+          {mapFiltersActive && onClearMapFilters ? (
+            <button type="button" className="monitor-map-quick-btn is-active" onClick={onClearMapFilters}>
+              Clear filters
+            </button>
+          ) : null}
           <button type="button" className="monitor-map-quick-btn" onClick={onFullscreen}>
             {isFullscreen ? "Exit" : "Full"}
           </button>

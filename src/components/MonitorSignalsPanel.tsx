@@ -69,7 +69,7 @@ export function MonitorSignalsPanel({
         </div>
         <div className="monitor-signals-stats" aria-label="Signal counts">
           <span className="monitor-signals-stat">
-            <strong>{stats.total}</strong> total
+            <strong>{stats.total}</strong> archive events
           </span>
           {stats.recentCount ? (
             <span className="monitor-signals-stat monitor-signals-stat-recent">

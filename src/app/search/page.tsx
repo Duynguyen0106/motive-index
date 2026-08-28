@@ -12,7 +12,14 @@ import {
 import type { CrimeCategory, CountryCode, DocumentType, PsychologicalFactor, TheoreticalFramework } from "@/lib/types";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { getAllCases } from "@/lib/data";
-import { parseSearchParams, hasActiveFilters, monitorUrlFromFilters } from "@/lib/search";
+import {
+  DEFAULT_ARCHIVE_PAGE_SIZE,
+  paginateCases,
+  parseSearchParams,
+  hasActiveFilters,
+  monitorUrlFromFilters,
+  searchUrlFromFilters,
+} from "@/lib/search";
 import { runSearch } from "@/lib/searchServer";
 
 export const metadata: Metadata = {
@@ -25,7 +32,14 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function SearchPage({ searchParams }: Props) {
   const raw = await searchParams;
   const filters = parseSearchParams(raw);
-  const { cases, documents } = runSearch(filters);
+  const { cases: allMatchingCases, documents } = runSearch(filters);
+  const page = Math.max(1, Number(raw.page) || 1);
+  const pageSize = Math.min(
+    100,
+    Math.max(10, Number(raw.pageSize) || DEFAULT_ARCHIVE_PAGE_SIZE),
+  );
+  const paginated = paginateCases(allMatchingCases, page, pageSize);
+  const cases = paginated.items;
   const countryOptions = listCountryOptions(getAllCases());
   const hasQuery = hasActiveFilters(filters);
   const focusSearch = raw.focus === "1" || raw.focus === "true";
@@ -259,14 +273,21 @@ export default async function SearchPage({ searchParams }: Props) {
       ) : (
         <>
           <p className="mt-6 text-sm text-[var(--muted)]">
-            {cases.length} cases · {documents.length} documents ·{" "}
+            {paginated.total.toLocaleString()} cases · {documents.length} documents ·{" "}
             <Link href={monitorHref} className="text-[var(--accent)] hover:underline">
               View on map
             </Link>
           </p>
 
           <section className="mt-8">
-            <h2 className="display text-3xl">Cases ({cases.length})</h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="display text-3xl">Cases ({paginated.total.toLocaleString()})</h2>
+              {paginated.totalPages > 1 ? (
+                <p className="text-sm text-[var(--muted)]">
+                  Page {paginated.page} of {paginated.totalPages}
+                </p>
+              ) : null}
+            </div>
             <ul className="mt-4 grid gap-3">
               {cases.map((c) => (
                 <li key={c.id}>
@@ -304,6 +325,44 @@ export default async function SearchPage({ searchParams }: Props) {
             </li>
           ) : null}
             </ul>
+            {paginated.totalPages > 1 ? (
+              <nav
+                className="archive-pagination mt-8 flex flex-wrap items-center justify-between gap-4"
+                aria-label="Search result pages"
+              >
+                <div className="flex flex-wrap gap-2">
+                  {paginated.page > 1 ? (
+                    <Link
+                      href={searchUrlFromFilters(filters, { page: paginated.page - 1, pageSize })}
+                      className="btn btn-ghost text-sm"
+                    >
+                      ← Previous
+                    </Link>
+                  ) : (
+                    <span className="btn btn-ghost text-sm opacity-40 pointer-events-none">
+                      ← Previous
+                    </span>
+                  )}
+                  {paginated.page < paginated.totalPages ? (
+                    <Link
+                      href={searchUrlFromFilters(filters, { page: paginated.page + 1, pageSize })}
+                      className="btn btn-ghost text-sm"
+                    >
+                      Next →
+                    </Link>
+                  ) : (
+                    <span className="btn btn-ghost text-sm opacity-40 pointer-events-none">
+                      Next →
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-[var(--muted)]">
+                  Showing {(paginated.page - 1) * paginated.pageSize + 1}–
+                  {Math.min(paginated.page * paginated.pageSize, paginated.total)} of{" "}
+                  {paginated.total.toLocaleString()}
+                </p>
+              </nav>
+            ) : null}
           </section>
 
           <section className="mt-10">

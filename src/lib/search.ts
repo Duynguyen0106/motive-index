@@ -51,8 +51,16 @@ export function monitorUrlFromFilters(filters: SearchFilters, caseSlug?: string)
   return qs ? `/?${qs}` : "/";
 }
 
-export function searchUrlFromFilters(filters: SearchFilters): string {
-  const qs = filtersToQueryString(filters);
+export function searchUrlFromFilters(
+  filters: SearchFilters,
+  opts?: { page?: number; pageSize?: number },
+): string {
+  const p = new URLSearchParams(filtersToQueryString(filters));
+  if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
+  if (opts?.pageSize && opts.pageSize !== DEFAULT_ARCHIVE_PAGE_SIZE) {
+    p.set("pageSize", String(opts.pageSize));
+  }
+  const qs = p.toString();
   return qs ? `/search?${qs}` : "/search";
 }
 

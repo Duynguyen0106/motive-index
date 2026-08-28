@@ -139,6 +139,8 @@ export function CaseWorldMap({
   const bboxLayerRef = useRef<Layer | null>(null);
   const highlightRef = useRef<Layer | null>(null);
   const geoJsonRef = useRef<GeoJSONType | null>(null);
+  const caseMarkersRef = useRef<Map<string, import("leaflet").Marker>>(new Map());
+  const markerPinRef = useRef<Map<string, MonitorCasePin>>(new Map());
   const drawStartRef = useRef<{ lat: number; lng: number } | null>(null);
   const drawRectRef = useRef<Layer | null>(null);
   const onSelectCountryRef = useRef(onSelectCountry);
@@ -359,6 +361,8 @@ export function CaseWorldMap({
       }
 
       cluster.clearLayers();
+      caseMarkersRef.current.clear();
+      markerPinRef.current.clear();
 
       const showCases = view.contentLayer === "cases" || view.contentLayer === "both";
 
@@ -376,13 +380,12 @@ export function CaseWorldMap({
           const crimeMatch = pinMatchesCrimeFilter(pin, view.crimeCategoryFilter);
           const dimmed = crimeFilterActive && !crimeMatch;
           const active = selectedCaseId === pin.id;
-          const hovered = hoveredCaseId === pin.id;
           const marker = L.marker([pin.lat, pin.lng], {
             unsolved: pin.status === "unsolved",
             caseId: pin.id,
             icon: L.divIcon({
               className: "monitor-leaflet-icon",
-              html: markerHtml(pin, active, hovered, dimmed),
+              html: markerHtml(pin, active, false, dimmed),
               iconSize: [20, 20],
               iconAnchor: [10, 10],
             }),
@@ -400,12 +403,38 @@ export function CaseWorldMap({
           });
           marker.on("mouseout", () => onHoverCaseRef.current?.(""));
 
+          caseMarkersRef.current.set(pin.id, marker);
+          markerPinRef.current.set(pin.id, pin);
           cluster.addLayer(marker);
         }
       }
 
     })();
-  }, [filteredPins, contextualPins, ready, selectedCaseId, hoveredCaseId, view.contentLayer, view.layerMode, view.crimeCategoryFilter]);
+  }, [filteredPins, contextualPins, ready, selectedCaseId, view.contentLayer, view.layerMode, view.crimeCategoryFilter]);
+
+  // Update marker highlight on hover/select without rebuilding all markers
+  useEffect(() => {
+    if (!ready || !caseMarkersRef.current.size) return;
+    void (async () => {
+      const L = await getLeaflet();
+      for (const [id, marker] of caseMarkersRef.current) {
+        const pin = markerPinRef.current.get(id);
+        if (!pin) continue;
+        const crimeMatch = pinMatchesCrimeFilter(pin, view.crimeCategoryFilter);
+        const dimmed = crimeFilterActive && !crimeMatch;
+        const active = selectedCaseId === id;
+        const hovered = hoveredCaseId === id;
+        marker.setIcon(
+          L.divIcon({
+            className: "monitor-leaflet-icon",
+            html: markerHtml(pin, active, hovered, dimmed),
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          }),
+        );
+      }
+    })();
+  }, [hoveredCaseId, selectedCaseId, ready, view.crimeCategoryFilter, crimeFilterActive]);
 
   // News markers
   useEffect(() => {

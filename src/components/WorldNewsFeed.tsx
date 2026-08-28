@@ -108,8 +108,20 @@ function NewsCard({
 
       {item.caseSlug ? (
         <p className="monitor-news-linked">
-          Archive link:{" "}
-          <span className="monitor-news-linked-name">{caseName ?? item.caseSlug}</span>
+          Linked dossier:{" "}
+          {onSelectCase ? (
+            <button
+              type="button"
+              className="monitor-news-linked-name monitor-news-linked-btn"
+              onClick={() => onSelectCase(item.caseSlug!)}
+            >
+              {caseName ?? item.caseSlug}
+            </button>
+          ) : (
+            <Link href={`/cases/${item.caseSlug}`} className="monitor-news-linked-name">
+              {caseName ?? item.caseSlug}
+            </Link>
+          )}
         </p>
       ) : null}
 

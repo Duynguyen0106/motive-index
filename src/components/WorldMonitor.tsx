@@ -25,7 +25,7 @@ import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters, paginateCases, DEFAULT_ARCHIVE_PAGE_SIZE } from "@/lib/search";
 import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
 import type { NewsFeedFilter } from "@/lib/newsFeedUtils";
-import type { MonitorPayload } from "@/lib/monitor";
+import type { MonitorDeltaPayload, MonitorPayload } from "@/lib/monitor";
 import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
 import { exportCasesCsv, sidebarPinClasses } from "@/lib/monitorMapUtils";
@@ -173,6 +173,18 @@ export function WorldMonitor({ initial }: Props) {
   const archiveActivityUpdates = useMemo(
     () => filterArchiveActivityUpdates(data.updates),
     [data.updates],
+  );
+  const pinsByCaseId = useMemo(
+    () => new Map(data.pins.map((p) => [p.id, p])),
+    [data.pins],
+  );
+  const slugToId = useMemo(
+    () => new Map(data.cases.map((c) => [c.slug, c.id])),
+    [data.cases],
+  );
+  const slugToName = useMemo(
+    () => Object.fromEntries(data.cases.map((c) => [c.slug, c.name])),
+    [data.cases],
   );
   const unsolvedCount = useMemo(
     () => data.cases.filter((c) => c.status === "unsolved").length,
@@ -338,8 +350,26 @@ export function WorldMonitor({ initial }: Props) {
     setNewsFilter(parseNewsFilter(searchParams.get("newsFilter")));
     const pageRaw = searchParams.get("casesPage");
     const pageNum = pageRaw ? parseInt(pageRaw, 10) : 1;
-    setCasesPage(Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1);
+    const totalPages = Math.max(
+      1,
+      Math.ceil(initial.cases.length / MONITOR_CASES_PAGE_SIZE),
+    );
+    const safePage = Math.min(
+      Math.max(1, Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1),
+      totalPages,
+    );
+    setCasesPage(safePage);
   }, [initial, searchParams]);
+
+  useEffect(() => {
+    const totalPages = Math.max(
+      1,
+      Math.ceil(displayCases.length / MONITOR_CASES_PAGE_SIZE),
+    );
+    if (casesPage > totalPages) {
+      goToCasesPage(totalPages);
+    }
+  }, [displayCases.length, casesPage, goToCasesPage]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
@@ -373,16 +403,24 @@ export function WorldMonitor({ initial }: Props) {
       try {
         setLiveStatus("syncing");
         const qs = searchParams.toString();
-        const res = await fetch(qs ? `/api/monitor?${qs}` : "/api/monitor", {
+        const pollQs = qs ? `${qs}&mode=delta` : "mode=delta";
+        const res = await fetch(`/api/monitor?${pollQs}`, {
           cache: "no-store",
         });
         if (!res.ok) {
           if (!cancelled) setLiveStatus("stale");
           return;
         }
-        const json = (await res.json()) as MonitorPayload;
+        const json = (await res.json()) as MonitorDeltaPayload;
         if (!cancelled) {
-          setData(json);
+          setData((prev) => ({
+            ...prev,
+            generatedAt: json.generatedAt,
+            updates: json.updates,
+            worldNews: json.worldNews,
+            newsPins: json.newsPins,
+            signals: json.signals,
+          }));
           setLiveStatus("live");
         }
       } catch {
@@ -824,6 +862,8 @@ export function WorldMonitor({ initial }: Props) {
             }}
             onPlayTimeline={() => setIsPlayingTimeline((v) => !v)}
             isPlayingTimeline={isPlayingTimeline}
+            onClearMapFilters={clearMapFilters}
+            mapFiltersActive={mapFiltersActive}
           />
           {compareMode ? (
             <div className="monitor-compare-banner" role="status">
@@ -1209,7 +1249,7 @@ export function WorldMonitor({ initial }: Props) {
               ) : null}
               <ul className="monitor-case-list mt-3">
                 {paginatedCases.items.map((c) => {
-                  const pin = data.pins.find((p) => p.id === c.id);
+                  const pin = pinsByCaseId.get(c.id);
                   const mapVisible = pin ? visibleCaseIds.has(c.id) : false;
                   const active = selectedCaseId === c.id;
                   const isTranslated = c.tags.includes("translated-en");
@@ -1343,7 +1383,7 @@ export function WorldMonitor({ initial }: Props) {
               <WorldNewsFeed
                 initial={data.worldNews}
                 countryFilter={filters.country ?? ""}
-                caseNames={Object.fromEntries(data.cases.map((c) => [c.slug, c.name]))}
+                caseNames={slugToName}
                 showFullPageLink
                 disablePolling
                 filter={newsFilter}

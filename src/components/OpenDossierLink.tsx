@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { MouseEvent, ReactNode } from "react";
 
 type Props = {
@@ -14,11 +15,12 @@ export function dossierHref(slug: string): string {
 
 /** Reliable dossier navigation — avoids Leaflet / map overlays swallowing Next.js Link clicks. */
 export function OpenDossierLink({ slug, className, children }: Props) {
+  const router = useRouter();
   const href = dossierHref(slug);
 
   function openDossier(e: MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
-    window.location.assign(href);
+    router.push(href);
   }
 
   function blockMapPointer(e: MouseEvent<HTMLButtonElement>) {

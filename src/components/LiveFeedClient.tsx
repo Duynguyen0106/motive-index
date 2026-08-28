@@ -1,17 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { readJsonResponse } from "@/lib/clientFetch";
 import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
 import type { LiveUpdate } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-export function LiveFeedClient({ initial }: { initial: LiveUpdate[] }) {
+type Props = {
+  initial: LiveUpdate[];
+  disablePolling?: boolean;
+};
+
+export function LiveFeedClient({ initial, disablePolling = false }: Props) {
   const [updates, setUpdates] = useState(initial);
-  const archiveUpdates = useMemo(() => filterArchiveActivityUpdates(updates), [updates]);
+  const archiveUpdates = filterArchiveActivityUpdates(updates);
 
   useEffect(() => {
+    setUpdates(initial);
+  }, [initial]);
+
+  useEffect(() => {
+    if (disablePolling) return;
     let cancelled = false;
 
     async function poll() {
@@ -30,7 +40,7 @@ export function LiveFeedClient({ initial }: { initial: LiveUpdate[] }) {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, []);
+  }, [disablePolling]);
 
   return (
     <div>

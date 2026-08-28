@@ -159,3 +159,40 @@ export async function buildMonitorPayload(
     })(),
   };
 }
+
+/** Lightweight poll payload — live news, updates, and signals only. */
+export type MonitorDeltaPayload = Pick<
+  MonitorPayload,
+  "generatedAt" | "updates" | "worldNews" | "signals" | "newsPins"
+>;
+
+export async function buildMonitorDelta(
+  params: Record<string, string | string[] | undefined>,
+  updateLimit = 24,
+): Promise<MonitorDeltaPayload> {
+  const filters = parseSearchParams(params);
+  const all = await getAllCasesAsync();
+  const cases = searchCasesFrom(all, filters);
+  const updates = await getUpdatesAsync(updateLimit);
+  const countryStats = buildCountryStats(cases, all);
+  const worldNews = await buildWorldNewsPayload({
+    limit: 24,
+    country: filters.country ?? "",
+  });
+  const newsPins = worldNews.items
+    .map(newsItemToPin)
+    .filter((p): p is MonitorNewsPin => Boolean(p));
+
+  return {
+    generatedAt: new Date().toISOString(),
+    updates,
+    worldNews,
+    newsPins,
+    signals: buildMonitorSignals({
+      updates,
+      cases,
+      countryStats,
+      filters,
+    }),
+  };
+}
