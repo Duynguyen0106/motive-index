@@ -17,7 +17,8 @@ export async function POST(req: Request) {
   const json = await req.json().catch(() => null);
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid submission" }, { status: 400 });
+    const detail = parsed.error.issues[0]?.message ?? "Invalid submission";
+    return NextResponse.json({ error: detail }, { status: 400 });
   }
   const row = addContribution(parsed.data);
   await syncAfterContributionWrite(row);

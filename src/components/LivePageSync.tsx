@@ -44,10 +44,12 @@ export function LivePageSync({
   const [news, setNews] = useState(initialNews);
   const [updates, setUpdates] = useState(initialUpdates);
   const [newsFilter, setNewsFilter] = useState<NewsFeedFilter>(initialNewsFilter);
+  const [syncStatus, setSyncStatus] = useState<"live" | "syncing" | "stale">("live");
 
   useEffect(() => {
     setNews(initialNews);
     setUpdates(initialUpdates);
+    setSyncStatus("live");
   }, [initialNews, initialUpdates]);
 
   useEffect(() => {
@@ -66,21 +68,28 @@ export function LivePageSync({
     [router, searchParams],
   );
 
+  const refreshNews = useCallback(async () => {
+    setSyncStatus("syncing");
+    try {
+      const newsQs = country
+        ? `?country=${country}&limit=${WORLD_NEWS_DISPLAY_LIMIT}`
+        : `?limit=${WORLD_NEWS_DISPLAY_LIMIT}`;
+      const newsRes = await fetch(`/api/world-news${newsQs}`, { cache: "no-store" });
+      if (!newsRes.ok) throw new Error("fetch failed");
+      const newsJson = await readJsonResponse<WorldNewsPayload>(newsRes);
+      setNews(newsJson);
+      setSyncStatus("live");
+    } catch {
+      setSyncStatus("stale");
+    }
+  }, [country]);
+
   useEffect(() => {
     let cancelled = false;
 
     async function poll() {
-      try {
-        const newsQs = country
-          ? `?country=${country}&limit=${WORLD_NEWS_DISPLAY_LIMIT}`
-          : `?limit=${WORLD_NEWS_DISPLAY_LIMIT}`;
-        const newsRes = await fetch(`/api/world-news${newsQs}`, { cache: "no-store" });
-        if (!newsRes.ok) return;
-        const newsJson = await readJsonResponse<WorldNewsPayload>(newsRes);
-        if (!cancelled) setNews(newsJson);
-      } catch {
-        /* ignore transient poll errors */
-      }
+      if (cancelled) return;
+      await refreshNews();
     }
 
     const id = window.setInterval(poll, 30000);
@@ -88,7 +97,7 @@ export function LivePageSync({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [country]);
+  }, [refreshNews]);
 
   const hotLookup = useMemo(() => buildHotNewsLookup(news.items), [news.items]);
   const filterCounts = useMemo(
@@ -125,17 +134,43 @@ export function LivePageSync({
 
       <LivePageHotNews worldNewsItems={news.items} country={country || undefined} />
 
+      {syncStatus === "stale" ? (
+        <div className="live-sync-banner mt-6 card p-4" role="status">
+          <p className="text-sm text-[var(--ink-soft)]">
+            Feed may be stale — last refresh failed.{" "}
+            <button
+              type="button"
+              className="text-[var(--accent)] hover:underline"
+              onClick={() => void refreshNews()}
+            >
+              Retry now
+            </button>
+          </p>
+        </div>
+      ) : null}
+
       <section className="mt-10">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <div>
             <h2 className="display text-2xl">Global feed</h2>
             <p className="mt-2 text-sm text-[var(--muted)]">
-              Refreshes every 30 seconds · synced with monitor news
+              {syncStatus === "syncing" ? "Syncing…" : "Refreshes every 30 seconds"} · synced with
+              monitor news
             </p>
           </div>
-          <a href="#archive-activity" className="text-sm text-[var(--accent)] hover:underline">
-            Archive activity ↓
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="btn btn-ghost text-xs"
+              onClick={() => void refreshNews()}
+              disabled={syncStatus === "syncing"}
+            >
+              Refresh
+            </button>
+            <a href="#archive-activity" className="text-sm text-[var(--accent)] hover:underline">
+              Archive activity ↓
+            </a>
+          </div>
         </div>
         <NewsFeedFilterBar
           className="live-news-filters mt-4"

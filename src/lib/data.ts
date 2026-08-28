@@ -94,6 +94,7 @@ function getStore(): Store {
 
 function persist(): void {
   writeStore(getStore());
+  invalidateArchiveStatsCache();
 }
 
 export function getAllCases(): CrimeCase[] {

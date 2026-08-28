@@ -41,6 +41,9 @@ const ROUTES = [
   { href: "/stats", label: "Archive stats", hint: "Catalog analytics" },
   { href: "/live", label: "World news", hint: "Regional RSS" },
   { href: "/documents", label: "Documents", hint: "Primary sources" },
+  { href: "/resources", label: "Resources", hint: "Glossary & theories" },
+  { href: "/contribute", label: "Contribute", hint: "Submit for review" },
+  { href: "/about", label: "About & ethics", hint: "Purpose and guidelines" },
   { href: "/method", label: "Method", hint: "Analysis rubric" },
 ];
 

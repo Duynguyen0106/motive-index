@@ -3330,10 +3330,9 @@ a.monitor-news-headline:hover {
   margin-top: 0.75rem;
 }
 
-.live-news-filters.monitor-news-filters {
-  padding: 0;
-  border: 0;
-  background: transparent;
+.live-sync-banner {
+  border-color: color-mix(in srgb, var(--maroon) 35%, var(--line));
+  background: color-mix(in srgb, var(--maroon) 6%, var(--paper));
 }
 
 .monitor-skeleton .monitor-hero {

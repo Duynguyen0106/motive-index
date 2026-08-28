@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { GlossaryList, type GlossaryListItem } from "@/components/GlossaryList";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks } from "@/components/ui";
-import { getCaseOfWeek, getGlossary, getTheories } from "@/lib/data";
+import { getCaseBySlug, getCaseOfWeek, getGlossary, getTheories } from "@/lib/data";
 import { FRAMEWORK_LABELS } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -15,6 +16,16 @@ export default function ResourcesPage() {
   const glossary = getGlossary();
   const theories = getTheories();
   const cotw = getCaseOfWeek();
+
+  const glossaryItems: GlossaryListItem[] = glossary.map((g) => ({
+    id: g.id,
+    term: g.term,
+    definition: g.definition,
+    relatedCases: (g.relatedCaseSlugs ?? []).map((slug) => ({
+      slug,
+      name: getCaseBySlug(slug)?.name ?? slug,
+    })),
+  }));
 
   return (
     <div className="site-shell page-intro py-10 md:py-14">
@@ -73,27 +84,12 @@ export default function ResourcesPage() {
 
       <section className="mt-12">
         <h2 className="display text-3xl">Glossary</h2>
-        <ul className="glossary-list mt-5 divide-y divide-[var(--line)] overflow-hidden rounded border border-[var(--line)]">
-          {glossary.map((g) => (
-            <li key={g.id} className="glossary-item px-5 py-4 md:px-6">
-              <h3 className="font-semibold text-[var(--ink)]">{g.term}</h3>
-              <p className="mt-1 text-[var(--ink-soft)]">{g.definition}</p>
-              {g.relatedCaseSlugs?.length ? (
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Related:{" "}
-                  {g.relatedCaseSlugs.map((s, i) => (
-                    <span key={s}>
-                      {i > 0 ? ", " : ""}
-                      <Link href={`/cases/${s}`} className="text-[var(--accent)] hover:underline">
-                        {s}
-                      </Link>
-                    </span>
-                  ))}
-                </p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <p className="mt-2 text-sm text-[var(--muted)]">
+          Link directly to a term with <code className="text-xs">/resources#term-id</code>
+        </p>
+        <div className="mt-5">
+          <GlossaryList items={glossaryItems} />
+        </div>
       </section>
 
       <section className="card mt-12 p-6 pb-8">
