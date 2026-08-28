@@ -126,8 +126,10 @@ export function WorldMonitor({ initial }: Props) {
   );
   const [mountedAt] = useState(() => Date.now());
   const caseCardRef = useRef<HTMLDivElement>(null);
+  const caseRowRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const sidebarRef = useRef<HTMLElement>(null);
   const keywordDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const viewportDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const filters = data.filters;
   const countryOptions = data.countryOptions;
@@ -550,6 +552,19 @@ export function WorldMonitor({ initial }: Props) {
     updateMapView(defaultMapViewFilters());
   }, [updateMapView]);
 
+  const handleMapViewportChange = useCallback(
+    (lat: number, lng: number, zoom: number) => {
+      if (viewportDebounceRef.current) clearTimeout(viewportDebounceRef.current);
+      viewportDebounceRef.current = setTimeout(() => {
+        updateMapView(
+          { viewportLat: lat, viewportLng: lng, viewportZoom: zoom },
+          { syncUrl: true },
+        );
+      }, 900);
+    },
+    [updateMapView],
+  );
+
   // Scroll case card into view on mobile when selected
   useEffect(() => {
     if (!selectedCaseId || !caseCardRef.current) return;
@@ -557,6 +572,18 @@ export function WorldMonitor({ initial }: Props) {
       caseCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [selectedCaseId]);
+
+  // Scroll case list row into view when selected from map (mobile)
+  useEffect(() => {
+    if (!selectedCaseId || !isMobileLayout) return;
+    if (sidebarTab !== "cases") return;
+    requestAnimationFrame(() => {
+      caseRowRefs.current.get(selectedCaseId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  }, [selectedCaseId, isMobileLayout, sidebarTab]);
 
   function handleTabKey(e: ReactKeyboardEvent<HTMLButtonElement>, tab: SidebarTab) {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -761,6 +788,7 @@ export function WorldMonitor({ initial }: Props) {
       {activeFilterCount(filters) > 0 ||
       mapView.bboxFilter ||
       mapView.crimeCategoryFilter.length > 0 ||
+      mapView.coordAccuracyFilter !== "all" ||
       mapView.timelineMinYear !== TIMELINE_YEAR_MIN ||
       mapView.timelineMaxYear !== TIMELINE_YEAR_MAX ? (
         <div className="monitor-chips" aria-label="Active filters">
@@ -815,6 +843,16 @@ export function WorldMonitor({ initial }: Props) {
               onClick={() => updateMapView({ bboxFilter: null })}
             >
               Map area filter <span aria-hidden>×</span>
+            </button>
+          ) : null}
+          {mapView.coordAccuracyFilter !== "all" ? (
+            <button
+              type="button"
+              className="monitor-chip"
+              onClick={() => updateMapView({ coordAccuracyFilter: "all" })}
+            >
+              {mapView.coordAccuracyFilter === "city-only" ? "City pins only" : "Hide estimates"}{" "}
+              <span aria-hidden>×</span>
             </button>
           ) : null}
           {(mapView.timelineMinYear !== TIMELINE_YEAR_MIN ||
@@ -933,6 +971,7 @@ export function WorldMonitor({ initial }: Props) {
               updateMapView({ bboxFilter: bbox });
               setIsDrawingBbox(false);
             }}
+            onViewportChange={handleMapViewportChange}
             onClearMapFilters={clearMapFilters}
           />
           {!isMobileLayout ? (
@@ -1298,6 +1337,10 @@ export function WorldMonitor({ initial }: Props) {
                     <li key={c.id}>
                       <button
                         type="button"
+                        ref={(el) => {
+                          if (el) caseRowRefs.current.set(c.id, el);
+                          else caseRowRefs.current.delete(c.id);
+                        }}
                         className={`monitor-case-row ${active ? "is-active" : ""} ${hoveredCaseId === c.id ? "is-hovered" : ""} ${pin && !mapVisible ? "is-map-hidden" : ""}`}
                         onClick={() => selectCase(c.id, { syncUrl: true })}
                         onMouseEnter={() => setHoveredCaseId(c.id)}
@@ -1330,6 +1373,7 @@ export function WorldMonitor({ initial }: Props) {
                             className={sidebarPinClasses(
                               pin.primaryCategory ?? c.crimeCategories[0] ?? "other",
                               c.status,
+                              pin.coordAccuracy,
                             )}
                             title={
                               c.status === "unsolved"

@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contribute",
-  description: "Submit cases, analyses, or documents for moderation and peer review.",
+  description: "Submit cases, analyses, or document pointers for automated integrity review.",
 };
 
 export default function ContributePage() {
@@ -24,7 +24,7 @@ export default function ContributePage() {
         className="mt-5"
         label="Contribute"
         title="User contributions & peer review"
-        description="Researchers and students can propose new cases, analyses, or document pointers. Everything enters a moderation queue before publication."
+        description="Researchers and students can propose new cases, analyses, or document pointers. Submissions enter the secured AI pipeline for integrity review before publication."
       />
       <QuickLinks
         links={[
@@ -37,7 +37,7 @@ export default function ContributePage() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <ContributeForm />
         <section>
-          <h2 className="display text-2xl">Moderation queue</h2>
+          <h2 className="display text-2xl">Submission queue</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">
             {queue.length} submission{queue.length === 1 ? "" : "s"} awaiting review
           </p>
@@ -68,7 +68,8 @@ export default function ContributePage() {
         </section>
       </div>
       <p className="mt-8 text-sm text-[var(--muted)]">
-        Admin review tools: <Link href="/login" className="text-[var(--accent)] hover:underline">sign in</Link>
+        New cases from RSS and ingest APIs are processed by the secured AI pipeline — provenance
+        and reference gates must pass before a dossier appears in the public catalog.
       </p>
     </div>
   );

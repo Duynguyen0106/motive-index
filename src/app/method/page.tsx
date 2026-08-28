@@ -63,19 +63,19 @@ export default function MethodPage() {
             ],
             [
               "03 — Signal extract",
-              "Behavioral claims are stored with source linkage—no free-floating motive talk.",
+              "AI (or keyword heuristics) turns news text into behavioral signals with source linkage—no free-floating motive talk.",
             ],
             [
               "04 — Rubric analysis",
-              "AI (or deterministic draft mode) fills constructs with evidence, counter-evidence, and confidence.",
+              "When OPENAI_API_KEY is set, AI fills constructs with evidence, counter-evidence, and confidence; otherwise a deterministic rubric engine runs.",
             ],
             [
-              "05 — Human review",
-              "Featured dossiers publish only after review. Drafts stay labeled.",
+              "05 — Integrity gate",
+              "Auto-publish runs only when provenance and reference checks pass. Failed drafts stay hidden.",
             ],
             [
-              "06 — Provenance gate",
-              "publishCase() blocks publication without verified references and clean provenance tags.",
+              "06 — Transparency",
+              "Published AI dossiers label narrative source, analysis model, and review status on every page.",
             ],
           ].map(([title, body]) => (
             <li key={title} className="card p-5 md:grid md:grid-cols-[220px_1fr] md:gap-8 md:p-6">
@@ -124,8 +124,8 @@ export default function MethodPage() {
               "Wikidata/Wikipedia entity links — algorithmic analysis, not human-reviewed.",
             ],
             [
-              "Draft / moderation",
-              "Live ingest and admin stubs. Hidden from public browse until approved.",
+              "Draft / pipeline",
+              "Live ingest stubs. Hidden from public browse until integrity gates pass.",
             ],
           ].map(([name, desc]) => (
             <li

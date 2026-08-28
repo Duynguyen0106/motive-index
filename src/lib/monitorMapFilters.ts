@@ -3,6 +3,8 @@ import { COUNTRY_LABELS } from "@/lib/country";
 import type { CountryMonitorStat } from "@/lib/monitor";
 import type {
   ChoroplethMetric,
+  CoordAccuracyFilter,
+  MapBasemap,
   MapContentLayer,
   MapLayerMode,
   MonitorMapViewState,
@@ -11,8 +13,21 @@ import type {
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
 import { defaultTimelineRange } from "@/lib/monitorMapUtils";
 import { CRIME_CATEGORY_LABELS, type CountryCode, type CrimeCategory } from "@/lib/types";
-
 const CRIME_CATEGORIES = new Set<CrimeCategory>(Object.keys(CRIME_CATEGORY_LABELS) as CrimeCategory[]);
+
+export function pinPassesCoordAccuracy(
+  pin: Pick<MonitorCasePin, "coordAccuracy">,
+  filter: CoordAccuracyFilter,
+): boolean {
+  switch (filter) {
+    case "city-only":
+      return pin.coordAccuracy === "city";
+    case "hide-estimates":
+      return pin.coordAccuracy === "city";
+    default:
+      return true;
+  }
+}
 
 export function pinMatchesCrimeFilter(
   pin: Pick<MonitorCasePin, "crimeCategories">,
@@ -66,6 +81,7 @@ export function filterVisiblePins(
     | "timelineMaxYear"
     | "bboxFilter"
     | "crimeCategoryFilter"
+    | "coordAccuracyFilter"
   >,
 ): MonitorCasePin[] {
   return pins.filter(
@@ -73,7 +89,8 @@ export function filterVisiblePins(
       pinPassesProvenance(p, view.provenanceFilter) &&
       pinInTimeline(p, view.timelineMinYear, view.timelineMaxYear) &&
       pinInBbox(p, view.bboxFilter) &&
-      pinMatchesCrimeFilter(p, view.crimeCategoryFilter),
+      pinMatchesCrimeFilter(p, view.crimeCategoryFilter) &&
+      pinPassesCoordAccuracy(p, view.coordAccuracyFilter),
   );
 }
 
@@ -109,6 +126,7 @@ export function mapFiltersAffectPins(
     | "timelineMaxYear"
     | "bboxFilter"
     | "crimeCategoryFilter"
+    | "coordAccuracyFilter"
   >,
 ): boolean {
   return (
@@ -116,7 +134,8 @@ export function mapFiltersAffectPins(
     view.timelineMinYear !== TIMELINE_YEAR_MIN ||
     view.timelineMaxYear !== TIMELINE_YEAR_MAX ||
     view.bboxFilter !== null ||
-    view.crimeCategoryFilter.length > 0
+    view.crimeCategoryFilter.length > 0 ||
+    view.coordAccuracyFilter !== "all"
   );
 }
 
@@ -135,6 +154,18 @@ export const MAP_VIEW_PRESETS: MapViewPreset[] = [
     patch: {
       choroplethEnabled: true,
       choroplethMetric: "unsolved",
+      provenanceFilter: "hide-composite",
+      layerMode: "pins",
+      contentLayer: "cases",
+    },
+  },
+  {
+    id: "unsolved-rate",
+    label: "Unsolved rate",
+    description: "Choropleth by % unsolved per country",
+    patch: {
+      choroplethEnabled: true,
+      choroplethMetric: "unsolved_rate",
       provenanceFilter: "hide-composite",
       layerMode: "pins",
       contentLayer: "cases",
@@ -188,6 +219,7 @@ export const MAP_VIEW_PRESETS: MapViewPreset[] = [
       bboxFilter: null,
       showGhostPins: false,
       crimeCategoryFilter: [],
+      coordAccuracyFilter: "all",
     },
   },
 ];
@@ -195,7 +227,16 @@ export const MAP_VIEW_PRESETS: MapViewPreset[] = [
 const LAYER_MODES = new Set<MapLayerMode>(["pins", "heatmap"]);
 const CONTENT_LAYERS = new Set<MapContentLayer>(["cases", "news", "both"]);
 const PROV_FILTERS = new Set<ProvenanceFilter>(["all", "verified", "curated", "hide-composite"]);
-const CHORO_METRICS = new Set<ChoroplethMetric>(["cases", "unsolved"]);
+const CHORO_METRICS = new Set<ChoroplethMetric>(["cases", "unsolved", "unsolved_rate"]);
+const COORD_FILTERS = new Set<CoordAccuracyFilter>(["all", "city-only", "hide-estimates"]);
+const BASEMAPS = new Set<MapBasemap>(["dark", "light"]);
+
+function parseFloatParam(value: string | null, fallback: number | null, min: number, max: number): number | null {
+  if (!value) return fallback;
+  const n = parseFloat(value);
+  if (Number.isNaN(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
 
 function parseIntParam(value: string | null, fallback: number, min: number, max: number): number {
   if (!value) return fallback;
@@ -239,6 +280,12 @@ export function parseMapViewFromSearchParams(
       .filter((c): c is CrimeCategory => CRIME_CATEGORIES.has(c as CrimeCategory));
   }
 
+  const accRaw = params.get("macc") ?? "";
+  const basemapRaw = params.get("mbasemap") ?? "";
+  const vLat = parseFloatParam(params.get("mlat"), null, -90, 90);
+  const vLng = parseFloatParam(params.get("mlng"), null, -180, 180);
+  const vZoom = parseFloatParam(params.get("mzoom"), null, 2, 12);
+
   return {
     choroplethEnabled: choroRaw !== "0",
     choroplethMetric: CHORO_METRICS.has(chmRaw as ChoroplethMetric)
@@ -257,6 +304,13 @@ export function parseMapViewFromSearchParams(
     timelineMaxYear: Math.max(yx, ym + 1),
     bboxFilter,
     crimeCategoryFilter,
+    coordAccuracyFilter: COORD_FILTERS.has(accRaw as CoordAccuracyFilter)
+      ? (accRaw as CoordAccuracyFilter)
+      : "all",
+    basemap: BASEMAPS.has(basemapRaw as MapBasemap) ? (basemapRaw as MapBasemap) : "dark",
+    viewportLat: vLat,
+    viewportLng: vLng,
+    viewportZoom: vZoom,
   };
 }
 
@@ -279,9 +333,31 @@ export function mapViewToSearchParams(
     timelineMaxYear: TIMELINE_YEAR_MAX,
     bboxFilter: null,
     crimeCategoryFilter: [],
+    coordAccuracyFilter: "all",
+    basemap: "dark",
+    viewportLat: null,
+    viewportLng: null,
+    viewportZoom: null,
   };
 
-  const keys = ["ym", "yx", "mlayer", "mcontent", "mprov", "mchoro", "mchm", "mghost", "marcs", "mbbox", "mcat"] as const;
+  const keys = [
+    "ym",
+    "yx",
+    "mlayer",
+    "mcontent",
+    "mprov",
+    "mchoro",
+    "mchm",
+    "mghost",
+    "marcs",
+    "mbbox",
+    "mcat",
+    "macc",
+    "mbasemap",
+    "mlat",
+    "mlng",
+    "mzoom",
+  ] as const;
   for (const k of keys) p.delete(k);
 
   if (view.timelineMinYear !== defaults.timelineMinYear) p.set("ym", String(view.timelineMinYear));
@@ -300,6 +376,15 @@ export function mapViewToSearchParams(
   if (view.crimeCategoryFilter.length) {
     p.set("mcat", view.crimeCategoryFilter.join(","));
   }
+  if (view.coordAccuracyFilter !== defaults.coordAccuracyFilter) {
+    p.set("macc", view.coordAccuracyFilter);
+  }
+  if (view.basemap !== defaults.basemap) p.set("mbasemap", view.basemap);
+  if (view.viewportLat !== null && view.viewportLng !== null && view.viewportZoom !== null) {
+    p.set("mlat", view.viewportLat.toFixed(2));
+    p.set("mlng", view.viewportLng.toFixed(2));
+    p.set("mzoom", String(Math.round(view.viewportZoom)));
+  }
 
   return p;
 }
@@ -316,6 +401,7 @@ export function defaultMapViewFilters(): Pick<
   | "timelineMaxYear"
   | "bboxFilter"
   | "crimeCategoryFilter"
+  | "coordAccuracyFilter"
 > {
   return {
     provenanceFilter: "hide-composite",
@@ -323,6 +409,7 @@ export function defaultMapViewFilters(): Pick<
     timelineMaxYear: TIMELINE_YEAR_MAX,
     bboxFilter: null,
     crimeCategoryFilter: [],
+    coordAccuracyFilter: "all",
   };
 }
 

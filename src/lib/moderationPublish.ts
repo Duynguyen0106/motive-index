@@ -19,7 +19,7 @@ function isPipelineStub(c: CrimeCase): boolean {
   return c.tags.includes("live-ingest") || c.tags.includes("admin-created");
 }
 
-/** UI + admin hints before moderation approve. Mirrors publishCase() gates. */
+/** Pipeline readiness before auto-publish. Mirrors publishCase() gates. */
 export function getPublishReadiness(c: CrimeCase): PublishReadiness {
   const blockers: string[] = [];
   const warnings: string[] = [];

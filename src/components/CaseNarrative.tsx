@@ -1,5 +1,6 @@
-import type { CaseNarrative, DossierChapter } from "@/lib/types";
+import { NarrativeSourceBadge } from "@/components/AiProvenanceBadge";
 import { isProceduralNarrativeCase } from "@/lib/casePublishState";
+import type { CaseNarrative, DossierChapter } from "@/lib/types";
 
 const CHAPTER_ORDER: DossierChapter["id"][] = [
   "origins",
@@ -100,8 +101,24 @@ export function CaseNarrativeView({
         </div>
       ) : narrative.reviewNote ? (
         <div className="note lg:col-span-2 text-sm">
-          <p className="label mb-1">Dossier provenance</p>
+          <p className="label mb-1 flex flex-wrap items-center gap-2">
+            Dossier provenance
+            <NarrativeSourceBadge narrative={narrative} />
+          </p>
           <p className="text-[var(--ink-soft)]">{narrative.reviewNote}</p>
+        </div>
+      ) : !isDraft && narrative.source ? (
+        <div className="note lg:col-span-2 text-sm">
+          <p className="label mb-1 flex flex-wrap items-center gap-2">
+            Story source
+            <NarrativeSourceBadge narrative={narrative} />
+          </p>
+          {narrative.generatedAt ? (
+            <p className="text-[var(--ink-soft)]">
+              Generated {new Date(narrative.generatedAt).toLocaleString()}. Verify claims against
+              the References tab before citing.
+            </p>
+          ) : null}
         </div>
       ) : null}
       {!isDraft && procedural ? (

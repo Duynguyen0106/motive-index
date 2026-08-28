@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { DossierAiProvenance } from "@/components/AiProvenanceBadge";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { CaseImageGallery } from "@/components/CaseImageGallery";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -17,6 +18,7 @@ import { Timeline } from "@/components/Timeline";
 import { RelatedCases } from "@/components/RelatedCases";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { CaseStatusBadge } from "@/components/ui";
+import { reviewStatusLabel } from "@/lib/aiProvenance";
 import { getActiveTab, CASE_TABS, dossierShareUrl } from "@/lib/case-tabs";
 import {
   getAllCases,
@@ -242,7 +244,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 Draft — not published
               </p>
               <p className="mt-1 text-sm text-[var(--ink-soft)]">
-                This dossier is awaiting moderation and primary-source verification. Do not cite
+                This dossier is awaiting integrity gate review. Do not cite
                 behavioral claims until an editor approves publication.
               </p>
             </div>
@@ -260,12 +262,13 @@ export default async function CasePage({ params, searchParams }: Props) {
             </div>
           ) : null}
         </div>
-        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
-          <span>Analysis: {analysis.status}</span>
-          <span>
-            Review: {analysis.reviewedByHuman ? "human-reviewed" : "awaiting review"}
-          </span>
-          <span>Updated {formatDate(analysis.updatedAt)}</span>
+        <div className="mt-4 space-y-3">
+          <DossierAiProvenance crimeCase={crimeCase} />
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
+            <span>Analysis: {analysis.status}</span>
+            <span>Review: {reviewStatusLabel(crimeCase)}</span>
+            <span>Updated {formatDate(analysis.updatedAt)}</span>
+          </div>
         </div>
           </div>
           {primaryImage ? (

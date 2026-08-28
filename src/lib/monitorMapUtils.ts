@@ -143,10 +143,17 @@ function markerStatusClass(status: MonitorCasePin["status"]): string {
   return status === "unsolved" ? "status-unsolved" : "status-closed";
 }
 
+function markerAccuracyClass(accuracy: MonitorCasePin["coordAccuracy"]): string {
+  if (accuracy === "city") return "acc-city";
+  if (accuracy === "centroid") return "acc-centroid";
+  return "acc-country";
+}
+
 function markerClassesForCategoryPin(
   category: CrimeCategory,
   status: MonitorCasePin["status"],
   baseClass: string,
+  accuracy: MonitorCasePin["coordAccuracy"],
   opts?: { active?: boolean; hovered?: boolean; dimmed?: boolean },
 ): string {
   const cat = category ?? "other";
@@ -155,6 +162,7 @@ function markerClassesForCategoryPin(
     markerCategoryClass(cat),
     markerShapeClass(cat),
     markerStatusClass(status),
+    markerAccuracyClass(accuracy),
   ];
   if (opts?.active) parts.push("is-active");
   else if (opts?.hovered) parts.push("is-hover");
@@ -163,13 +171,14 @@ function markerClassesForCategoryPin(
 }
 
 export function markerClassesForPin(
-  pin: Pick<MonitorCasePin, "primaryCategory" | "status">,
+  pin: Pick<MonitorCasePin, "primaryCategory" | "status" | "coordAccuracy">,
   opts?: { active?: boolean; hovered?: boolean; dimmed?: boolean },
 ): string {
   return markerClassesForCategoryPin(
     pin.primaryCategory ?? "other",
     pin.status,
     "monitor-leaflet-marker",
+    pin.coordAccuracy ?? "city",
     opts,
   );
 }
@@ -177,8 +186,9 @@ export function markerClassesForPin(
 export function sidebarPinClasses(
   category: CrimeCategory,
   status: MonitorCasePin["status"],
+  accuracy: MonitorCasePin["coordAccuracy"] = "city",
 ): string {
-  return markerClassesForCategoryPin(category, status, "monitor-case-pin");
+  return markerClassesForCategoryPin(category, status, "monitor-case-pin", accuracy);
 }
 
 export function escapeHtml(text: string): string {
@@ -262,4 +272,43 @@ export function exportCasesCsv(
     ].join(","),
   );
   return [header, ...lines].join("\n");
+}
+
+/** Summary popup HTML for a marker cluster. */
+export function buildClusterPopupHtml(
+  pins: Array<
+    Pick<
+      MonitorCasePin,
+      "name" | "slug" | "status" | "primaryCategory" | "yearStart" | "crimeCategories"
+    >
+  >,
+): string {
+  const count = pins.length;
+  const unsolved = pins.filter((p) => p.status === "unsolved").length;
+  const byCategory = new Map<CrimeCategory, number>();
+  for (const pin of pins) {
+    const cat = pin.primaryCategory ?? "other";
+    byCategory.set(cat, (byCategory.get(cat) ?? 0) + 1);
+  }
+  const topCats = [...byCategory.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([cat, n]) => `${CRIME_CATEGORY_LABELS[cat]} (${n})`)
+    .join(" · ");
+
+  const sample = pins
+    .slice(0, 5)
+    .map(
+      (p) =>
+        `<li><a href="/cases/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> <span class="monitor-cluster-year">${p.yearStart}</span></li>`,
+    )
+    .join("");
+
+  return `<div class="monitor-cluster-popup">
+    <strong>${count} dossiers</strong>
+    ${unsolved ? `<p class="monitor-cluster-meta">${unsolved} unsolved</p>` : ""}
+    ${topCats ? `<p class="monitor-cluster-meta">${escapeHtml(topCats)}</p>` : ""}
+    <ul class="monitor-cluster-list">${sample}</ul>
+    ${count > 5 ? `<p class="monitor-cluster-more">+ ${count - 5} more — zoom in</p>` : ""}
+  </div>`;
 }

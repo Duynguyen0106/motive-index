@@ -1796,6 +1796,83 @@ a.monitor-news-headline:hover {
   opacity: 0.35;
 }
 
+.monitor-leaflet-marker.acc-centroid,
+.monitor-leaflet-marker.acc-country {
+  background: color-mix(in srgb, var(--paper) 55%, transparent) !important;
+  border-style: dashed;
+  border-width: 2px;
+}
+
+.monitor-leaflet-marker.acc-country {
+  transform: scale(0.82);
+}
+
+.monitor-leaflet-marker.acc-centroid.is-hover,
+.monitor-leaflet-marker.acc-country.is-hover {
+  transform: scale(1.08);
+}
+
+.monitor-leaflet-marker.acc-country.is-hover {
+  transform: scale(0.9);
+}
+
+.monitor-leaflet-marker.acc-centroid.shape-diamond.is-hover,
+.monitor-leaflet-marker.acc-country.shape-diamond.is-hover {
+  transform: rotate(45deg) scale(1.08);
+}
+
+.monitor-legend-marker.acc-centroid.monitor-legend-acc {
+  background: transparent !important;
+  border: 2px dashed var(--muted);
+}
+
+.monitor-cluster-popup-wrap .monitor-cluster-popup {
+  min-width: 12rem;
+}
+
+.monitor-cluster-popup strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+}
+
+.monitor-cluster-meta {
+  margin: 0.15rem 0;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.monitor-cluster-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.monitor-cluster-list li {
+  margin: 0.25rem 0;
+}
+
+.monitor-cluster-list a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.monitor-cluster-list a:hover {
+  text-decoration: underline;
+}
+
+.monitor-cluster-year {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.monitor-cluster-more {
+  margin: 0.35rem 0 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
 .crime-cat-serial_murder {
   background: var(--crime-cat-serial_murder);
   border-color: var(--crime-cat-serial_murder-ring);

@@ -1,3 +1,4 @@
+import { AnalysisProviderBadge } from "@/components/AiProvenanceBadge";
 import type { ForensicAnalysis, FrameworkNote, PsychConstruct } from "@/lib/types";
 import { DIMENSION_LABELS, FRAMEWORK_LABELS } from "@/lib/types";
 import { formatConfidence } from "@/lib/utils";
@@ -124,7 +125,10 @@ export function ForensicAnalysisView({ analysis }: { analysis: ForensicAnalysis 
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="display text-3xl">Psychological map</h2>
-          <DimensionCoverage constructs={analysis.constructs} />
+          <div className="flex flex-col items-end gap-1">
+            <AnalysisProviderBadge analysis={analysis} />
+            <DimensionCoverage constructs={analysis.constructs} />
+          </div>
         </div>
         <p className="body-copy mt-2 text-[var(--ink-soft)]">
           Constructs are hypotheses grounded in public behavior — not diagnoses. Each dimension
