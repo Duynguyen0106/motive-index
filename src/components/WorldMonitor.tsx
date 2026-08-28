@@ -28,6 +28,7 @@ import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
 import { exportCasesCsv, sidebarPinClasses } from "@/lib/monitorMapUtils";
 import {
   buildCountryStatsFromPins,
+  defaultMapViewFilters,
   filterVisiblePins,
   mapFiltersAffectPins,
   mapViewToSearchParams,
@@ -441,6 +442,10 @@ export function WorldMonitor({ initial }: Props) {
     updateMapView(preset.patch);
   }
 
+  const clearMapFilters = useCallback(() => {
+    updateMapView(defaultMapViewFilters());
+  }, [updateMapView]);
+
   // Scroll case card into view on mobile when selected
   useEffect(() => {
     if (!selectedCaseId || !caseCardRef.current) return;
@@ -682,9 +687,17 @@ export function WorldMonitor({ initial }: Props) {
           <div className="monitor-map-header">
             <h2 className="display text-lg">Global map</h2>
             <span className="text-xs text-[var(--muted)]">
-              {visiblePins.length
-                ? `${visiblePins.length}${visiblePins.length !== data.pins.length ? ` of ${data.pins.length}` : ""} visible · zoom clusters to expand`
-                : "No markers for current map filters"}
+              {visiblePins.length ? (
+                <>
+                  <strong className="text-[var(--ink)]">{visiblePins.length.toLocaleString()}</strong>
+                  {visiblePins.length !== data.pins.length
+                    ? ` of ${data.pins.length.toLocaleString()} plotted`
+                    : " cases plotted"}
+                  {mapFiltersActive ? " · filters active" : ""}
+                </>
+              ) : (
+                "No markers — adjust map filters below"
+              )}
             </span>
           </div>
           <MonitorMapControls
@@ -725,6 +738,18 @@ export function WorldMonitor({ initial }: Props) {
               </button>
             </div>
           ) : null}
+          {isDrawingBbox ? (
+            <div className="monitor-draw-banner" role="status">
+              <span>Drag on the map to draw an area filter · press Esc to cancel</span>
+              <button
+                type="button"
+                className="monitor-compare-banner-cancel"
+                onClick={() => setIsDrawingBbox(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : null}
           <CaseWorldMap
             pins={data.pins}
             ghostPins={data.ghostPins}
@@ -746,6 +771,7 @@ export function WorldMonitor({ initial }: Props) {
               updateMapView({ bboxFilter: bbox });
               setIsDrawingBbox(false);
             }}
+            onClearMapFilters={clearMapFilters}
           />
           {!isMobileLayout ? (
             <div className="monitor-map-interactive-layer">

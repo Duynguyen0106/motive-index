@@ -88,8 +88,10 @@ export function MonitorMapControls({
     onChange({ crimeCategoryFilter: [...filter, cat] });
   }
 
-  function crimeChipActive(cat: CrimeCategory): boolean {
-    return view.crimeCategoryFilter.length === 0 || view.crimeCategoryFilter.includes(cat);
+  function crimeChipClass(cat: CrimeCategory): string {
+    const filter = view.crimeCategoryFilter;
+    if (filter.length === 0) return "is-neutral";
+    return filter.includes(cat) ? "is-filtered" : "is-excluded";
   }
 
   return (
@@ -111,6 +113,36 @@ export function MonitorMapControls({
           {shareCopied ? "Link copied" : "Share view"}
         </button>
       </div>
+
+      {collapsed ? (
+        <div className="monitor-map-quick-bar" role="toolbar" aria-label="Quick map actions">
+          <button type="button" className="monitor-map-quick-btn" onClick={onToggleCollapsed}>
+            Layers
+          </button>
+          <button
+            type="button"
+            className={`monitor-map-quick-btn ${view.layerMode === "heatmap" ? "is-active" : ""}`}
+            onClick={() => onChange({ layerMode: view.layerMode === "heatmap" ? "pins" : "heatmap" })}
+          >
+            {view.layerMode === "heatmap" ? "Heatmap" : "Pins"}
+          </button>
+          <button type="button" className="monitor-map-quick-btn" onClick={() => onRegionPreset(REGION_PRESETS[0])}>
+            Reset view
+          </button>
+          <button type="button" className="monitor-map-quick-btn" onClick={onExplore}>
+            Explore
+          </button>
+          <button type="button" className="monitor-map-quick-btn" onClick={onFullscreen}>
+            {isFullscreen ? "Exit" : "Full"}
+          </button>
+        </div>
+      ) : null}
+
+      {collapsed ? (
+        <p className="monitor-keyboard-hint monitor-keyboard-hint-collapsed text-xs text-[var(--muted)]">
+          <kbd>N</kbd>/<kbd>P</kbd> cycle · <kbd>E</kbd> explore · <kbd>F</kbd> fullscreen
+        </p>
+      ) : null}
 
       {!collapsed ? (
         <>
@@ -225,7 +257,7 @@ export function MonitorMapControls({
                 <button
                   key={cat}
                   type="button"
-                  className={`monitor-crime-chip ${crimeChipActive(cat) ? "is-active" : ""}`}
+                  className={`monitor-crime-chip ${crimeChipClass(cat)}`}
                   title={CRIME_CATEGORY_LABELS[cat]}
                   onClick={() => toggleCrimeCategory(cat)}
                 >
@@ -248,97 +280,108 @@ export function MonitorMapControls({
             </div>
           </div>
 
-          <div className="monitor-map-controls-row monitor-timeline-row">
-            <span className="monitor-map-controls-label">Timeline</span>
-            <span className="monitor-timeline-range">
-              {view.timelineMinYear}–{view.timelineMaxYear}
-            </span>
-            {onPlayTimeline ? (
-              <button type="button" className="monitor-map-toggle" onClick={onPlayTimeline}>
-                {isPlayingTimeline ? "Pause" : "Play decades"}
-              </button>
-            ) : null}
-          </div>
-          <div className="monitor-timeline-sliders">
-            <input
-              type="range"
-              min={TIMELINE_YEAR_MIN}
-              max={TIMELINE_YEAR_MAX}
-              value={view.timelineMinYear}
-              onChange={(e) =>
-                onChange({
-                  timelineMinYear: Math.min(parseInt(e.target.value, 10), view.timelineMaxYear - 1),
-                })
-              }
-              aria-label="Timeline start year"
-            />
-            <input
-              type="range"
-              min={TIMELINE_YEAR_MIN}
-              max={TIMELINE_YEAR_MAX}
-              value={view.timelineMaxYear}
-              onChange={(e) =>
-                onChange({
-                  timelineMaxYear: Math.max(parseInt(e.target.value, 10), view.timelineMinYear + 1),
-                })
-              }
-              aria-label="Timeline end year"
-            />
-          </div>
-          <div className="monitor-timeline-decades">
-            {decades.slice(0, 8).map((d) => (
-              <button
-                key={d}
-                type="button"
-                className="monitor-map-toggle monitor-decade-btn"
-                onClick={() => onChange({ timelineMinYear: d, timelineMaxYear: d + 9 })}
-              >
-                {d}s
-              </button>
-            ))}
-          </div>
-
-          <div className="monitor-map-controls-row">
-            <span className="monitor-map-controls-label">Regions</span>
-            <div className="monitor-map-toggle-group monitor-region-presets">
-              {REGION_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className="monitor-map-toggle"
-                  onClick={() => onRegionPreset(p)}
-                >
-                  {p.label}
-                </button>
-              ))}
+          <details className="monitor-controls-section">
+            <summary className="monitor-controls-section-summary">Timeline</summary>
+            <div className="monitor-controls-section-body">
+              <div className="monitor-map-controls-row monitor-timeline-row">
+                <span className="monitor-timeline-range">
+                  {view.timelineMinYear}–{view.timelineMaxYear}
+                </span>
+                {onPlayTimeline ? (
+                  <button type="button" className="monitor-map-toggle" onClick={onPlayTimeline}>
+                    {isPlayingTimeline ? "Pause" : "Play decades"}
+                  </button>
+                ) : null}
+              </div>
+              <div className="monitor-timeline-sliders">
+                <input
+                  type="range"
+                  min={TIMELINE_YEAR_MIN}
+                  max={TIMELINE_YEAR_MAX}
+                  value={view.timelineMinYear}
+                  onChange={(e) =>
+                    onChange({
+                      timelineMinYear: Math.min(parseInt(e.target.value, 10), view.timelineMaxYear - 1),
+                    })
+                  }
+                  aria-label="Timeline start year"
+                />
+                <input
+                  type="range"
+                  min={TIMELINE_YEAR_MIN}
+                  max={TIMELINE_YEAR_MAX}
+                  value={view.timelineMaxYear}
+                  onChange={(e) =>
+                    onChange({
+                      timelineMaxYear: Math.max(parseInt(e.target.value, 10), view.timelineMinYear + 1),
+                    })
+                  }
+                  aria-label="Timeline end year"
+                />
+              </div>
+              <div className="monitor-timeline-decades">
+                {decades.slice(0, 8).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className="monitor-map-toggle monitor-decade-btn"
+                    onClick={() => onChange({ timelineMinYear: d, timelineMaxYear: d + 9 })}
+                  >
+                    {d}s
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          </details>
 
-          <div className="monitor-map-controls-row monitor-map-actions">
-            <button type="button" className="monitor-map-toggle" onClick={onExplore} title="Random case">
-              Explore
-            </button>
-            <button type="button" className="monitor-map-toggle" onClick={onFullscreen}>
-              {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-            </button>
-            <button
-              type="button"
-              className={`monitor-map-toggle ${isDrawingBbox ? "is-active" : ""}`}
-              onClick={onDrawBbox}
-              disabled={coarsePointer}
-              title={coarsePointer ? "Area filter requires a mouse — use region presets on touch devices" : undefined}
-            >
-              {isDrawingBbox ? "Drawing…" : "Draw area filter"}
-            </button>
-            {view.bboxFilter ? (
-              <button type="button" className="monitor-map-toggle" onClick={onClearBbox}>
-                Clear area
-              </button>
-            ) : null}
-            <button type="button" className="monitor-map-toggle" onClick={onExport}>
-              Export CSV
-            </button>
-          </div>
+          <details className="monitor-controls-section">
+            <summary className="monitor-controls-section-summary">Regions</summary>
+            <div className="monitor-controls-section-body">
+              <div className="monitor-map-toggle-group monitor-region-presets">
+                {REGION_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="monitor-map-toggle"
+                    onClick={() => onRegionPreset(p)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </details>
+
+          <details className="monitor-controls-section" open>
+            <summary className="monitor-controls-section-summary">Actions</summary>
+            <div className="monitor-controls-section-body">
+              <div className="monitor-map-controls-row monitor-map-actions">
+                <button type="button" className="monitor-map-toggle" onClick={onExplore} title="Random case">
+                  Explore
+                </button>
+                <button type="button" className="monitor-map-toggle" onClick={onFullscreen}>
+                  {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                </button>
+                <button
+                  type="button"
+                  className={`monitor-map-toggle ${isDrawingBbox ? "is-active" : ""}`}
+                  onClick={onDrawBbox}
+                  disabled={coarsePointer}
+                  title={coarsePointer ? "Area filter requires a mouse — use region presets on touch devices" : undefined}
+                >
+                  {isDrawingBbox ? "Drawing…" : "Draw area filter"}
+                </button>
+                {view.bboxFilter ? (
+                  <button type="button" className="monitor-map-toggle" onClick={onClearBbox}>
+                    Clear area
+                  </button>
+                ) : null}
+                <button type="button" className="monitor-map-toggle" onClick={onExport}>
+                  Export CSV
+                </button>
+              </div>
+            </div>
+          </details>
 
           {compareMode ? (
             <p className="monitor-compare-hint text-xs text-[var(--muted)]">

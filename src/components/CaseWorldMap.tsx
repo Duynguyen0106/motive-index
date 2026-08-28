@@ -6,7 +6,7 @@ import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
 import { MonitorMapOverlay } from "@/components/MonitorMapOverlay";
 import { getLeaflet, getLeafletWithCluster } from "@/lib/leafletClient";
-import { filterVisiblePins } from "@/lib/monitorMapFilters";
+import { filterVisiblePins, pinInBbox, pinInTimeline, pinMatchesCrimeFilter, pinPassesProvenance } from "@/lib/monitorMapFilters";
 import type { CountryMonitorStat } from "@/lib/monitor";
 import {
   COUNTRY_BOUNDS,
@@ -61,6 +61,7 @@ type Props = {
   isDrawingBbox?: boolean;
   isFullscreen?: boolean;
   cardRef?: RefObject<HTMLDivElement | null>;
+  onClearMapFilters?: () => void;
 };
 
 function featureIso3(feature: GeoJSON.Feature | undefined): string | undefined {
@@ -126,6 +127,7 @@ export function CaseWorldMap({
   isDrawingBbox = false,
   isFullscreen = false,
   onBboxChange,
+  onClearMapFilters,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -146,7 +148,22 @@ export function CaseWorldMap({
   const selectedCountryRef = useRef(selectedCountry);
   const [ready, setReady] = useState(false);
   const [hint, setHint] = useState("Loading map…");
-  const [clusterCount, setClusterCount] = useState(0);
+  const [legendOpen, setLegendOpen] = useState(false);
+
+  useEffect(() => {
+    setLegendOpen(!window.matchMedia("(max-width: 1023px)").matches);
+  }, []);
+
+  const filteredPins = filterVisiblePins(pins, view);
+  const contextualPins = pins.filter(
+    (p) =>
+      pinPassesProvenance(p, view.provenanceFilter) &&
+      pinInTimeline(p, view.timelineMinYear, view.timelineMaxYear) &&
+      pinInBbox(p, view.bboxFilter),
+  );
+  const crimeFilterActive = view.crimeCategoryFilter.length > 0;
+  const unsolvedVisible = filteredPins.filter((p) => p.status === "unsolved").length;
+  const filteredOutCount = pins.length - filteredPins.length;
 
   useEffect(() => {
     onSelectCountryRef.current = onSelectCountry;
@@ -155,9 +172,6 @@ export function CaseWorldMap({
     onBboxChangeRef.current = onBboxChange;
     selectedCountryRef.current = selectedCountry;
   }, [onSelectCountry, onSelectCase, onHoverCase, onBboxChange, selectedCountry]);
-
-  const filteredPins = filterVisiblePins(pins, view);
-  const unsolvedVisible = filteredPins.filter((p) => p.status === "unsolved").length;
 
   const statsByCode = useMemoMap(countryStats);
   const choroplethMax = Math.max(
@@ -358,7 +372,9 @@ export function CaseWorldMap({
         heat.addTo(map);
         heatLayerRef.current = heat;
       } else if (showCases) {
-        for (const pin of filteredPins) {
+        for (const pin of contextualPins) {
+          const crimeMatch = pinMatchesCrimeFilter(pin, view.crimeCategoryFilter);
+          const dimmed = crimeFilterActive && !crimeMatch;
           const active = selectedCaseId === pin.id;
           const hovered = hoveredCaseId === pin.id;
           const marker = L.marker([pin.lat, pin.lng], {
@@ -366,7 +382,7 @@ export function CaseWorldMap({
             caseId: pin.id,
             icon: L.divIcon({
               className: "monitor-leaflet-icon",
-              html: markerHtml(pin, active, hovered, false),
+              html: markerHtml(pin, active, hovered, dimmed),
               iconSize: [20, 20],
               iconAnchor: [10, 10],
             }),
@@ -375,19 +391,21 @@ export function CaseWorldMap({
           marker.bindPopup(buildRichPopupHtml(pin), { maxWidth: 280, className: "monitor-leaflet-popup" });
 
           marker.on("click", () => {
+            if (dimmed) return;
             onSelectCaseRef.current?.(pin.id);
             map.flyTo([pin.lat, pin.lng], Math.max(map.getZoom(), 6), { duration: 0.6 });
           });
-          marker.on("mouseover", () => onHoverCaseRef.current?.(pin.id));
+          marker.on("mouseover", () => {
+            if (!dimmed) onHoverCaseRef.current?.(pin.id);
+          });
           marker.on("mouseout", () => onHoverCaseRef.current?.(""));
 
           cluster.addLayer(marker);
         }
       }
 
-      setClusterCount(cluster.getLayers().length);
     })();
-  }, [filteredPins, ready, selectedCaseId, hoveredCaseId, view.contentLayer, view.layerMode]);
+  }, [filteredPins, contextualPins, ready, selectedCaseId, hoveredCaseId, view.contentLayer, view.layerMode, view.crimeCategoryFilter]);
 
   // News markers
   useEffect(() => {
@@ -720,6 +738,21 @@ export function CaseWorldMap({
         timelineLabel={`${view.timelineMinYear}–${view.timelineMaxYear}`}
         bboxActive={Boolean(view.bboxFilter)}
       />
+      {filteredPins.length === 0 && pins.length > 0 ? (
+        <div className="monitor-map-filtered-empty">
+          <p className="display text-base">No cases match map filters</p>
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">
+            {filteredOutCount > 0
+              ? `${filteredOutCount.toLocaleString()} dossiers hidden by timeline, provenance, area, or crime-type filters.`
+              : "Adjust layers or clear filters to restore markers."}
+          </p>
+          {onClearMapFilters ? (
+            <button type="button" className="btn btn-primary mt-3 text-sm" onClick={onClearMapFilters}>
+              Clear map filters
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="monitor-map-float-controls">
         <button type="button" className="monitor-map-btn" onClick={resetView} title="Reset view">
           ⟲
@@ -728,43 +761,57 @@ export function CaseWorldMap({
       <div className="monitor-map-toolbar">
         <span className="monitor-map-hint">{hint}</span>
       </div>
-      <div className="monitor-map-legend">
-        <span className="monitor-legend-heading">Crime types</span>
-        <div className="monitor-legend-crime-grid">
-          {CRIME_CATEGORY_FILTER_ORDER.filter((cat) => cat !== "other").map((cat) => (
-            <span key={cat} className="monitor-legend-item">
-              <span
-                className={`monitor-legend-marker ${markerCategoryClass(cat)} ${markerShapeClass(cat)}`}
-                aria-hidden
-              />
-              {CRIME_CATEGORY_LABELS[cat]}
+      <div className={`monitor-map-legend ${legendOpen ? "is-open" : "is-collapsed"}`}>
+        <button
+          type="button"
+          className="monitor-legend-toggle"
+          onClick={() => setLegendOpen((v) => !v)}
+          aria-expanded={legendOpen}
+        >
+          <span className="monitor-legend-toggle-label">Map legend</span>
+          <span className="monitor-legend-toggle-hint">{legendOpen ? "Hide" : "Show"}</span>
+        </button>
+        {legendOpen ? (
+          <div className="monitor-legend-body">
+            <span className="monitor-legend-heading">Crime types</span>
+            <div className="monitor-legend-crime-grid">
+              {CRIME_CATEGORY_FILTER_ORDER.filter((cat) => cat !== "other").map((cat) => (
+                <span key={cat} className="monitor-legend-item">
+                  <span
+                    className={`monitor-legend-marker ${markerCategoryClass(cat)} ${markerShapeClass(cat)}`}
+                    aria-hidden
+                  />
+                  {CRIME_CATEGORY_LABELS[cat]}
+                </span>
+              ))}
+            </div>
+            <span className="monitor-legend-heading">Status</span>
+            <span className="monitor-legend-item">
+              <span className="monitor-legend-marker status-ring-closed" aria-hidden /> Closed / historical
             </span>
-          ))}
-        </div>
-        <span className="monitor-legend-heading">Status</span>
-        <span className="monitor-legend-item">
-          <span className="monitor-legend-marker status-ring-closed" aria-hidden /> Closed / historical
-        </span>
-        <span className="monitor-legend-item">
-          <span className="monitor-legend-marker status-ring-unsolved" aria-hidden /> Unsolved (amber ring)
-        </span>
-        <span className="monitor-legend-item">
-          <span className="monitor-news-marker monitor-legend-news">◆</span> News
-        </span>
-        {view.showGhostPins ? (
-          <span className="monitor-legend-item">
-            <span className="monitor-ghost-marker monitor-legend-ghost">?</span> Estimated pin
-          </span>
+            <span className="monitor-legend-item">
+              <span className="monitor-legend-marker status-ring-unsolved" aria-hidden /> Unsolved (amber ring)
+            </span>
+            <span className="monitor-legend-item">
+              <span className="monitor-news-marker monitor-legend-news">◆</span> News
+            </span>
+            {view.showGhostPins ? (
+              <span className="monitor-legend-item">
+                <span className="monitor-ghost-marker monitor-legend-ghost">?</span> Estimated pin
+              </span>
+            ) : null}
+            {crimeFilterActive ? (
+              <span className="monitor-legend-item">
+                <span className="monitor-legend-marker is-dimmed-preview" aria-hidden /> Dimmed = filtered out
+              </span>
+            ) : null}
+            {filteredOutCount > 0 ? (
+              <span className="monitor-legend-filter-note">
+                {filteredOutCount.toLocaleString()} filtered out
+              </span>
+            ) : null}
+          </div>
         ) : null}
-        {compareCaseId ? (
-          <span className="monitor-legend-item">Compare arc</span>
-        ) : null}
-        {view.choroplethEnabled ? (
-          <span className="monitor-legend-item">Choropleth: {view.choroplethMetric}</span>
-        ) : null}
-        <span className="monitor-legend-meta">
-          {filteredPins.length} cases · {clusterCount} markers · {view.timelineMinYear}–{view.timelineMaxYear}
-        </span>
       </div>
     </div>
   );

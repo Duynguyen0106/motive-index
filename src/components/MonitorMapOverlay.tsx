@@ -45,16 +45,17 @@ export function MonitorMapOverlay({
             <strong>{newsCount}</strong> news
           </span>
         ) : null}
-        <span className="monitor-overlay-stat">{timelineLabel}</span>
+        <span className="monitor-overlay-stat monitor-overlay-stat-timeline">{timelineLabel}</span>
         {bboxActive ? <span className="monitor-overlay-stat is-active">Area filter</span> : null}
       </div>
 
       {choroplethEnabled ? (
         <div className="monitor-choropleth-legend" aria-hidden>
           <span className="monitor-choropleth-legend-label">
-            {choroplethMetric === "unsolved" ? "Unsolved" : "Cases"}
+            {choroplethMetric === "unsolved" ? "Unsolved count" : "Case count"}
           </span>
           <span className="monitor-choropleth-scale">
+            <span className="monitor-choropleth-min">0</span>
             {Array.from({ length: 5 }, (_, i) => {
               const value = ((i + 1) / 5) * choroplethMax;
               const opacity = choroplethFillOpacity(value, choroplethMax);
@@ -67,7 +68,7 @@ export function MonitorMapOverlay({
               );
             })}
           </span>
-          <span className="monitor-choropleth-max">{choroplethMax}</span>
+          <span className="monitor-choropleth-max">{choroplethMax}+</span>
         </div>
       ) : null}
     </div>

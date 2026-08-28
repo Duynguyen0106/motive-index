@@ -1327,7 +1327,7 @@ a.monitor-news-headline:hover {
 
 .monitor-map-float-controls {
   position: absolute;
-  top: 4.25rem;
+  bottom: 4.75rem;
   right: 0.65rem;
   z-index: 450;
   display: flex;
@@ -1336,20 +1336,23 @@ a.monitor-news-headline:hover {
 }
 
 .monitor-map-btn {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
   color: var(--ink);
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+  transition: background 0.12s, border-color 0.12s, transform 0.12s;
 }
 
 .monitor-map-btn:hover {
   background: var(--accent-soft);
   border-color: var(--accent);
+  transform: scale(1.05);
 }
 
 .monitor-map-toolbar {
@@ -1367,14 +1370,81 @@ a.monitor-news-headline:hover {
 
 .monitor-map-legend {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1rem;
-  padding: 0.55rem 1rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem 0.55rem;
   border-top: 1px solid var(--line);
   font-size: 0.6875rem;
   color: var(--muted);
   background: var(--paper);
+}
+
+.monitor-map-legend.is-collapsed {
+  padding-block: 0.35rem;
+}
+
+.monitor-legend-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.15rem 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.monitor-legend-toggle-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.monitor-legend-toggle-hint {
+  font-size: 0.625rem;
+  color: var(--accent);
+}
+
+.monitor-legend-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding-top: 0.15rem;
+}
+
+.monitor-legend-filter-note {
+  flex-basis: 100%;
+  font-size: 0.625rem;
+  color: var(--accent);
+}
+
+.monitor-legend-marker.is-dimmed-preview {
+  opacity: 0.35;
+  background: var(--muted);
+  border-color: var(--line);
+}
+
+.monitor-map-filtered-empty {
+  position: absolute;
+  inset: 3rem 1rem 4rem;
+  z-index: 520;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  border: 1px dashed var(--line-strong);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
 }
 
 .monitor-legend-heading {
@@ -1436,14 +1506,14 @@ a.monitor-news-headline:hover {
 
 .monitor-legend-marker.status-ring-closed {
   border-radius: 50%;
-  background: var(--crime-cat-homicide);
-  border-color: var(--crime-cat-homicide-ring);
+  background: var(--map-pin-resolved);
+  border-color: var(--map-pin-resolved-ring);
 }
 
 .monitor-legend-marker.status-ring-unsolved {
   border-radius: 50%;
-  background: var(--crime-cat-homicide);
-  border-color: var(--crime-cat-homicide-ring);
+  background: var(--map-pin-resolved);
+  border-color: var(--map-pin-resolved-ring);
   box-shadow: 0 0 0 2px var(--map-pin-unsolved);
 }
 
@@ -1459,6 +1529,102 @@ a.monitor-news-headline:hover {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+}
+
+.monitor-map-controls:not(.is-collapsed) .monitor-map-controls-body {
+  animation: monitor-controls-in 0.2s ease-out;
+}
+
+@keyframes monitor-controls-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.monitor-map-quick-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-top: 0.15rem;
+}
+
+.monitor-map-quick-btn {
+  font-size: 0.6875rem;
+  padding: 0.3rem 0.6rem;
+  min-height: 2rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.monitor-map-quick-btn:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: var(--accent-soft);
+}
+
+.monitor-map-quick-btn.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.monitor-keyboard-hint-collapsed {
+  margin: 0;
+  padding-bottom: 0.15rem;
+}
+
+.monitor-controls-section {
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.monitor-controls-section-summary {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.monitor-controls-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.monitor-controls-section-summary::before {
+  content: "▸ ";
+  color: var(--accent);
+}
+
+.monitor-controls-section[open] .monitor-controls-section-summary::before {
+  content: "▾ ";
+}
+
+.monitor-controls-section-body {
+  padding: 0 0.55rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.monitor-timeline-range {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  min-width: 6.5rem;
 }
 
 .monitor-map-controls-row {
@@ -1543,6 +1709,22 @@ a.monitor-news-headline:hover {
 
 .monitor-crime-chip:hover {
   border-color: var(--accent);
+}
+
+.monitor-crime-chip.is-neutral {
+  border-color: var(--line);
+  opacity: 0.85;
+}
+
+.monitor-crime-chip.is-filtered {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.monitor-crime-chip.is-excluded {
+  opacity: 0.45;
+  border-style: dashed;
 }
 
 .monitor-crime-chip.is-active {
@@ -1671,6 +1853,18 @@ a.monitor-news-headline:hover {
   padding: 0.55rem 1rem;
   border-bottom: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--map-pin-unsolved) 12%, var(--paper));
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.monitor-draw-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--accent) 10%, var(--paper));
   font-size: 0.8125rem;
   color: var(--ink-soft);
 }
@@ -1957,6 +2151,18 @@ a.monitor-news-headline:hover {
   background: color-mix(in srgb, var(--paper) 88%, transparent);
   border: 1px solid var(--line);
   color: var(--muted);
+}
+
+.monitor-choropleth-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.monitor-choropleth-min,
+.monitor-choropleth-max {
+  font-size: 0.5625rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .monitor-choropleth-scale {
@@ -3209,14 +3415,24 @@ textarea:focus-visible {
   }
 
   .monitor-case-card {
-    position: relative;
+    position: sticky;
+    bottom: calc(4.25rem + env(safe-area-inset-bottom));
     top: auto;
     right: auto;
     width: 100%;
     margin: 0;
     border-top: 1px solid var(--line);
-    box-shadow: none;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
     animation: none;
+    z-index: 180;
+  }
+
+  .monitor-overlay-stat-timeline {
+    display: none;
+  }
+
+  .monitor-map-overlay-stats {
+    max-width: calc(100% - 3rem);
   }
 
   .monitor-sidebar {
@@ -3230,6 +3446,11 @@ textarea:focus-visible {
   .monitor-leaflet-map {
     min-height: 320px;
     height: 50vh;
+  }
+
+  .monitor-map-filtered-empty {
+    inset: 2rem 0.75rem 3rem;
+    padding: 1rem;
   }
 }
 

@@ -308,5 +308,23 @@ export function isDefaultTimeline(min: number, max: number): boolean {
   return min === TIMELINE_YEAR_MIN && max === TIMELINE_YEAR_MAX;
 }
 
+/** Default map-layer filter state (matches URL serialization defaults). */
+export function defaultMapViewFilters(): Pick<
+  MonitorMapViewState,
+  | "provenanceFilter"
+  | "timelineMinYear"
+  | "timelineMaxYear"
+  | "bboxFilter"
+  | "crimeCategoryFilter"
+> {
+  return {
+    provenanceFilter: "hide-composite",
+    timelineMinYear: TIMELINE_YEAR_MIN,
+    timelineMaxYear: TIMELINE_YEAR_MAX,
+    bboxFilter: null,
+    crimeCategoryFilter: [],
+  };
+}
+
 // Re-export timeline defaults for filters module consumers
 export { TIMELINE_YEAR_MIN, TIMELINE_YEAR_MAX };
