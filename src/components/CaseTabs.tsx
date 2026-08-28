@@ -2,20 +2,39 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { CASE_TABS } from "@/lib/case-tabs";
+import { useEffect, useRef } from "react";
+import { visibleCaseTabs } from "@/lib/case-tabs";
 
-export function CaseTabs({ slug }: { slug: string }) {
+export function CaseTabs({
+  slug,
+  defaultTab = "overview",
+  hasNarrative = false,
+}: {
+  slug: string;
+  defaultTab?: string;
+  hasNarrative?: boolean;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const active = searchParams.get("tab") ?? "overview";
+  const active = searchParams.get("tab") ?? defaultTab;
+  const tabs = visibleCaseTabs(hasNarrative);
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const activeLink = nav.querySelector<HTMLAnchorElement>(`[data-tab-id="${active}"]`);
+    activeLink?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
+  }, [active]);
 
   return (
-    <div className="border-b border-[var(--line-strong)] bg-[var(--paper)]">
+    <div className="dossier-tabs border-b border-[var(--line-strong)] bg-[var(--bg-subtle)]/80 backdrop-blur-sm">
       <nav
-        className="site-shell flex gap-0 overflow-x-auto"
+        ref={navRef}
+        className="site-shell dossier-tab-scroll flex max-w-full min-w-0 gap-0 overflow-x-auto"
         aria-label="Case sections"
       >
-        {CASE_TABS.map((tab) => {
+        {tabs.map((tab) => {
           const href = `${pathname}?tab=${tab.id}`;
           const isActive = active === tab.id;
           return (
@@ -23,9 +42,11 @@ export function CaseTabs({ slug }: { slug: string }) {
               key={tab.id}
               href={href}
               scroll={false}
-              className={`whitespace-nowrap border-b-2 px-3 py-3 text-sm transition-colors md:px-4 ${
+              data-tab-id={tab.id}
+              aria-current={isActive ? "page" : undefined}
+              className={`dossier-tab whitespace-nowrap border-b-2 px-3 py-3 text-sm transition-colors md:px-4 ${
                 isActive
-                  ? "border-[var(--ink)] font-medium text-[var(--ink)]"
+                  ? "border-[var(--cs-signal)] font-medium text-[var(--ink)]"
                   : "border-transparent text-[var(--muted)] hover:text-[var(--ink-soft)]"
               }`}
             >
@@ -35,6 +56,11 @@ export function CaseTabs({ slug }: { slug: string }) {
         })}
         <span className="sr-only">Case: {slug}</span>
       </nav>
+      <p className="dossier-tab-hint mobile-hide site-shell py-1.5 text-xs text-[var(--muted)]">
+        <kbd className="keyboard-kbd">←</kbd> <kbd className="keyboard-kbd">→</kbd> tabs ·{" "}
+        <kbd className="keyboard-kbd">j</kbd> <kbd className="keyboard-kbd">k</kbd> prev/next ·{" "}
+        <kbd className="keyboard-kbd">?</kbd> shortcuts
+      </p>
     </div>
   );
 }

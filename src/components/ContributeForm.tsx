@@ -1,14 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 export function ContributeForm() {
+  const router = useRouter();
   const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("saving");
+    setMessage("");
     const form = new FormData(e.currentTarget);
     try {
       const res = await fetch("/api/contribute", {
@@ -22,26 +25,32 @@ export function ContributeForm() {
           summary: form.get("summary"),
         }),
       });
-      if (!res.ok) throw new Error("Request failed");
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setStatus("error");
+        setMessage(data.error ?? "Could not submit. Check required fields and try again.");
+        return;
+      }
       setStatus("done");
       setMessage("Submitted to the moderation queue.");
       e.currentTarget.reset();
+      router.refresh();
     } catch {
       setStatus("error");
-      setMessage("Could not submit. Try again.");
+      setMessage("Could not submit. Check your connection and try again.");
     }
   }
 
   return (
     <form onSubmit={onSubmit} className="card grid gap-4 p-6">
       <h2 className="display text-2xl">Submission form</h2>
+      <p className="text-sm text-[var(--muted)]">
+        Open to researchers and students. Submissions are reviewed before publication — no account
+        required in this MVP.
+      </p>
       <label className="block text-sm">
         <span className="font-medium">Type</span>
-        <select
-          name="kind"
-          required
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
-        >
+        <select name="kind" required className="field mt-1">
           <option value="case">New case</option>
           <option value="analysis">Analysis / commentary</option>
           <option value="document">Document pointer</option>
@@ -49,27 +58,20 @@ export function ContributeForm() {
       </label>
       <label className="block text-sm">
         <span className="font-medium">Title</span>
-        <input
-          name="title"
-          required
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
-        />
+        <input name="title" required minLength={3} className="field mt-1" />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Your name</span>
-        <input
-          name="submitterName"
-          required
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
-        />
+        <input name="submitterName" required minLength={2} className="field mt-1" />
       </label>
       <label className="block text-sm">
         <span className="font-medium">Role</span>
         <input
           name="submitterRole"
           required
+          minLength={2}
           placeholder="e.g. Graduate student — forensic psychology"
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+          className="field mt-1"
         />
       </label>
       <label className="block text-sm">
@@ -77,21 +79,19 @@ export function ContributeForm() {
         <textarea
           name="summary"
           required
+          minLength={10}
           rows={5}
-          className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+          className="field mt-1"
           placeholder="What are you proposing? List public sources. No graphic detail."
         />
       </label>
-      <button
-        type="submit"
-        disabled={status === "saving"}
-        className="rounded bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
-      >
+      <button type="submit" disabled={status === "saving"} className="btn btn-primary">
         {status === "saving" ? "Submitting…" : "Submit for review"}
       </button>
       {message ? (
         <p
           className={`text-sm ${status === "error" ? "text-[var(--maroon)]" : "text-[var(--accent)]"}`}
+          role={status === "error" ? "alert" : "status"}
         >
           {message}
         </p>

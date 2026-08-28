@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { addContribution } from "@/lib/data";
+import { syncAfterContributionWrite } from "@/lib/dbSync";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,10 @@ export async function POST(req: Request) {
   const json = await req.json().catch(() => null);
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid submission" }, { status: 400 });
+    const detail = parsed.error.issues[0]?.message ?? "Invalid submission";
+    return NextResponse.json({ error: detail }, { status: 400 });
   }
   const row = addContribution(parsed.data);
+  await syncAfterContributionWrite(row);
   return NextResponse.json({ submission: row }, { status: 201 });
 }

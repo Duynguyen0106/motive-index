@@ -2,8 +2,70 @@ export type CaseStatus = "closed" | "unsolved" | "historical";
 export type AnalysisStatus = "published" | "draft" | "pending";
 export type ContributionStatus = "pending" | "in_review" | "accepted" | "rejected";
 
-/** ISO-style country codes used for case filtering. */
-export type CountryCode = "US" | "GB" | "CA" | "AU" | "OTHER";
+/** ISO 3166-1 alpha-2 country codes represented in the case catalog. */
+export type CountryCode =
+  | "AR"
+  | "AT"
+  | "AU"
+  | "BE"
+  | "BR"
+  | "CA"
+  | "CH"
+  | "CL"
+  | "CN"
+  | "CO"
+  | "CZ"
+  | "DE"
+  | "DK"
+  | "EG"
+  | "ES"
+  | "FI"
+  | "FR"
+  | "GB"
+  | "GR"
+  | "HU"
+  | "ID"
+  | "IE"
+  | "IL"
+  | "IN"
+  | "IQ"
+  | "IR"
+  | "IT"
+  | "JP"
+  | "KE"
+  | "KR"
+  | "MX"
+  | "MY"
+  | "NG"
+  | "NL"
+  | "NO"
+  | "NZ"
+  | "PE"
+  | "PH"
+  | "PK"
+  | "PL"
+  | "PT"
+  | "RO"
+  | "RU"
+  | "SE"
+  | "SG"
+  | "TH"
+  | "TR"
+  | "TW"
+  | "UA"
+  | "US"
+  | "VN"
+  | "ZA"
+  | "BD"
+  | "LV"
+  | "ET"
+  | "SA"
+  | "MK"
+  | "RS"
+  | "BG"
+  | "SK"
+  | "UZ"
+  | "OTHER";
 
 export type CrimeCategory =
   | "serial_murder"
@@ -63,6 +125,12 @@ export type PsychologicalFactor =
 
 export interface SourceRef {
   title: string;
+  /** Title in the original publication language, when translated for display. */
+  originalTitle?: string;
+  /** ISO 639-1 language code of the primary source (e.g. ja, de, ar). */
+  language?: string;
+  /** Human-readable language name for UI. */
+  languageLabel?: string;
   url?: string;
   kind: "court" | "news" | "academic" | "biography" | "primary";
 }
@@ -93,10 +161,21 @@ export interface PsychConstruct {
   clinicalCaveat?: string;
 }
 
+export interface FrameworkNote {
+  framework: TheoreticalFramework;
+  prediction: string;
+  assessment: string;
+  confidence: number;
+}
+
 export interface ForensicAnalysis {
   status: AnalysisStatus;
   summary: string;
+  /** Cross-dimensional integration of top constructs. */
+  synthesis?: string;
   constructs: PsychConstruct[];
+  /** Testable predictions from theoretical frameworks on the dossier. */
+  frameworkNotes?: FrameworkNote[];
   alternativeExplanations: string[];
   whatWeCannotKnow: string[];
   modelVersion: string;
@@ -169,11 +248,38 @@ export interface CaseDocument {
   hosted: boolean;
 }
 
+/** Editorial photograph attached to a dossier (Wikimedia / public archive). */
+export type CaseImageKind = "context" | "location" | "portrait";
+
+export interface CaseImage {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
+  kind: CaseImageKind;
+  source: string;
+  attribution: string;
+  license?: string;
+  /** Mugshots and arrest photos require click-to-reveal in the UI. */
+  sensitive?: boolean;
+}
+
 export interface CaseReference {
   id: string;
   citation: string;
+  /** Citation text in the original source language. */
+  originalCitation?: string;
+  /** ISO 639-1 language code. */
+  language?: string;
+  languageLabel?: string;
   kind: "book" | "journal" | "report" | "media" | "court";
   url?: string;
+  /** Publication or decision year when known. */
+  year?: string;
+  /** Why this source matters for forensic reading of the dossier. */
+  note?: string;
+  /** When true, citation is a teaching template — not a verified primary source. */
+  synthetic?: boolean;
 }
 
 export type DossierChapterId =
@@ -240,12 +346,21 @@ export interface CrimeCase {
   warning: string;
   contentLevel: "standard" | "restricted";
   overview: string;
+  /** Offender or case name in the primary source language. */
+  nameOriginal?: string;
+  /** ISO 639-1 code of the main non-English source language, if any. */
+  primarySourceLanguage?: string;
+  primarySourceLanguageLabel?: string;
+  /** How English text was produced and what to verify in originals. */
+  translationNote?: string;
   /** Full documentary narrative (childhood → crime → motive → aftermath). */
   narrative?: CaseNarrative;
   timeline: TimelineEvent[];
   signals: BehaviorSignal[];
   documentIds: string[];
   references: CaseReference[];
+  /** Optional documentary or contextual photograph (see editorial policy on /about). */
+  images?: CaseImage[];
   sources: SourceRef[];
   analysis: ForensicAnalysis;
   featured?: boolean;
@@ -258,8 +373,19 @@ export interface LiveUpdate {
   headline: string;
   summary: string;
   caseSlug?: string;
-  kind: "new_case" | "analysis_ready" | "source_added" | "revision";
+  kind: "new_case" | "analysis_ready" | "source_added" | "revision" | "world_news";
   status: "published" | "draft";
+  /** ISO country when the story is region-tagged. */
+  country?: CountryCode;
+  /** Human region label, e.g. "East Asia", "Latin America". */
+  region?: string;
+  sourceUrl?: string;
+  sourceName?: string;
+  /** ISO 639-1 when headline was translated for display. */
+  language?: string;
+  languageLabel?: string;
+  /** Headline in original publication language. */
+  originalHeadline?: string;
 }
 
 export interface GlossaryTerm {
@@ -303,6 +429,30 @@ export interface SearchFilters {
   offenderSex?: string;
   documentType?: DocumentType | "";
   status?: CaseStatus | "";
+  /** Archive/monitor filter: curated (no bulk-catalog tag), composite, or all. */
+  catalogTier?: CatalogTier | "";
+}
+
+export type CatalogTier = "curated" | "composite" | "all";
+
+/** Lightweight case row for monitor sidebar and map context. */
+export interface MonitorCaseSummary {
+  id: string;
+  slug: string;
+  name: string;
+  subtitle: string;
+  yearStart: number;
+  yearEnd?: number;
+  status: CaseStatus;
+  country?: CountryCode;
+  crimeCategories: CrimeCategory[];
+  tags: string[];
+}
+
+/** Lightweight case row for archive index (avoids shipping full dossiers). */
+export interface CaseArchiveSummary extends MonitorCaseSummary {
+  location: string;
+  featured?: boolean;
 }
 
 export const DIMENSION_LABELS: Record<PsychDimension, string> = {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runLiveUpdatePipeline } from "@/lib/pipeline/ingestWorker";
+import { runLiveUpdatePipeline, runWorldNewsPipeline } from "@/lib/pipeline/ingestWorker";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -30,17 +30,21 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
 
   try {
-    const result = await runLiveUpdatePipeline({
-      limit: typeof body.limit === "number" ? body.limit : undefined,
-      analyze: body.analyze !== false,
-      generateNarrative: body.generateNarrative !== false,
-      llmNarrative: false,
-    });
+    const [result, worldNews] = await Promise.all([
+      runLiveUpdatePipeline({
+        limit: typeof body.limit === "number" ? body.limit : undefined,
+        analyze: body.analyze !== false,
+        generateNarrative: body.generateNarrative !== false,
+        llmNarrative: false,
+      }),
+      runWorldNewsPipeline(8),
+    ]);
 
     return NextResponse.json({
       ok: true,
       triggeredAt: new Date().toISOString(),
       result,
+      worldNews,
     });
   } catch (err) {
     return NextResponse.json(
@@ -69,8 +73,11 @@ export async function GET(req: Request) {
   }
 
   try {
-    const result = await runLiveUpdatePipeline({ limit: 5, llmNarrative: false });
-    return NextResponse.json({ ok: true, result });
+    const [result, worldNews] = await Promise.all([
+      runLiveUpdatePipeline({ limit: 5, llmNarrative: false }),
+      runWorldNewsPipeline(6),
+    ]);
+    return NextResponse.json({ ok: true, result, worldNews });
   } catch (err) {
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : "Pipeline failed" },

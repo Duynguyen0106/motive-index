@@ -1,27 +1,16 @@
-import { Suspense } from "react";
-import type { Metadata } from "next";
-import { WorldMonitor } from "@/components/WorldMonitor";
-import { buildMonitorPayload } from "@/lib/monitor";
-
-export const metadata: Metadata = {
-  title: "World crime monitor",
-  description:
-    "Live world map of forensic psychology cases — filter by country, crime type, and period.",
-};
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-export default async function MonitorPage({ searchParams }: Props) {
+/** Legacy /monitor URL → homepage monitor. */
+export default async function MonitorRedirectPage({ searchParams }: Props) {
   const raw = await searchParams;
-  const initial = buildMonitorPayload(raw);
-
-  return (
-    <div className="monitor-page">
-      <Suspense fallback={<p className="site-shell py-12 text-[var(--muted)]">Loading monitor…</p>}>
-        <WorldMonitor initial={initial} />
-      </Suspense>
-    </div>
-  );
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "string") qs.set(k, v);
+  }
+  const tail = qs.toString();
+  redirect(tail ? `/?${tail}` : "/");
 }

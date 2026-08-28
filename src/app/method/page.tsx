@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Disclaimer } from "@/components/Disclaimer";
+import { PageHeader } from "@/components/PageHeader";
+import { QuickLinks } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Method",
@@ -20,20 +23,32 @@ const dimensions = [
 
 export default function MethodPage() {
   return (
-    <div className="site-shell py-12 md:py-14">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-        Method
-      </p>
-      <h1 className="display mt-3 max-w-3xl text-4xl text-[var(--ink)] md:text-5xl">
-        Behavior first. Labels last.
-      </h1>
-      <p className="body-copy mt-5 max-w-2xl text-lg text-[var(--ink-soft)] md:text-xl">
-        Motive Index does not diagnose people from headlines. It extracts
-        observable public signals, scores them on a fixed forensic rubric, and
-        forces competing explanations into the open.
-      </p>
+    <div className="site-shell page-intro py-10 md:py-14">
+      <Breadcrumbs items={[{ label: "Monitor", href: "/" }, { label: "Method" }]} />
+      <PageHeader
+        className="mt-5"
+        label="Method"
+        title="Behavior first. Labels last."
+        description="Motive Index does not diagnose people from headlines. It extracts observable public signals, scores them on a fixed forensic rubric, and forces competing explanations into the open."
+      />
+      <QuickLinks
+        links={[
+          { href: "/resources", label: "Theories & glossary" },
+          { href: "/archive", label: "Case archive" },
+          { href: "/about", label: "Ethics" },
+        ]}
+      />
 
-      <section className="mt-12">
+      <nav className="method-toc card mt-8 p-4 md:p-5" aria-label="On this page">
+        <p className="label mb-2 normal-case tracking-normal">On this page</p>
+        <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          <li><a href="#method-pipeline" className="text-link">Pipeline</a></li>
+          <li><a href="#method-rubric" className="text-link">Rubric</a></li>
+          <li><a href="#method-rules" className="text-link">Hard rules</a></li>
+        </ul>
+      </nav>
+
+      <section id="method-pipeline" className="mt-12 scroll-mt-24">
         <h2 className="display text-3xl text-[var(--ink)]">Pipeline</h2>
         <ol className="mt-5 grid gap-3">
           {[
@@ -68,7 +83,7 @@ export default function MethodPage() {
         </ol>
       </section>
 
-      <section className="mt-12">
+      <section id="method-rubric" className="mt-12 scroll-mt-24">
         <h2 className="display text-3xl text-[var(--ink)]">Rubric dimensions</h2>
         <ul className="card mt-5 divide-y divide-[var(--line)] overflow-hidden">
           {dimensions.map(([name, desc]) => (
@@ -83,7 +98,7 @@ export default function MethodPage() {
         </ul>
       </section>
 
-      <section className="mt-12 space-y-5">
+      <section id="method-rules" className="mt-12 scroll-mt-24 space-y-5 pb-8">
         <h2 className="display text-3xl text-[var(--ink)]">Hard rules</h2>
         <div className="card p-6">
           <ul className="body-copy space-y-3 text-[var(--ink-soft)] md:text-lg">

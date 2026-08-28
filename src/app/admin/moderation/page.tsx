@@ -46,6 +46,18 @@ export default async function AdminModerationPage() {
         <RunLiveUpdateButton />
       </div>
 
+      <section className="card mb-8 p-5">
+        <h2 className="display text-xl">Publication checklist</h2>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[var(--ink-soft)]">
+          <li>Every approve runs provenance + reference gates — blockers disable the button.</li>
+          <li>Ingest/admin stubs need ≥1 verifiable reference (URL or court/report citation).</li>
+          <li>AI/heuristic narratives and analysis stay draft until you verify primary sources.</li>
+          <li>
+            Catalog validation: <code className="text-xs">npm run validate:all</code>
+          </li>
+        </ul>
+      </section>
+
       <section className="mb-8">
         <h2 className="display mb-4 text-3xl">
           Queue ({queue.length})

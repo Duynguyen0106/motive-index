@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requirePrivilegedApiAccess } from "@/lib/apiAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,9 @@ function heuristicExtract(rawText: string) {
 }
 
 export async function POST(req: Request) {
+  const auth = await requirePrivilegedApiAccess(req);
+  if (!auth.ok) return auth.response;
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {

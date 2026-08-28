@@ -20,6 +20,9 @@ type Extracted = {
   offenderName?: string;
   motivationalFactors?: string[];
   psychologicalFactors?: string[];
+  referenceCitation?: string;
+  referenceUrl?: string;
+  referenceKind?: "court" | "media" | "report" | "book" | "journal";
 };
 
 const empty: Extracted = {
@@ -78,7 +81,20 @@ export function CaseCreateForm() {
       const res = await fetch("/api/admin/cases", {
         ...adminFetchInit,
         method: "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          references:
+            form.referenceCitation?.trim()
+              ? [
+                  {
+                    citation: form.referenceCitation.trim(),
+                    url: form.referenceUrl?.trim() || "",
+                    kind: form.referenceKind ?? "media",
+                    note: "Submitted with admin case create form",
+                  },
+                ]
+              : [],
+        }),
       });
       const data = await readJsonResponse<{ error?: string; case?: { id: string } }>(res);
       if (!res.ok) throw new Error(data.error || "Create failed");
@@ -208,6 +224,51 @@ export function CaseCreateForm() {
             className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
           />
         </label>
+        <fieldset className="rounded border border-[var(--line)] p-4">
+          <legend className="px-1 text-sm font-medium">Primary reference (required for publish)</legend>
+          <p className="mb-3 text-xs text-[var(--muted)]">
+            Court docket, inquiry report, or contemporaneous press URL — needed before moderation
+            approve.
+          </p>
+          <label className="block text-sm">
+            <span className="font-medium">Citation</span>
+            <input
+              value={form.referenceCitation ?? ""}
+              onChange={(e) => setField("referenceCitation", e.target.value)}
+              placeholder="e.g. State v. Offender (2010) — Superior Court"
+              className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            />
+          </label>
+          <label className="mt-3 block text-sm">
+            <span className="font-medium">Source URL</span>
+            <input
+              type="url"
+              value={form.referenceUrl ?? ""}
+              onChange={(e) => setField("referenceUrl", e.target.value)}
+              placeholder="https://…"
+              className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            />
+          </label>
+          <label className="mt-3 block text-sm">
+            <span className="font-medium">Reference kind</span>
+            <select
+              value={form.referenceKind ?? "media"}
+              onChange={(e) =>
+                setField(
+                  "referenceKind",
+                  e.target.value as NonNullable<Extracted["referenceKind"]>,
+                )
+              }
+              className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            >
+              <option value="court">court</option>
+              <option value="report">report</option>
+              <option value="media">media</option>
+              <option value="book">book</option>
+              <option value="journal">journal</option>
+            </select>
+          </label>
+        </fieldset>
         <button
           type="submit"
           disabled={busy || !form.name || !form.overview}

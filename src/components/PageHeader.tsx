@@ -5,16 +5,16 @@ export function PageHeader({
   title,
   description,
   children,
-  narrow,
+  className = "",
 }: {
   label?: string;
   title: string;
   description?: string;
   children?: ReactNode;
-  narrow?: boolean;
+  className?: string;
 }) {
   return (
-    <header className={narrow ? "site-shell-narrow" : "site-shell"}>
+    <header className={`page-header ${className}`.trim()}>
       {label ? <p className="label">{label}</p> : null}
       <h1 className="display mt-2 text-[clamp(2rem,5vw,3.25rem)] text-[var(--ink)]">
         {title}

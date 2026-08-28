@@ -1,11 +1,10 @@
 import { z } from "zod";
+import { buildDeepForensicAnalysis } from "@/lib/deepAnalysis";
+import { normalizeAnalysisDraft } from "@/lib/validation/analysisDraft";
 import type {
   BehaviorSignal,
   ForensicAnalysis,
-  PsychConstruct,
-  PsychDimension,
 } from "@/lib/types";
-import { DIMENSION_LABELS } from "@/lib/types";
 
 export const ANALYSIS_MODEL_VERSION = "rubric-v1";
 
@@ -32,7 +31,28 @@ export const psychConstructSchema = z.object({
 export const forensicAnalysisSchema = z.object({
   status: z.enum(["published", "draft", "pending"]),
   summary: z.string(),
+  synthesis: z.string().optional(),
   constructs: z.array(psychConstructSchema),
+  frameworkNotes: z
+    .array(
+      z.object({
+        framework: z.enum([
+          "psychodynamic",
+          "cognitive_behavioral",
+          "social_learning",
+          "attachment",
+          "biological",
+          "personality",
+          "ideological",
+          "situational",
+          "group_influence",
+        ]),
+        prediction: z.string(),
+        assessment: z.string(),
+        confidence: z.number().min(0).max(1),
+      }),
+    )
+    .optional(),
   alternativeExplanations: z.array(z.string()),
   whatWeCannotKnow: z.array(z.string()),
   modelVersion: z.string(),
@@ -41,26 +61,25 @@ export const forensicAnalysisSchema = z.object({
 });
 
 export const RUBRIC_INSTRUCTIONS = `
-You are a forensic psychology analyst for an educational archive.
+You are a senior forensic psychology analyst for an educational archive.
 Rules:
-- Only use provided behavioral signals and source excerpts.
+- Only use provided behavioral signals, dossier excerpts, and timeline facts.
+- Produce 3–6 constructs spanning at least 3 distinct PsychDimension values.
+- Each construct needs: specific evidence (quote or paraphrase dossier facts), counter-evidence, confidence 0.4–0.9, and clinicalCaveat when using clinical language.
+- Write a synthesis paragraph integrating how planning, affect, empathy/remorse, and control interact.
+- For each theoreticalFramework listed, add a frameworkNote with a testable prediction and assessment against public evidence.
 - Prefer behavioral description over clinical diagnosis labels.
-- If you use clinical terms, mark them as hypotheses with caveats.
 - Always include competing explanations and explicit unknowns.
 - Never invent private childhood facts, motives, or quotes.
 - Never provide operational advice for committing or concealing crime.
 - Minimize graphic detail; focus on psychological pattern.
 `.trim();
 
-function avgConfidence(constructs: PsychConstruct[]): number {
-  if (!constructs.length) return 0;
-  return constructs.reduce((s, c) => s + c.confidence, 0) / constructs.length;
-}
-
-/** Deterministic rubric filler for MVP when no LLM key is present. */
+/** Deterministic rubric analysis — delegates to deep dossier engine. */
 export function analyzeFromSignals(
   signals: BehaviorSignal[],
   caseName: string,
+  overview = "",
 ): ForensicAnalysis {
   if (!signals.length) {
     return {
@@ -81,62 +100,73 @@ export function analyzeFromSignals(
     };
   }
 
-  const byDim = new Map<PsychDimension, BehaviorSignal[]>();
-  for (const s of signals) {
-    const list = byDim.get(s.dimension) ?? [];
-    list.push(s);
-    byDim.set(s.dimension, list);
-  }
-
-  const constructs: PsychConstruct[] = [...byDim.entries()].map(
-    ([dimension, dimSignals], i) => {
-      const evidence = dimSignals.map((s) => s.observation);
-      const confidence = Math.min(0.45 + dimSignals.length * 0.12, 0.78);
-      return {
-        id: `auto-${dimension}-${i}`,
-        label: `${DIMENSION_LABELS[dimension]} pattern hypothesis`,
-        dimension,
-        hypothesis: `Public behavioral signals suggest a noteworthy pattern on ${DIMENSION_LABELS[dimension].toLowerCase()}. This is an automated draft for human review—not a clinical finding.`,
-        evidence,
-        counterEvidence: [
-          "Automated extraction may overweight sensational sources",
-          "Missing counter-evidence until fuller dossier review",
-        ],
-        confidence,
-        clinicalCaveat:
-          "Draft construct from signal clustering only; requires expert review before publish.",
-      };
-    },
-  );
-
-  return {
-    status: "draft",
-    summary: `Automated draft for ${caseName} across ${constructs.length} dimensions (mean confidence ${avgConfidence(constructs).toFixed(2)}). Publish only after human review and source verification.`,
-    constructs,
-    alternativeExplanations: [
-      "Situational stressors may explain parts of the pattern without trait pathology",
-      "Investigative and media selection bias can create false consistency",
-      "Substance or group influence may be under-documented in early sources",
-    ],
-    whatWeCannotKnow: [
-      "Private subjective experience",
-      "Undocumented offenses or aborted acts",
-      "Definitive clinical diagnosis from open sources",
-    ],
+  const slug = caseName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return buildDeepForensicAnalysis({
+    slug: slug || "case",
+    name: caseName,
+    subtitle: "Automated dossier analysis",
+    overview: overview || `Public-record analysis for ${caseName}.`,
+    jurisdiction: "See dossier",
+    location: "See dossier",
+    era: "See dossier",
+    yearStart: 1900,
+    status: "closed",
+    crimeCategories: ["other"],
+    offenderName: "See dossier",
+    signals,
+    published: false,
     modelVersion: ANALYSIS_MODEL_VERSION,
-    reviewedByHuman: false,
-    updatedAt: new Date().toISOString(),
-  };
+  });
 }
 
 export async function analyzeWithOptionalLLM(input: {
   caseName: string;
   overview: string;
   signals: BehaviorSignal[];
+  slug?: string;
+  subtitle?: string;
+  jurisdiction?: string;
+  location?: string;
+  era?: string;
+  yearStart?: number;
+  yearEnd?: number;
+  status?: import("@/lib/types").CaseStatus;
+  crimeCategories?: import("@/lib/types").CrimeCategory[];
+  offenderName?: string;
+  narrative?: import("@/lib/types").CaseNarrative;
+  timeline?: import("@/lib/types").TimelineEvent[];
+  behavioralProfile?: import("@/lib/types").BehavioralProfile;
+  motivationalFactors?: import("@/lib/types").MotivationalFactor[];
+  psychologicalFactors?: import("@/lib/types").PsychologicalFactor[];
+  theoreticalFrameworks?: import("@/lib/types").TheoreticalFramework[];
 }): Promise<ForensicAnalysis> {
+  const fallback = () =>
+    buildDeepForensicAnalysis({
+      slug: input.slug ?? "case",
+      name: input.caseName,
+      subtitle: input.subtitle ?? "Forensic dossier",
+      overview: input.overview,
+      jurisdiction: input.jurisdiction ?? "See dossier",
+      location: input.location ?? input.jurisdiction ?? "See dossier",
+      era: input.era ?? "See dossier",
+      yearStart: input.yearStart ?? 1900,
+      yearEnd: input.yearEnd,
+      status: input.status ?? "closed",
+      crimeCategories: input.crimeCategories ?? ["other"],
+      offenderName: input.offenderName ?? "See dossier",
+      signals: input.signals,
+      narrative: input.narrative,
+      timeline: input.timeline,
+      behavioralProfile: input.behavioralProfile,
+      motivationalFactors: input.motivationalFactors,
+      psychologicalFactors: input.psychologicalFactors,
+      theoreticalFrameworks: input.theoreticalFrameworks,
+      published: false,
+    });
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return analyzeFromSignals(input.signals, input.caseName);
+    return fallback();
   }
 
   try {
@@ -158,9 +188,20 @@ export async function analyzeWithOptionalLLM(input: {
               caseName: input.caseName,
               overview: input.overview,
               signals: input.signals,
+              dossier: {
+                subtitle: input.subtitle,
+                jurisdiction: input.jurisdiction,
+                timeline: input.timeline?.slice(0, 6),
+                behavioralProfile: input.behavioralProfile,
+                motivationalFactors: input.motivationalFactors,
+                psychologicalFactors: input.psychologicalFactors,
+                theoreticalFrameworks: input.theoreticalFrameworks,
+              },
               requiredKeys: [
                 "summary",
+                "synthesis",
                 "constructs",
+                "frameworkNotes",
                 "alternativeExplanations",
                 "whatWeCannotKnow",
               ],
@@ -171,7 +212,7 @@ export async function analyzeWithOptionalLLM(input: {
     });
 
     if (!res.ok) {
-      return analyzeFromSignals(input.signals, input.caseName);
+      return fallback();
     }
 
     const data = await res.json();
@@ -185,10 +226,10 @@ export async function analyzeWithOptionalLLM(input: {
     });
 
     if (!parsed.success) {
-      return analyzeFromSignals(input.signals, input.caseName);
+      return fallback();
     }
-    return parsed.data;
+    return normalizeAnalysisDraft(parsed.data, ANALYSIS_MODEL_VERSION);
   } catch {
-    return analyzeFromSignals(input.signals, input.caseName);
+    return fallback();
   }
 }

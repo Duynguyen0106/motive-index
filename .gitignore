@@ -43,3 +43,5 @@ next-env.d.ts
 
 # local MVP data store
 .data/
+scripts/audit-all-cases-report.tsv
+scripts/audit-reference-links-report.tsv

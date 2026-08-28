@@ -53,8 +53,30 @@ curl -s -X POST "$BASE/api/reset" >/dev/null || true
 echo "-- Pages --"
 expect_200 "GET /" "$BASE/"
 expect_contains "Home brand" "$BASE/" "Motive Index"
+expect_contains "Home world monitor" "$BASE/" "World crime monitor"
 expect_contains "Home featured dossier" "$BASE/" "Featured dossier"
-expect_200 "GET /cases" "$BASE/cases"
+expect_contains "Map container present" "$BASE/" "monitor-leaflet-map"
+expect_contains "Keyboard shortcuts control" "$BASE/" "Keyboard shortcuts"
+expect_contains "Header site search" "$BASE/" "site-search-input"
+expect_200 "GET /archive" "$BASE/archive"
+expect_contains "Archive featured dossier" "$BASE/archive" "Featured dossier"
+expect_contains "Total dossiers" "$BASE/archive" "Total dossiers"
+expect_contains "Archive pagination" "$BASE/archive" "archive-pagination"
+expect_contains "Archive catalog filter" "$BASE/archive?catalogTier=curated" "Curated only"
+expect_contains "Bulk archive slug" "$BASE/cases/archive-us-0001" "Composite archival dossier"
+expect_contains "Stats page" "$BASE/stats" "Archive statistics"
+expect_contains "Stats curated count" "$BASE/stats" "Curated"
+expect_contains "Command palette shortcut" "$BASE/" "⌘K"
+expect_contains "Monitor slim payload" "$BASE/api/monitor" '"filteredCount"'
+code=$(http_code "$BASE/api/monitor")
+monitor_bytes=$(wc -c < /tmp/mi_body.txt)
+if [[ "$code" == "200" ]] && [[ "$monitor_bytes" -lt 8000000 ]]; then
+  check "Monitor API under 8MB" 1
+else
+  check "Monitor API under 8MB [bytes=$monitor_bytes code=$code]" 0
+fi
+code=$(http_code "$BASE/cases")
+if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /cases redirects" 1; else check "GET /cases redirects [got $code]" 0; fi
 expect_200 "GET /search" "$BASE/search"
 expect_200 "GET /documents" "$BASE/documents"
 expect_200 "GET /analyses" "$BASE/analyses"
@@ -63,9 +85,27 @@ expect_200 "GET /contribute" "$BASE/contribute"
 expect_200 "GET /about" "$BASE/about"
 expect_200 "GET /method" "$BASE/method"
 expect_200 "GET /live" "$BASE/live"
-expect_200 "GET /monitor" "$BASE/monitor"
+code=$(http_code "$BASE/monitor")
+if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /monitor redirects to home" 1; else check "GET /monitor redirects to home [got $code]" 0; fi
 expect_200 "GET /api/monitor" "$BASE/api/monitor"
-expect_contains "Monitor filter country US" "$BASE/monitor?country=US" "Ted Bundy"
+expect_contains "Monitor filter country US" "$BASE/?country=US" "Ted Bundy"
+expect_contains "Live country filter" "$BASE/live?country=US" "United States"
+expect_200 "GET /sitemap.xml" "$BASE/sitemap.xml"
+expect_200 "GET /robots.txt" "$BASE/robots.txt"
+expect_contains "Sitemap includes case slug" "$BASE/sitemap.xml" "ted-bundy"
+expect_contains "Monitor tab news" "$BASE/?tab=news" "World crime news"
+expect_contains "Archive URL filter" "$BASE/archive?country=US" "Ted Bundy"
+
+echo
+echo "-- SEO & canonical URLs --"
+code=$(http_code "$BASE/cases/case-bundy")
+if [[ "$code" == "308" || "$code" == "301" ]]; then check "Legacy case id redirects" 1; else check "Legacy case id redirects [got $code]" 0; fi
+expect_contains "Multilingual dossier banner" "$BASE/cases/alexander-pichushkin" "Translated dossier"
+
+echo
+echo "-- APIs (extended) --"
+code=$(http_code "$BASE/api/world-news")
+if [[ "$code" == "200" ]] && grep -q '"generatedAt"' /tmp/mi_body.txt; then check "GET /api/world-news" 1; else check "GET /api/world-news" 0; fi
 
 echo
 echo "-- Case dossiers & tabs --"
@@ -76,10 +116,36 @@ expect_contains "Tab story" "$BASE/cases/ted-bundy?tab=story" "Origins"
 expect_contains "Tab overview content" "$BASE/cases/ted-bundy?tab=overview" "Legal outcome"
 expect_contains "Tab timeline" "$BASE/cases/ted-bundy?tab=timeline" "Behavioral timeline"
 expect_contains "Tab analysis" "$BASE/cases/ted-bundy?tab=analysis" "Psychological map"
+expect_contains "Analysis synthesis section" "$BASE/cases/ted-bundy?tab=analysis" "Integrated synthesis"
+expect_contains "Framework tests section" "$BASE/cases/ted-bundy?tab=analysis" "Theoretical framework tests"
+expect_contains "Deep analysis constructs" "$BASE/cases/john-wayne-gacy?tab=analysis" "dimensions scored"
+expect_200 "GET /cases/richard-ramirez" "$BASE/cases/richard-ramirez"
+expect_200 "GET /cases/golden-state-killer" "$BASE/cases/golden-state-killer"
+expect_200 "GET /cases/jack-the-ripper" "$BASE/cases/jack-the-ripper"
+expect_200 "GET /cases/josef-fritzl" "$BASE/cases/josef-fritzl"
+expect_contains "Famous case synthesis" "$BASE/cases/edmund-kemper?tab=analysis" "Integrated synthesis"
+expect_contains "Deep narrative origins" "$BASE/cases/john-wayne-gacy?tab=story" "Institutional"
+expect_contains "Deep narrative escalation" "$BASE/cases/golden-state-killer?tab=story" "DeAngelo"
+expect_contains "Expanded overview depth" "$BASE/cases/richard-ramirez?tab=overview" "dossier synthesizes"
 expect_contains "Tab documents" "$BASE/cases/ted-bundy?tab=documents" "Document library"
 expect_contains "Tab references" "$BASE/cases/ted-bundy?tab=references" "References"
+expect_contains "Reference relevance notes" "$BASE/cases/john-wayne-gacy?tab=references" "forensic relevance"
+expect_contains "Curated Gacy court ref" "$BASE/cases/john-wayne-gacy?tab=references" "Cook County"
+expect_contains "Curated Bundy book ref" "$BASE/cases/ted-bundy?tab=references" "Whoever Fights Monsters"
+expect_contains "Related dossiers section" "$BASE/cases/ted-bundy?tab=analysis" "Related dossiers"
+expect_contains "Share dossier button" "$BASE/cases/ted-bundy" "Share dossier"
+expect_contains "Case JSON-LD article" "$BASE/cases/ted-bundy" '"@type":"Article"'
 expect_contains "Content warning present" "$BASE/cases/ted-bundy" "Content warning"
 expect_contains "Psych factors tagged" "$BASE/cases/ted-bundy?tab=analysis" "Impression management"
+expect_contains "Case photo panel" "$BASE/cases/ted-bundy" "case-image-hero"
+expect_contains "Bundy photo caption" "$BASE/cases/ted-bundy" "Florida court proceedings"
+expect_contains "Gacy courthouse photo" "$BASE/cases/john-wayne-gacy" "Cook County Criminal Court"
+expect_contains "McVeigh memorial photo" "$BASE/cases/timothy-mcveigh" "Oklahoma City National Memorial"
+expect_contains "Sensitive photo reveal" "$BASE/cases/richard-ramirez" "Sensitive photograph"
+expect_contains "About photo policy" "$BASE/about" "click-to-reveal"
+expect_contains "Overview photo gallery" "$BASE/cases/ted-bundy?tab=overview" "Photographs"
+expect_contains "Archive index thumbnails" "$BASE/archive" "index-table-with-photos"
+expect_contains "Archive row thumbnail" "$BASE/archive" "case-image-index"
 
 echo
 echo "-- Theories --"
@@ -157,7 +223,36 @@ expect_contains "About ethics section" "$BASE/about" "Ethical"
 expect_contains "About distress resources" "$BASE/about" "988"
 expect_contains "Contribute form" "$BASE/contribute" "Submission form"
 expect_contains "Glossary term" "$BASE/resources" "Modus operandi"
+expect_contains "Resources breadcrumbs" "$BASE/resources" "Educational resources"
+expect_contains "Method breadcrumbs" "$BASE/method" "Behavior first"
 expect_contains "Documents library" "$BASE/documents" "Shipman Inquiry"
+
+echo
+echo "-- Catalog validation (no server) --"
+if node scripts/validate-catalog.mjs >/tmp/mi_catalog.txt 2>&1; then
+  check "Catalog validation clean" 1
+else
+  check "Catalog validation clean" 0
+  tail -30 /tmp/mi_catalog.txt
+fi
+
+echo
+echo "-- Database audit --"
+if npx tsx scripts/audit-database.mjs >/tmp/mi_audit.txt 2>&1; then
+  check "Database audit clean" 1
+else
+  check "Database audit clean" 0
+  tail -20 /tmp/mi_audit.txt
+fi
+
+echo
+echo "-- Source validation --"
+if npx tsx scripts/validate-sources.mjs >/tmp/mi_sources.txt 2>&1; then
+  check "Source validation clean" 1
+else
+  check "Source validation clean" 0
+  tail -20 /tmp/mi_sources.txt
+fi
 
 echo
 echo "=== Results: $PASS passed, $FAIL failed ==="

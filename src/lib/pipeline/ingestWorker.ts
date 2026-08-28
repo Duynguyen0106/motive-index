@@ -7,8 +7,10 @@ import {
   generateCaseNarrative,
   heuristicNarrativeFromSources,
 } from "@/lib/narrativeGenerate";
-import { syncCaseToSupabase } from "@/lib/repository";
+import { isHeadlineSeenInDb, markHeadlineSeenInDb } from "@/lib/repository";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import { inferCountry } from "@/lib/country";
+import { fetchLiveWorldNews } from "@/lib/worldNews";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
 export type FeedItem = {
@@ -308,7 +310,7 @@ export async function runLiveUpdatePipeline(options?: {
       result.skipped += 1;
       continue;
     }
-    if (seen[key] || existingTitles.has(key)) {
+    if (seen[key] || existingTitles.has(key) || (await isHeadlineSeenInDb(key))) {
       result.skipped += 1;
       continue;
     }
@@ -355,8 +357,8 @@ export async function runLiveUpdatePipeline(options?: {
       }
 
       upsertCase(draft);
-      await syncCaseToSupabase(draft);
-      addUpdate({
+      await syncAfterCaseWrite(draft);
+      const update = addUpdate({
         id: `upd-${Date.now()}-${result.created}`,
         createdAt: new Date().toISOString(),
         headline: `Live draft ingested: ${draft.name.slice(0, 80)}`,
@@ -365,8 +367,10 @@ export async function runLiveUpdatePipeline(options?: {
         kind: "new_case",
         status: "draft",
       });
+      await syncAfterUpdateWrite(update);
 
       seen[key] = draft.id;
+      await markHeadlineSeenInDb(key, { source: item.source, caseSlug: draft.slug });
       existingTitles.add(key);
       result.created += 1;
       result.createdSlugs.push(draft.slug);
@@ -391,4 +395,16 @@ export function getRecentJobs(limit = 20) {
   } catch {
     return [];
   }
+}
+
+/** Warm the live RSS cache — crime news is served via worldNews payload, not updates. */
+export async function runWorldNewsPipeline(limit = 12): Promise<{
+  fetched: number;
+  cached: number;
+  skipped: number;
+}> {
+  const items = await fetchLiveWorldNews(limit * 2);
+  const cached = Math.min(items.length, limit);
+  logJob({ type: "world-news", fetched: items.length, cached, skipped: 0 });
+  return { fetched: items.length, cached, skipped: 0 };
 }

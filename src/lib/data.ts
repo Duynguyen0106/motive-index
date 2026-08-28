@@ -24,6 +24,12 @@ import {
   FRAMEWORK_LABELS,
 } from "@/lib/types";
 import { resolveCaseCountry } from "@/lib/country";
+import { invalidateArchiveStatsCache } from "@/lib/archiveStats";
+import { matchesCatalogTier } from "@/lib/caseSummaries";
+import { assertPublishableCase } from "@/lib/validation/caseProvenance";
+import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
+import { filterPublicCases } from "@/lib/casePublishState";
+import { assertRuntimeCaseWrite, assertModerationPublishReady } from "@/lib/validation/runtimeWriteGuard";
 
 type Store = {
   cases: CrimeCase[];
@@ -58,10 +64,26 @@ function readStoreFromDisk(): Store | null {
 function writeStore(store: Store): void {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
-  } catch {
-    /* best-effort persistence for local MVP */
+    const tmp = `${STORE_PATH}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(store, null, 2));
+    fs.renameSync(tmp, STORE_PATH);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to write store";
+    if (process.env.NODE_ENV === "production") {
+      console.error(`[data] persist failed: ${message}`);
+    }
+    throw new Error(`Failed to persist store: ${message}`);
   }
+}
+
+export function invalidateStoreCache(): void {
+  const g = globalThis as unknown as { __motiveIndexStore?: Store };
+  g.__motiveIndexStore = undefined;
+  invalidateArchiveStatsCache();
+}
+
+export function getStoreSnapshot(): Store {
+  return structuredClone(getStore());
 }
 
 function getStore(): Store {
@@ -74,12 +96,18 @@ function getStore(): Store {
 
 function persist(): void {
   writeStore(getStore());
+  invalidateArchiveStatsCache();
 }
 
 export function getAllCases(): CrimeCase[] {
   return getStore()
     .cases.slice()
     .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+}
+
+/** Published catalog excluding moderation/live-ingest drafts. */
+export function getPublicCases(): CrimeCase[] {
+  return filterPublicCases(getAllCases());
 }
 
 export function getPublishedCases(): CrimeCase[] {
@@ -105,6 +133,10 @@ export function getUpdates(limit = 20): LiveUpdate[] {
     .updates.slice()
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
     .slice(0, limit);
+}
+
+export function getUpdatesTotal(): number {
+  return getStore().updates.length;
 }
 
 export function getAllDocuments(): CaseDocument[] {
@@ -165,9 +197,21 @@ export function getAnalyses() {
 }
 
 export function searchCases(filters: SearchFilters): CrimeCase[] {
+  return searchCasesFrom(getPublicCases(), filters);
+}
+
+export type SearchCasesOpts = { includeModerationDrafts?: boolean };
+
+export function searchCasesFrom(
+  cases: CrimeCase[],
+  filters: SearchFilters,
+  opts?: SearchCasesOpts,
+): CrimeCase[] {
+  const pool =
+    opts?.includeModerationDrafts === true ? cases : filterPublicCases(cases);
   const q = filters.q?.trim().toLowerCase() ?? "";
 
-  return getAllCases().filter((c) => {
+  return pool.filter((c) => {
     if (filters.crimeCategory && !c.crimeCategories.includes(filters.crimeCategory)) {
       return false;
     }
@@ -184,6 +228,7 @@ export function searchCases(filters: SearchFilters): CrimeCase[] {
       return false;
     }
     if (filters.status && c.status !== filters.status) return false;
+    if (!matchesCatalogTier(c, filters.catalogTier)) return false;
     if (filters.country && resolveCaseCountry(c) !== filters.country) return false;
     if (filters.location) {
       const loc = filters.location.toLowerCase();
@@ -260,13 +305,46 @@ export function searchDocuments(filters: SearchFilters): CaseDocument[] {
   });
 }
 
-export function upsertCase(next: CrimeCase): CrimeCase {
+export function upsertCase(
+  next: CrimeCase,
+  opts?: { bypassPublishGate?: boolean },
+): CrimeCase {
+  if (isRetiredSlug(next.slug)) {
+    throw new Error(`Cannot upsert retired slug: ${next.slug}`);
+  }
   const store = getStore();
   const idx = store.cases.findIndex((c) => c.id === next.id || c.slug === next.slug);
+  const existing = idx >= 0 ? store.cases[idx] : undefined;
+  if (!opts?.bypassPublishGate) {
+    assertRuntimeCaseWrite(existing, next);
+  }
   if (idx >= 0) store.cases[idx] = next;
   else store.cases = [next, ...store.cases];
   persist();
   return next;
+}
+
+export function upsertDocument(doc: CaseDocument, caseId?: string): CaseDocument {
+  const store = getStore();
+  const idx = store.documents.findIndex((d) => d.id === doc.id);
+  if (idx >= 0) store.documents[idx] = doc;
+  else store.documents = [doc, ...store.documents];
+
+  if (caseId) {
+    const caseIdx = store.cases.findIndex((c) => c.id === caseId);
+    if (caseIdx >= 0) {
+      const ids = store.cases[caseIdx].documentIds ?? [];
+      if (!ids.includes(doc.id)) {
+        store.cases[caseIdx] = {
+          ...store.cases[caseIdx],
+          documentIds: [doc.id, ...ids],
+        };
+      }
+    }
+  }
+
+  persist();
+  return doc;
 }
 
 export function getModerationQueue(): CrimeCase[] {
@@ -285,6 +363,35 @@ export function getModerationQueue(): CrimeCase[] {
 export function publishCase(slug: string, reviewerEmail: string): CrimeCase | undefined {
   const existing = getCaseBySlug(slug);
   if (!existing) return undefined;
+
+  assertModerationPublishReady({
+    slug: existing.slug,
+    tags: existing.tags.filter(
+      (t) =>
+        !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(
+          t,
+        ),
+    ),
+    references: existing.references,
+    offenderName: existing.offenders?.[0]?.name,
+    name: existing.name,
+    analysisStatus: "published",
+  });
+
+  assertPublishableCase({
+    slug: existing.slug,
+    tags: existing.tags.filter(
+      (t) =>
+        !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(
+          t,
+        ),
+    ),
+    references: existing.references,
+    offenderName: existing.offenders?.[0]?.name,
+    name: existing.name,
+    analysisStatus: "published",
+  });
+
   const tags = existing.tags.filter(
     (t) =>
       !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(
@@ -293,31 +400,34 @@ export function publishCase(slug: string, reviewerEmail: string): CrimeCase | un
   );
   if (!tags.includes("published")) tags.push("published");
 
-  return upsertCase({
-    ...existing,
-    tags,
-    narrative: existing.narrative
-      ? { ...existing.narrative, reviewNote: undefined, source: "human" as const }
-      : undefined,
-    analysis: {
-      ...existing.analysis,
-      status: "published",
-      reviewedByHuman: true,
-      updatedAt: new Date().toISOString(),
-      expertCommentary: [
-        ...(existing.analysis.expertCommentary ?? []),
-        {
-          id: `mod-${Date.now()}`,
-          author: reviewerEmail,
-          role: "editor",
-          title: "Moderation approval",
-          body: "Approved for educational publication after human review of public-source draft and narrative.",
-          reviewed: true,
-          publishedAt: new Date().toISOString(),
-        },
-      ],
+  return upsertCase(
+    {
+      ...existing,
+      tags,
+      narrative: existing.narrative
+        ? { ...existing.narrative, reviewNote: undefined, source: "human" as const }
+        : undefined,
+      analysis: {
+        ...existing.analysis,
+        status: "published",
+        reviewedByHuman: true,
+        updatedAt: new Date().toISOString(),
+        expertCommentary: [
+          ...(existing.analysis.expertCommentary ?? []),
+          {
+            id: `mod-${Date.now()}`,
+            author: reviewerEmail,
+            role: "editor",
+            title: "Moderation approval",
+            body: "Approved for educational publication after human review of public-source draft and narrative.",
+            reviewed: true,
+            publishedAt: new Date().toISOString(),
+          },
+        ],
+      },
     },
-  });
+    { bypassPublishGate: true },
+  );
 }
 
 export function rejectCase(
@@ -341,7 +451,7 @@ export function rejectCase(
     analysis: {
       ...existing.analysis,
       status: "draft",
-      reviewedByHuman: true,
+      reviewedByHuman: false,
       updatedAt: new Date().toISOString(),
       summary: `${existing.analysis.summary}\n\n[Rejected by ${reviewerEmail}] ${note ?? ""}`.trim(),
     },
@@ -356,6 +466,7 @@ export function addUpdate(update: LiveUpdate): LiveUpdate {
 }
 
 export function resetStore(): void {
+  invalidateStoreCache();
   const g = globalThis as unknown as { __motiveIndexStore?: Store };
   g.__motiveIndexStore = seedStore();
   persist();

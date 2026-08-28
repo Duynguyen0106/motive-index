@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buildMonitorPayload } from "@/lib/monitor";
+import { buildMonitorDelta, buildMonitorPayload } from "@/lib/monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,12 @@ export async function GET(req: Request) {
     params[k] = v;
   });
 
-  const payload = buildMonitorPayload(params);
+  const mode = url.searchParams.get("mode");
+  if (mode === "delta") {
+    const delta = await buildMonitorDelta(params);
+    return NextResponse.json(delta);
+  }
+
+  const payload = await buildMonitorPayload(params);
   return NextResponse.json(payload);
 }

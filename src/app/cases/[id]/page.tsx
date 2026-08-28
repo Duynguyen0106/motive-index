@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { CaseImagePanel } from "@/components/CaseImagePanel";
+import { CaseImageGallery } from "@/components/CaseImageGallery";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseTabs } from "@/components/CaseTabs";
-import { CaseNarrativeView } from "@/components/CaseNarrative";
+import { CaseTabKeyboardNav } from "@/components/CaseTabKeyboardNav";
+import { CaseNarrativeView, NARRATIVE_CHAPTER_ORDER } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
-import { PsychMap } from "@/components/PsychMap";
+import { DossierActionBar } from "@/components/DossierActionBar";
+import { DossierNeighborNav } from "@/components/DossierNeighborNav";
+import { ForensicAnalysisView } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
-import { getActiveTab } from "@/lib/case-tabs";
+import { RelatedCases } from "@/components/RelatedCases";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
+import { CaseStatusBadge } from "@/components/ui";
+import { getActiveTab, CASE_TABS, dossierShareUrl } from "@/lib/case-tabs";
 import {
   getAllCases,
   getCaseBySlug,
@@ -22,6 +31,18 @@ import {
   FRAMEWORK_LABELS,
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { resolveCaseCountry } from "@/lib/country";
+import { monitorUrlFromFilters, searchUrlFromFilters, getAdjacentCases } from "@/lib/search";
+import { getSiteUrl } from "@/lib/seo";
+import { getPrimaryCaseImage } from "@/lib/caseImages";
+import type { SearchFilters } from "@/lib/types";
+import { getPrimaryDirectReferences } from "@/lib/validation/referenceAccuracy";
+import { ReferenceQualityBadge } from "@/components/ReferenceQualityBadge";
+import {
+  isEncyclopedicImportCase,
+  isModerationDraftCase,
+  shouldIndexCase,
+} from "@/lib/casePublishState";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
   const key = decodeURIComponent(idOrSlug);
@@ -41,61 +62,203 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  return getAllCases().map((c) => ({ id: c.id }));
+  return getAllCases()
+    .filter((c) => c.featured)
+    .slice(0, 24)
+    .map((c) => ({ id: c.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const c = getCaseByIdOrSlug(id);
   if (!c) return { title: "Case not found" };
-  return { title: c.name, description: c.subtitle };
+  const url = `${getSiteUrl()}/cases/${c.slug}`;
+  const primaryImage = getPrimaryCaseImage(c.slug);
+  const indexable = shouldIndexCase(c);
+  return {
+    title: c.name,
+    description: c.subtitle,
+    alternates: { canonical: url },
+    robots: indexable ? undefined : { index: false, follow: false },
+    openGraph: {
+      type: "article",
+      title: c.name,
+      description: c.subtitle,
+      url,
+      ...(primaryImage
+        ? { images: [{ url: primaryImage.url, alt: primaryImage.alt }] }
+        : {}),
+    },
+    twitter: {
+      card: primaryImage ? "summary_large_image" : "summary",
+      title: c.name,
+      description: c.subtitle,
+      ...(primaryImage ? { images: [primaryImage.url] } : {}),
+    },
+  };
 }
 
 export default async function CasePage({ params, searchParams }: Props) {
   const { id } = await params;
   const sp = await searchParams;
-  const tab = getActiveTab(sp.tab);
   const crimeCase = getCaseByIdOrSlug(id);
   if (!crimeCase) notFound();
 
+  if (decodeURIComponent(id) !== crimeCase.slug) {
+    const tab = sp.tab ? `?tab=${encodeURIComponent(sp.tab)}` : "";
+    permanentRedirect(`/cases/${crimeCase.slug}${tab}`);
+  }
+
+  const narrative = crimeCase.narrative;
+  const tab = getActiveTab(sp.tab, { hasNarrative: Boolean(narrative) });
+  const tabLabel = CASE_TABS.find((t) => t.id === tab)?.label ?? tab;
+
+  const country = resolveCaseCountry(crimeCase);
+  const searchSimilar: SearchFilters = {
+    country,
+    crimeCategory: crimeCase.crimeCategories[0] ?? "",
+    psychologicalFactor: crimeCase.psychologicalFactors[0] ?? "",
+    theoreticalFramework: crimeCase.theoreticalFrameworks[0] ?? "",
+    status: crimeCase.status === "unsolved" ? "unsolved" : "",
+  };
+
   const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
-  const narrative = crimeCase.narrative;
+  const allCases = getAllCases();
+  const { prev: prevCase, next: nextCase } = getAdjacentCases(crimeCase.slug, allCases);
+  const dossierUrl = dossierShareUrl(crimeCase.slug, tab, {
+    hasNarrative: Boolean(narrative),
+    siteOrigin: getSiteUrl(),
+  });
+  const primaryImage = crimeCase.images?.[0];
+  const storyChapterIds = narrative
+    ? NARRATIVE_CHAPTER_ORDER.filter((id) => narrative.chapters.some((c) => c.id === id))
+    : [];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: crimeCase.name,
+    description: crimeCase.subtitle,
+    url: dossierUrl,
+    datePublished: `${crimeCase.yearStart}`,
+    author: { "@type": "Organization", name: "Motive Index" },
+    about: crimeCase.crimeCategories.map((c) => CRIME_CATEGORY_LABELS[c]).join(", "),
+  };
 
   return (
-    <article className="pb-16">
-      <header className="site-shell py-10 md:py-12">
-        <Link href="/cases" className="text-sm text-link">
-          ← Case index
-        </Link>
-        <p className="label mt-5">
-          {crimeCase.yearStart}
-          {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location} ·{" "}
-          {crimeCase.status}
+    <article className="dossier-page w-full min-w-0 max-w-full overflow-x-clip pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <header className="dossier-header site-shell py-6 md:py-12">
+        <Breadcrumbs
+          items={[
+            { label: "Monitor", href: "/" },
+            { label: "Archive", href: "/archive" },
+            { label: crimeCase.name, href: `/cases/${crimeCase.slug}` },
+            { label: tabLabel },
+          ]}
+        />
+        <div className="dossier-header-grid mt-5">
+          <div className="dossier-header-main">
+        <p className="label flex flex-wrap items-center gap-2">
+          <span>
+            {crimeCase.yearStart}
+            {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location}
+          </span>
+          <CaseStatusBadge status={crimeCase.status} />
         </p>
         <h1 className="display mt-2 max-w-4xl text-[clamp(2.4rem,6vw,3.75rem)] text-[var(--ink)]">
           {crimeCase.name}
         </h1>
+        {crimeCase.nameOriginal ? (
+          <p className="mt-2 text-lg text-[var(--ink-soft)]">
+            Original ({crimeCase.primarySourceLanguageLabel ?? "source language"}):{" "}
+            <span lang={crimeCase.primarySourceLanguage}>{crimeCase.nameOriginal}</span>
+          </p>
+        ) : null}
+        {crimeCase.primarySourceLanguage ? (
+          <div className="dossier-callout mt-4 max-w-3xl p-4">
+            <p className="text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
+              Translated dossier · {crimeCase.primarySourceLanguageLabel}
+            </p>
+            {crimeCase.translationNote ? (
+              <p className="body-copy mt-2 text-sm text-[var(--ink-soft)]">
+                {crimeCase.translationNote}
+              </p>
+            ) : null}
+            <p className="mt-2 text-xs text-[var(--muted)]">
+              English text synthesized from non-English public sources. See References for
+              original-language citations.
+            </p>
+          </div>
+        ) : null}
         {crimeCase.aliases?.length ? (
           <p className="mt-2 text-sm text-[var(--muted)]">
             Also known as: {crimeCase.aliases.join(" · ")}
           </p>
         ) : null}
-        <p className="lede mt-4 max-w-3xl">
-          {narrative?.hook ?? crimeCase.subtitle}
-        </p>
-        {!narrative ? (
-          <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">{crimeCase.subtitle}</p>
-        ) : null}
+        <p className="lede mt-4 max-w-3xl">{crimeCase.subtitle}</p>
+        <div className="dossier-actions mt-5 flex flex-wrap gap-2">
+          <Link href={monitorUrlFromFilters({}, crimeCase.slug)} className="btn btn-primary text-sm">
+            View on map
+          </Link>
+          <Link
+            href={searchUrlFromFilters(searchSimilar)}
+            className="btn btn-ghost dossier-action-secondary text-sm"
+          >
+            Similar cases
+          </Link>
+          <Link
+            href={`/live?country=${country}`}
+            className="btn btn-ghost dossier-action-secondary text-sm"
+          >
+            Regional news
+          </Link>
+          <Link href="/archive" className="btn btn-ghost dossier-action-secondary text-sm">
+            Full archive
+          </Link>
+          <ShareLinkButton url={dossierUrl} label="Share dossier" />
+        </div>
         <div className="mt-5 flex flex-wrap gap-2">
           {crimeCase.crimeCategories.map((c) => (
-            <span key={c} className="tag">
+            <Link key={c} href={`/archive?crimeCategory=${c}`} className="tag tag-link">
               {CRIME_CATEGORY_LABELS[c]}
-            </span>
+            </Link>
           ))}
+          {crimeCase.status === "unsolved" ? (
+            <Link href="/archive?status=unsolved" className="tag tag-link">
+              Unsolved
+            </Link>
+          ) : null}
         </div>
         <div className="mt-6 max-w-3xl space-y-3">
           <ContentWarning text={crimeCase.warning} level={crimeCase.contentLevel} />
+          {isModerationDraftCase(crimeCase) ? (
+            <div className="card border-[var(--maroon)]/30 bg-[color-mix(in_srgb,var(--maroon)_6%,var(--paper))] p-4">
+              <p className="text-xs font-semibold tracking-[0.12em] text-[var(--maroon)] uppercase">
+                Draft — not published
+              </p>
+              <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                This dossier is awaiting moderation and primary-source verification. Do not cite
+                behavioral claims until an editor approves publication.
+              </p>
+            </div>
+          ) : null}
+          {isEncyclopedicImportCase(crimeCase) ? (
+            <div className="card p-4">
+              <p className="text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
+                Wikipedia-sourced catalog entry
+              </p>
+              <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                Entity identity is linked to a Wikipedia article. Forensic analysis is algorithmic and
+                not human-reviewed — verify facts against court records and primary sources before
+                citation.
+              </p>
+            </div>
+          ) : null}
         </div>
         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
           <span>Analysis: {analysis.status}</span>
@@ -104,17 +267,43 @@ export default async function CasePage({ params, searchParams }: Props) {
           </span>
           <span>Updated {formatDate(analysis.updatedAt)}</span>
         </div>
+          </div>
+          {primaryImage ? (
+            <div className="dossier-header-media">
+              <CaseImagePanel image={primaryImage} variant="hero" priority />
+            </div>
+          ) : null}
+        </div>
       </header>
 
-      <Suspense fallback={null}>
-        <CaseTabs slug={crimeCase.slug} />
-      </Suspense>
+      <div className="dossier-sticky-stack">
+        <Suspense fallback={null}>
+          <CaseTabKeyboardNav
+            hasNarrative={Boolean(narrative)}
+            prevCase={prevCase ? { slug: prevCase.slug, name: prevCase.name } : undefined}
+            nextCase={nextCase ? { slug: nextCase.slug, name: nextCase.name } : undefined}
+            storyChapterIds={storyChapterIds}
+          />
+          <CaseTabs slug={crimeCase.slug} defaultTab={tab} hasNarrative={Boolean(narrative)} />
+        </Suspense>
+        <DossierActionBar
+          name={crimeCase.name}
+          slug={crimeCase.slug}
+          searchSimilar={searchSimilar}
+          country={country}
+          hasNarrative={Boolean(narrative)}
+          siteOrigin={getSiteUrl()}
+          prevCase={prevCase ? { slug: prevCase.slug, name: prevCase.name } : undefined}
+          nextCase={nextCase ? { slug: nextCase.slug, name: nextCase.name } : undefined}
+        />
+      </div>
 
-      <div className="site-shell py-8">
+      <div className="dossier-body site-shell w-full min-w-0 max-w-full py-8">
         {tab === "story" && narrative ? (
           <CaseNarrativeView
             narrative={narrative}
             isDraft={crimeCase.analysis.status !== "published"}
+            caseTags={crimeCase.tags}
           />
         ) : null}
 
@@ -125,17 +314,20 @@ export default async function CasePage({ params, searchParams }: Props) {
         ) : null}
 
         {tab === "overview" ? (
-          <div className="grid gap-6 md:grid-cols-[1.25fr_0.75fr]">
-            <div className="space-y-6">
+          <div className="dossier-overview-grid grid gap-6 md:grid-cols-[1.25fr_0.75fr]">
+            <div className="dossier-overview-main space-y-6">
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Overview</h2>
-                <p className="body-copy mt-3 text-[var(--ink-soft)] md:text-lg">
+                <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)] md:text-lg">
                   {crimeCase.overview}
                 </p>
               </section>
+              {crimeCase.images && crimeCase.images.length > 1 ? (
+                <CaseImageGallery images={crimeCase.images} />
+              ) : null}
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Legal outcome</h2>
-                <p className="body-copy mt-3 text-[var(--ink-soft)]">
+                <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)]">
                   {crimeCase.legalOutcome.summary}
                 </p>
                 <dl className="mt-4 grid gap-3 text-sm">
@@ -167,7 +359,7 @@ export default async function CasePage({ params, searchParams }: Props) {
               </section>
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Behavioral profile</h2>
-                <dl className="mt-4 space-y-3 text-sm md:text-base">
+                <dl className="prose-safe mt-4 space-y-3 text-sm md:text-base">
                   <div>
                     <dt className="font-semibold">Modus operandi</dt>
                     <dd className="text-[var(--ink-soft)]">
@@ -199,7 +391,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 </dl>
               </section>
             </div>
-            <aside className="space-y-4">
+            <aside className="dossier-overview-aside space-y-4">
               <div className="card p-5">
                 <h3 className="text-xs font-semibold tracking-[0.14em] text-[var(--muted)] uppercase">
                   Offender(s)
@@ -260,22 +452,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                   ) : null}
                 </ul>
               </div>
-              {crimeCase.relatedCaseSlugs.length ? (
-                <div className="card p-5">
-                  <h3 className="text-xs font-semibold tracking-[0.14em] text-[var(--muted)] uppercase">
-                    Related cases
-                  </h3>
-                  <ul className="mt-3 space-y-2 text-sm">
-                    {crimeCase.relatedCaseSlugs.map((s) => (
-                      <li key={s}>
-                        <Link href={`/cases/${s}`} className="text-[var(--accent)] hover:underline">
-                          {s}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
+              <RelatedCases crimeCase={crimeCase} allCases={allCases} compact />
             </aside>
           </div>
         ) : null}
@@ -293,7 +470,7 @@ export default async function CasePage({ params, searchParams }: Props) {
           <div className="space-y-6">
             <section className="card p-6 md:p-8">
               <h2 className="display text-2xl">Analysis summary</h2>
-              <p className="body-copy mt-3 text-[var(--ink-soft)] md:text-lg">
+              <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)] md:text-lg">
                 {analysis.summary}
               </p>
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -303,11 +480,13 @@ export default async function CasePage({ params, searchParams }: Props) {
                   </h3>
                   <ul className="mt-2 flex flex-wrap gap-2">
                     {crimeCase.psychologicalFactors.map((f) => (
-                      <li
-                        key={f}
-                        className="rounded border border-[var(--line)] px-2 py-1 text-sm"
-                      >
-                        {FACTOR_LABELS[f]}
+                      <li key={f}>
+                        <Link
+                          href={searchUrlFromFilters({ psychologicalFactor: f })}
+                          className="rounded border border-[var(--line)] px-2 py-1 text-sm hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        >
+                          {FACTOR_LABELS[f]}
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -356,22 +535,14 @@ export default async function CasePage({ params, searchParams }: Props) {
               </div>
             </section>
 
-            <section>
-              <h2 className="display text-3xl">Psychological map</h2>
-              <p className="body-copy mt-2 text-[var(--ink-soft)]">
-                Constructs are hypotheses grounded in public behavior—not diagnoses.
-              </p>
-              <div className="mt-5">
-                <PsychMap constructs={analysis.constructs} />
-              </div>
-            </section>
+            <ForensicAnalysisView analysis={analysis} />
 
             <section className="grid gap-4 md:grid-cols-2">
               <div className="card p-6">
                 <h2 className="display text-2xl">Alternative explanations</h2>
                 <ul className="mt-4 space-y-2">
                   {analysis.alternativeExplanations.map((a) => (
-                    <li key={a} className="body-copy text-[var(--ink-soft)]">
+                    <li key={a} className="body-copy prose-safe text-[var(--ink-soft)]">
                       {a}
                     </li>
                   ))}
@@ -381,7 +552,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 <h2 className="display text-2xl">What we cannot know</h2>
                 <ul className="mt-4 space-y-2">
                   {analysis.whatWeCannotKnow.map((a) => (
-                    <li key={a} className="body-copy text-[var(--muted)]">
+                    <li key={a} className="body-copy prose-safe text-[var(--muted)]">
                       {a}
                     </li>
                   ))}
@@ -401,7 +572,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                     <p className="mt-1 text-sm text-[var(--muted)]">
                       {c.author} · {formatDate(c.publishedAt)}
                     </p>
-                    <p className="body-copy mt-3 text-[var(--ink-soft)]">{c.body}</p>
+                    <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)]">{c.body}</p>
                   </article>
                 ))
               ) : (
@@ -420,7 +591,7 @@ export default async function CasePage({ params, searchParams }: Props) {
         {tab === "documents" ? (
           <div>
             <h2 className="display text-3xl">Document library</h2>
-            <p className="body-copy mt-2 max-w-2xl text-[var(--ink-soft)]">
+            <p className="body-copy prose-safe mt-2 max-w-2xl text-[var(--ink-soft)]">
               Public-domain or link-out sources only. Motive Index does not host
               copyrighted full text without permission.
             </p>
@@ -462,21 +633,67 @@ export default async function CasePage({ params, searchParams }: Props) {
 
         {tab === "references" ? (
           <div className="space-y-6">
+            {(() => {
+              const primaryLink = getPrimaryDirectReferences(crimeCase.references)[0];
+              return primaryLink?.url ? (
+                <section className="card p-6">
+                  <h2 className="display text-xl">Primary source</h2>
+                  <p className="body-copy mt-2 text-sm text-[var(--ink-soft)]">
+                    Jump directly to the main public record for this case.
+                  </p>
+                  <a
+                    href={primaryLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                  >
+                    Open primary source
+                    <span aria-hidden>↗</span>
+                  </a>
+                  <p className="mt-3 text-sm text-[var(--muted)]">{primaryLink.citation}</p>
+                </section>
+              ) : null;
+            })()}
             <section className="card p-6">
               <h2 className="display text-2xl">References & citations</h2>
-              <ul className="mt-4 space-y-3">
+              <p className="body-copy prose-safe mt-2 max-w-3xl text-sm text-[var(--ink-soft)]">
+                Primary sources for verifying behavioral claims in this dossier. Notes explain
+                forensic relevance — not endorsement of every interpretive claim.
+              </p>
+              <ul className="mt-5 space-y-4">
                 {crimeCase.references.map((r) => (
-                  <li key={r.id} className="body-copy text-[var(--ink-soft)]">
-                    <span className="mr-2 text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
-                      {r.kind}
-                    </span>
-                    {r.url ? (
-                      <a href={r.url} className="hover:text-[var(--accent)] hover:underline">
-                        {r.citation}
-                      </a>
-                    ) : (
-                      r.citation
-                    )}
+                  <li key={r.id} className="reference-item border-b border-[var(--line)] pb-4 last:border-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <ReferenceQualityBadge reference={r} />
+                      <span className="text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
+                        {r.kind}
+                      </span>
+                      {r.year ? (
+                        <span className="text-xs text-[var(--muted)]">{r.year}</span>
+                      ) : null}
+                      {r.languageLabel ? (
+                        <span className="rounded bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--accent)]">
+                          {r.languageLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="body-copy prose-safe mt-2 text-[var(--ink-soft)]">
+                      {r.url ? (
+                        <a href={r.url} className="hover:text-[var(--accent)] hover:underline">
+                          {r.citation}
+                        </a>
+                      ) : (
+                        r.citation
+                      )}
+                    </p>
+                    {r.note ? (
+                      <p className="mt-2 text-sm text-[var(--muted)]">{r.note}</p>
+                    ) : null}
+                    {r.originalCitation ? (
+                      <p className="mt-2 text-sm text-[var(--muted)]" lang={r.language}>
+                        Original: {r.originalCitation}
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -489,7 +706,23 @@ export default async function CasePage({ params, searchParams }: Props) {
                     <span className="mr-2 text-xs uppercase text-[var(--muted)]">
                       {s.kind}
                     </span>
-                    {s.title}
+                    {s.languageLabel ? (
+                      <span className="mr-2 rounded bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--accent)]">
+                        {s.languageLabel}
+                      </span>
+                    ) : null}
+                    {s.url ? (
+                      <a href={s.url} className="hover:text-[var(--accent)] hover:underline">
+                        {s.title}
+                      </a>
+                    ) : (
+                      s.title
+                    )}
+                    {s.originalTitle ? (
+                      <p className="mt-1 text-sm text-[var(--muted)]" lang={s.language}>
+                        Original: {s.originalTitle}
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -498,6 +731,16 @@ export default async function CasePage({ params, searchParams }: Props) {
             <Disclaimer />
           </div>
         ) : null}
+
+        {tab !== "overview" ? (
+          <RelatedCases crimeCase={crimeCase} allCases={allCases} />
+        ) : null}
+
+        <DossierNeighborNav
+          prev={prevCase ? { slug: prevCase.slug, name: prevCase.name } : undefined}
+          next={nextCase ? { slug: nextCase.slug, name: nextCase.name } : undefined}
+          tab={tab}
+        />
       </div>
     </article>
   );

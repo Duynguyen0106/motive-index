@@ -7,6 +7,7 @@ import type {
   CountryCode,
   DiagnosisNote,
   ExpertCommentary,
+  ForensicAnalysis,
   GlossaryTerm,
   MotivationalFactor,
   PersonRecord,
@@ -16,8 +17,14 @@ import type {
   BehavioralProfile,
   LegalOutcome,
 } from "@/lib/types";
+import { CASE_REFERENCE_OVERRIDES } from "@/data/caseReferenceCatalog";
 import { getCaseNarrative } from "@/data/narratives";
+import { worldEnrichments } from "@/data/worldCases";
+import { multilingualEnrichments } from "@/data/multilingualCases";
+import { augmentForensicAnalysis } from "@/lib/deepAnalysis";
+import { attachCaseImages } from "@/lib/caseImages";
 import { inferCountry } from "@/lib/country";
+import { getCatalogCoords } from "@/lib/geo";
 
 export interface CaseEnrichment {
   aliases?: string[];
@@ -41,6 +48,10 @@ export interface CaseEnrichment {
   references: CaseReference[];
   expertCommentary?: ExpertCommentary[];
   caseOfWeek?: boolean;
+  nameOriginal?: string;
+  primarySourceLanguage?: string;
+  primarySourceLanguageLabel?: string;
+  translationNote?: string;
 }
 
 export const enrichments: Record<string, CaseEnrichment> = {
@@ -104,20 +115,16 @@ export const enrichments: Record<string, CaseEnrichment> = {
       { label: "Power / control", detail: "Instrumental predation with dominance themes in public analyses." },
       { label: "Sexual violence (inferred)", detail: "Widely inferred from case facts; graphic detail omitted here." },
     ],
-    relatedCaseSlugs: ["dennis-rader-btk", "zodiac-killer"],
-    documentIds: ["doc-bundy-trial-summary", "doc-fbi-organized-notes"],
-    references: [
-      {
-        id: "ref-bundy-1",
-        citation: "Public trial reporting and court summaries (Florida proceedings).",
-        kind: "court",
-      },
-      {
-        id: "ref-bundy-2",
-        citation: "Behavioral analysis literature on organized serial offending (FBI training materials summaries).",
-        kind: "report",
-      },
+    relatedCaseSlugs: [
+      "dennis-rader-btk",
+      "zodiac-killer",
+      "john-wayne-gacy",
+      "richard-ramirez",
+      "edmund-kemper",
+      "golden-state-killer",
     ],
+    documentIds: ["doc-bundy-trial-summary", "doc-fbi-organized-notes"],
+    references: CASE_REFERENCE_OVERRIDES["ted-bundy"] ?? [],
     expertCommentary: [
       {
         id: "ec-bundy-1",
@@ -189,13 +196,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["ted-bundy", "zodiac-killer"],
     documentIds: ["doc-btk-letters-summary", "doc-rader-plea"],
-    references: [
-      {
-        id: "ref-rader-1",
-        citation: "Kansas court plea and sentencing records (public).",
-        kind: "court",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["dennis-rader-btk"] ?? [],
     expertCommentary: [
       {
         id: "ec-rader-1",
@@ -264,13 +265,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["charles-manson"],
     documentIds: ["doc-unabomber-manifesto", "doc-kaczynski-plea"],
-    references: [
-      {
-        id: "ref-k-1",
-        citation: "Industrial Society and Its Future (public manifesto text).",
-        kind: "media",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["ted-kaczynski"] ?? [],
   },
   "aileen-wuornos": {
     location: "Florida, United States",
@@ -324,13 +319,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: [],
     documentIds: ["doc-wuornos-trial-coverage"],
-    references: [
-      {
-        id: "ref-aw-1",
-        citation: "Florida trial and appellate summaries.",
-        kind: "court",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["aileen-wuornos"] ?? [],
     contentLevel: "standard",
   },
   "zodiac-killer": {
@@ -381,13 +370,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["dennis-rader-btk", "ted-bundy"],
     documentIds: ["doc-zodiac-letters"],
-    references: [
-      {
-        id: "ref-z-1",
-        citation: "Archived Zodiac letters in newspaper collections.",
-        kind: "media",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["zodiac-killer"] ?? [],
   },
   "charles-manson": {
     aliases: ["Manson Family leader"],
@@ -446,13 +429,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["ted-kaczynski"],
     documentIds: ["doc-manson-trial-summary"],
-    references: [
-      {
-        id: "ref-cm-1",
-        citation: "Trial records and sociological literature on high-control groups.",
-        kind: "journal",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["charles-manson"] ?? [],
   },
   "harold-shipman": {
     aliases: ["Dr. Death (press epithet — avoid sensational use)"],
@@ -507,13 +484,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: [],
     documentIds: ["doc-shipman-inquiry"],
-    references: [
-      {
-        id: "ref-hs-1",
-        citation: "The Shipman Inquiry public reports.",
-        kind: "report",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["harold-shipman"] ?? [],
   },
   "contemporary-draft-example": {
     location: "Example jurisdiction",
@@ -545,6 +516,8 @@ export const enrichments: Record<string, CaseEnrichment> = {
     references: [],
     contentLevel: "standard",
   },
+  ...worldEnrichments,
+  ...multilingualEnrichments,
 };
 
 export const documents: CaseDocument[] = [
@@ -867,6 +840,69 @@ export const seedContributions: ContributionSubmission[] = [
   },
 ];
 
+function analysisContextFromCase(
+  base: Pick<
+    CrimeCase,
+    | "slug"
+    | "name"
+    | "subtitle"
+    | "overview"
+    | "jurisdiction"
+    | "location"
+    | "era"
+    | "yearStart"
+    | "yearEnd"
+    | "status"
+    | "crimeCategories"
+    | "offenders"
+    | "psychologicalFactors"
+    | "theoreticalFrameworks"
+    | "primarySourceLanguageLabel"
+    | "translationNote"
+    | "signals"
+    | "timeline"
+    | "behavioralProfile"
+    | "motivationalFactors"
+  >,
+) {
+  return {
+    slug: base.slug,
+    name: base.name,
+    subtitle: base.subtitle,
+    overview: base.overview,
+    jurisdiction: base.jurisdiction,
+    location: base.location ?? base.jurisdiction,
+    era: base.era,
+    yearStart: base.yearStart,
+    yearEnd: base.yearEnd,
+    status: base.status,
+    crimeCategories: base.crimeCategories,
+    offenderName: base.offenders?.[0]?.name ?? "Unknown",
+    signals: base.signals,
+    timeline: base.timeline,
+    behavioralProfile: base.behavioralProfile,
+    motivationalFactors: base.motivationalFactors,
+    psychologicalFactors: base.psychologicalFactors,
+    theoreticalFrameworks: base.theoreticalFrameworks,
+    primarySourceLanguageLabel: base.primarySourceLanguageLabel,
+    translationNote: base.translationNote,
+  };
+}
+
+function finalizeAnalysis(
+  base: Parameters<typeof analysisContextFromCase>[0],
+  analysis: ForensicAnalysis,
+): ForensicAnalysis {
+  return augmentForensicAnalysis(analysisContextFromCase(base), analysis);
+}
+
+function withCatalogCoords<T extends CrimeCase>(c: T): T {
+  if (typeof c.lat === "number" && typeof c.lng === "number") return c;
+  const coords = getCatalogCoords(c.slug);
+  if (!coords) return c;
+  return { ...c, lat: coords.lat, lng: coords.lng };
+}
+
 export function applyEnrichment(
   base: Omit<
     CrimeCase,
@@ -895,7 +931,7 @@ export function applyEnrichment(
   const e = enrichments[base.slug];
   if (!e) {
     const location = base.location ?? base.jurisdiction;
-    return {
+    return withCatalogCoords(attachCaseImages({
       ...base,
       location,
       country: base.country ?? inferCountry(base.jurisdiction, location),
@@ -917,14 +953,31 @@ export function applyEnrichment(
       documentIds: base.documentIds ?? [],
       references: base.references ?? [],
       narrative: getCaseNarrative(base.slug),
-      analysis: {
-        ...base.analysis,
-        expertCommentary: base.analysis.expertCommentary ?? [],
-      },
-    } as CrimeCase;
+      analysis: finalizeAnalysis(
+        {
+          ...base,
+          location,
+          yearStart: base.yearStart ?? (Number(base.era) || 1900),
+          crimeCategories: base.crimeCategories ?? ["other"],
+          psychologicalFactors: base.psychologicalFactors ?? [],
+          theoreticalFrameworks: base.theoreticalFrameworks ?? [],
+          offenders: base.offenders ?? [],
+          timeline: base.timeline,
+          behavioralProfile: base.behavioralProfile ?? {
+            modusOperandi: "See analysis.",
+            organizationLevel: "unknown",
+          },
+          motivationalFactors: base.motivationalFactors ?? [],
+        },
+        {
+          ...base.analysis,
+          expertCommentary: base.analysis.expertCommentary ?? [],
+        },
+      ),
+    } as CrimeCase));
   }
 
-  return {
+  return withCatalogCoords(attachCaseImages({
     ...base,
     aliases: e.aliases,
     caseNumber: e.caseNumber,
@@ -946,10 +999,30 @@ export function applyEnrichment(
     documentIds: e.documentIds,
     references: e.references,
     caseOfWeek: e.caseOfWeek,
+    nameOriginal: e.nameOriginal ?? base.nameOriginal,
+    primarySourceLanguage: e.primarySourceLanguage ?? base.primarySourceLanguage,
+    primarySourceLanguageLabel:
+      e.primarySourceLanguageLabel ?? base.primarySourceLanguageLabel,
+    translationNote: e.translationNote ?? base.translationNote,
     narrative: getCaseNarrative(base.slug),
-    analysis: {
-      ...base.analysis,
-      expertCommentary: e.expertCommentary ?? [],
-    },
-  } as CrimeCase;
+    analysis: finalizeAnalysis(
+      {
+        ...base,
+        location: e.location,
+        yearStart: e.yearStart,
+        yearEnd: e.yearEnd,
+        crimeCategories: e.crimeCategories,
+        psychologicalFactors: e.psychologicalFactors,
+        theoreticalFrameworks: e.theoreticalFrameworks,
+        offenders: e.offenders,
+        timeline: base.timeline,
+        behavioralProfile: e.behavioralProfile,
+        motivationalFactors: e.motivationalFactors,
+      },
+      {
+        ...base.analysis,
+        expertCommentary: e.expertCommentary ?? [],
+      },
+    ),
+  } as CrimeCase));
 }

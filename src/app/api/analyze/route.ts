@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyzeWithOptionalLLM } from "@/lib/analyze";
+import { requirePrivilegedApiAccess } from "@/lib/apiAuth";
 import { getCaseBySlug, upsertCase, addUpdate } from "@/lib/data";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import type { BehaviorSignal } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +33,9 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const auth = await requirePrivilegedApiAccess(req);
+  if (!auth.ok) return auth.response;
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -65,6 +70,22 @@ export async function POST(req: Request) {
     caseName: existing.name,
     overview: existing.overview,
     signals,
+    slug: existing.slug,
+    subtitle: existing.subtitle,
+    jurisdiction: existing.jurisdiction,
+    location: existing.location,
+    era: existing.era,
+    yearStart: existing.yearStart,
+    yearEnd: existing.yearEnd,
+    status: existing.status,
+    crimeCategories: existing.crimeCategories,
+    offenderName: existing.offenders[0]?.name,
+    narrative: existing.narrative,
+    timeline: existing.timeline,
+    behavioralProfile: existing.behavioralProfile,
+    motivationalFactors: existing.motivationalFactors,
+    psychologicalFactors: existing.psychologicalFactors,
+    theoreticalFrameworks: existing.theoreticalFrameworks,
   });
 
   const updated = upsertCase({
@@ -77,7 +98,9 @@ export async function POST(req: Request) {
     },
   });
 
-  addUpdate({
+  await syncAfterCaseWrite(updated);
+
+  const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
     headline: `Analysis draft regenerated for ${existing.name}`,
@@ -86,6 +109,7 @@ export async function POST(req: Request) {
     kind: "analysis_ready",
     status: "draft",
   });
+  await syncAfterUpdateWrite(update);
 
   return NextResponse.json({ case: updated });
 }

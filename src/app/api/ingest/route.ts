@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyzeFromSignals } from "@/lib/analyze";
+import { requirePrivilegedApiAccess } from "@/lib/apiAuth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import { applyNarrativeToCase, generateCaseNarrative } from "@/lib/narrativeGenerate";
 import type { CrimeCase } from "@/lib/types";
 
@@ -12,6 +14,7 @@ const bodySchema = z.object({
   summary: z.string().min(3),
   jurisdiction: z.string().default("Unspecified"),
   name: z.string().optional(),
+  sourceUrl: z.string().url().optional(),
 });
 
 function slugify(input: string): string {
@@ -23,6 +26,9 @@ function slugify(input: string): string {
 }
 
 export async function POST(req: Request) {
+  const auth = await requirePrivilegedApiAccess(req);
+  if (!auth.ok) return auth.response;
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -50,7 +56,7 @@ export async function POST(req: Request) {
     era: String(year),
     status: "closed",
     crimeCategories: ["other"],
-    tags: ["live-ingest", "draft"],
+    tags: ["live-ingest", "draft", "awaiting-moderation"],
     psychologicalFactors: [],
     theoreticalFrameworks: [],
     diagnoses: [],
@@ -78,8 +84,23 @@ export async function POST(req: Request) {
     ],
     signals: [],
     documentIds: [],
-    references: [],
-    sources: [{ title: "Ingest payload (public summary)", kind: "news" }],
+    references: parsed.data.sourceUrl
+      ? [
+          {
+            id: `ref-${slug}`,
+            citation: parsed.data.headline,
+            kind: "media" as const,
+            url: parsed.data.sourceUrl,
+          },
+        ]
+      : [],
+    sources: [
+      {
+        title: parsed.data.headline,
+        url: parsed.data.sourceUrl,
+        kind: "news" as const,
+      },
+    ],
     analysis,
     featured: false,
   };
@@ -94,6 +115,7 @@ export async function POST(req: Request) {
   crimeCase = applyNarrativeToCase(crimeCase, narrativeResult, parsed.data.headline);
 
   upsertCase(crimeCase);
+  await syncAfterCaseWrite(crimeCase);
   const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
@@ -103,6 +125,7 @@ export async function POST(req: Request) {
     kind: "new_case",
     status: "draft",
   });
+  await syncAfterUpdateWrite(update);
 
   return NextResponse.json({ case: crimeCase, update }, { status: 201 });
 }

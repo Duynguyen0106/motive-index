@@ -1,5 +1,4 @@
 import type { SearchFilters } from "@/lib/types";
-import { searchCases, searchDocuments } from "@/lib/data";
 
 export function parseSearchParams(
   params: Record<string, string | string[] | undefined>,
@@ -23,12 +22,152 @@ export function parseSearchParams(
     offenderSex: g("offenderSex"),
     documentType: g("documentType") as SearchFilters["documentType"],
     status: g("status") as SearchFilters["status"],
+    catalogTier: (g("catalogTier") || "") as SearchFilters["catalogTier"],
   };
 }
 
-export function runSearch(filters: SearchFilters) {
+export function hasActiveFilters(filters: SearchFilters): boolean {
+  return Object.values(filters).some(Boolean);
+}
+
+const MONITOR_FILTER_KEYS = ["q", "country", "crimeCategory", "status", "period"] as const;
+
+export function filtersToQueryString(
+  filters: SearchFilters,
+  keys: readonly (keyof SearchFilters)[] = Object.keys(filters) as (keyof SearchFilters)[],
+): string {
+  const p = new URLSearchParams();
+  for (const k of keys) {
+    const v = filters[k];
+    if (v) p.set(k, String(v));
+  }
+  return p.toString();
+}
+
+export function monitorUrlFromFilters(filters: SearchFilters, caseSlug?: string): string {
+  const p = new URLSearchParams(filtersToQueryString(filters, [...MONITOR_FILTER_KEYS]));
+  if (caseSlug) p.set("case", caseSlug);
+  const qs = p.toString();
+  return qs ? `/?${qs}` : "/";
+}
+
+export type SearchUrlOpts = {
+  page?: number;
+  pageSize?: number;
+  sort?: ArchiveSort;
+  docPage?: number;
+  docPageSize?: number;
+};
+
+export function searchUrlFromFilters(
+  filters: SearchFilters,
+  opts?: SearchUrlOpts,
+): string {
+  const p = new URLSearchParams(filtersToQueryString(filters));
+  if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
+  if (opts?.pageSize && opts.pageSize !== DEFAULT_ARCHIVE_PAGE_SIZE) {
+    p.set("pageSize", String(opts.pageSize));
+  }
+  if (opts?.sort && opts.sort !== "featured") p.set("sort", opts.sort);
+  if (opts?.docPage && opts.docPage > 1) p.set("docPage", String(opts.docPage));
+  if (opts?.docPageSize && opts.docPageSize !== DEFAULT_DOC_PAGE_SIZE) {
+    p.set("docPageSize", String(opts.docPageSize));
+  }
+  const qs = p.toString();
+  return qs ? `/search?${qs}` : "/search";
+}
+
+export const DEFAULT_ARCHIVE_PAGE_SIZE = 50;
+export const DEFAULT_DOC_PAGE_SIZE = 25;
+
+export type ArchiveSort = "featured" | "year-desc" | "year-asc" | "name-asc";
+
+export function parseArchiveSort(value: string | undefined): ArchiveSort {
+  if (value === "year-desc" || value === "year-asc" || value === "name-asc") return value;
+  return "featured";
+}
+
+export function sortArchiveCases<T extends { featured?: boolean; yearStart: number; name: string }>(
+  items: T[],
+  sort: ArchiveSort,
+): T[] {
+  const copy = [...items];
+  switch (sort) {
+    case "year-desc":
+      return copy.sort((a, b) => b.yearStart - a.yearStart || a.name.localeCompare(b.name));
+    case "year-asc":
+      return copy.sort((a, b) => a.yearStart - b.yearStart || a.name.localeCompare(b.name));
+    case "name-asc":
+      return copy.sort((a, b) => a.name.localeCompare(b.name));
+    default:
+      return copy.sort(
+        (a, b) =>
+          Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+          b.yearStart - a.yearStart ||
+          a.name.localeCompare(b.name),
+      );
+  }
+}
+
+export function paginateCases<T>(
+  items: T[],
+  page: number,
+  pageSize: number = DEFAULT_ARCHIVE_PAGE_SIZE,
+) {
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const start = (safePage - 1) * pageSize;
   return {
-    cases: searchCases(filters),
-    documents: searchDocuments(filters),
+    items: items.slice(start, start + pageSize),
+    page: safePage,
+    pageSize,
+    total,
+    totalPages,
   };
+}
+
+export function documentsUrlFromParams(opts?: {
+  q?: string;
+  type?: string;
+  page?: number;
+  pageSize?: number;
+}): string {
+  const p = new URLSearchParams();
+  if (opts?.q?.trim()) p.set("q", opts.q.trim());
+  if (opts?.type) p.set("type", opts.type);
+  if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
+  if (opts?.pageSize && opts.pageSize !== DEFAULT_DOC_PAGE_SIZE) {
+    p.set("pageSize", String(opts.pageSize));
+  }
+  const qs = p.toString();
+  return qs ? `/documents?${qs}` : "/documents";
+}
+
+export function getAdjacentCases<T extends { slug: string; featured?: boolean; yearStart: number; name: string }>(
+  slug: string,
+  allCases: T[],
+  sort: ArchiveSort = "featured",
+): { prev?: T; next?: T } {
+  const sorted = sortArchiveCases(allCases, sort);
+  const idx = sorted.findIndex((c) => c.slug === slug);
+  if (idx < 0) return {};
+  return {
+    prev: idx > 0 ? sorted[idx - 1] : undefined,
+    next: idx < sorted.length - 1 ? sorted[idx + 1] : undefined,
+  };
+}
+
+export function archiveUrlFromFilters(
+  filters: SearchFilters,
+  opts?: { page?: number; pageSize?: number; sort?: ArchiveSort },
+): string {
+  const p = new URLSearchParams(filtersToQueryString(filters));
+  if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
+  if (opts?.pageSize && opts.pageSize !== DEFAULT_ARCHIVE_PAGE_SIZE) {
+    p.set("pageSize", String(opts.pageSize));
+  }
+  if (opts?.sort && opts.sort !== "featured") p.set("sort", opts.sort);
+  const qs = p.toString();
+  return qs ? `/archive?${qs}` : "/archive";
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-[var(--line-strong)] bg-[var(--bg-subtle)]">
+    <footer className="mt-auto border-t border-[var(--line-strong)] bg-[var(--bg-subtle)]/90 backdrop-blur-sm">
       <div className="site-shell py-10">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr]">
           <div>
@@ -15,24 +15,34 @@ export function SiteFooter() {
             <p className="label mt-6">Colophon</p>
             <p className="mt-1 text-xs text-[var(--muted)]">
               Public-source citations · Human-reviewed analysis · Content warnings
-              on sensitive dossiers
+              on sensitive dossiers · Press <kbd className="keyboard-kbd inline">⌘K</kbd> to jump ·{" "}
+              <kbd className="keyboard-kbd inline">?</kbd> for shortcuts
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-[var(--ink-soft)]">
-            <Link href="/cases" className="text-link">
-              Case index
-            </Link>
-            <Link href="/monitor" className="text-link">
+            <Link href="/" className="text-link">
               World monitor
+            </Link>
+            <Link href="/archive" className="text-link">
+              Case archive
             </Link>
             <Link href="/search" className="text-link">
               Advanced search
+            </Link>
+            <Link href="/live" className="text-link">
+              World news
             </Link>
             <Link href="/resources" className="text-link">
               Glossary & theories
             </Link>
             <Link href="/contribute" className="text-link">
               Contribute
+            </Link>
+            <Link href="/stats" className="text-link">
+              Archive stats
+            </Link>
+            <Link href="/analyses" className="text-link">
+              Commentary
             </Link>
             <Link href="/method" className="text-link">
               Method
