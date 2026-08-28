@@ -14,6 +14,7 @@ const STEPS = [
   { name: "Per-case provenance audit", script: "audit-all-cases.mjs" },
   { name: "Database audit", script: "audit-database.mjs" },
   { name: "Source validation", script: "validate-sources.mjs" },
+  { name: "Reference URL validation", script: "validate-reference-urls.mjs" },
 ];
 
 let failed = 0;

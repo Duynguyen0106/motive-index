@@ -35,6 +35,8 @@ import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
 import { getSiteUrl } from "@/lib/seo";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
 import type { SearchFilters } from "@/lib/types";
+import { isPrimarySourceReference } from "@/lib/validation/caseProvenance";
+import { isDirectSourceUrl } from "@/lib/validation/referenceUrls";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
   const key = decodeURIComponent(idOrSlug);
@@ -567,6 +569,29 @@ export default async function CasePage({ params, searchParams }: Props) {
 
         {tab === "references" ? (
           <div className="space-y-6">
+            {(() => {
+              const primaryLink = crimeCase.references.find(
+                (r) => isPrimarySourceReference(r) && isDirectSourceUrl(r.url),
+              );
+              return primaryLink?.url ? (
+                <section className="card p-6">
+                  <h2 className="display text-xl">Primary source</h2>
+                  <p className="body-copy mt-2 text-sm text-[var(--ink-soft)]">
+                    Jump directly to the main public record for this case.
+                  </p>
+                  <a
+                    href={primaryLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                  >
+                    Open primary source
+                    <span aria-hidden>↗</span>
+                  </a>
+                  <p className="mt-3 text-sm text-[var(--muted)]">{primaryLink.citation}</p>
+                </section>
+              ) : null;
+            })()}
             <section className="card p-6">
               <h2 className="display text-2xl">References & citations</h2>
               <p className="body-copy mt-2 max-w-3xl text-sm text-[var(--ink-soft)]">
