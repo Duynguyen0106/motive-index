@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ThemeInitScript } from "@/components/ThemeInitScript";
 import { DEFAULT_DESCRIPTION, getSiteUrl, SITE_NAME } from "@/lib/seo";
 import "./globals.css";
 
@@ -49,7 +50,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${literata.variable} ${plex.variable} h-full antialiased`}
+      data-theme="dark"
+      suppressHydrationWarning
     >
+      <head>
+        <ThemeInitScript />
+      </head>
       <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--ink)]">
         <SiteHeader />
         <main className="flex-1">{children}</main>

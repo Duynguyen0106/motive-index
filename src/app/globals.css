@@ -17,8 +17,8 @@
   --paper: #5c3038;
   --paper-elevated: #6a3844;
   --surface: rgba(92, 48, 56, 0.65);
-  --ink: #cccccc;
-  --ink-soft: #b5b5b5;
+  --ink: #e8e8e8;
+  --ink-soft: #cccccc;
   --muted: #a07272;
   --line: rgba(160, 114, 114, 0.35);
   --line-strong: rgba(160, 114, 114, 0.58);
@@ -31,6 +31,186 @@
   --overlay: rgba(47, 26, 32, 0.88);
   --background: var(--bg);
   --foreground: var(--ink);
+}
+
+/* Light mode — crime scene palette on fog base */
+html[data-theme="light"] {
+  --ai-glow: rgba(100, 4, 4, 0.22);
+  --ai-grid: rgba(92, 48, 56, 0.07);
+  --ai-scan: rgba(100, 4, 4, 0.05);
+
+  --bg: #ddd8d8;
+  --bg-subtle: #cccccc;
+  --paper: #ece9e9;
+  --paper-elevated: #f7f5f5;
+  --surface: rgba(204, 204, 204, 0.55);
+  --ink: #3a2228;
+  --ink-soft: #5c3038;
+  --muted: #8a6068;
+  --line: rgba(92, 48, 56, 0.22);
+  --line-strong: rgba(92, 48, 56, 0.38);
+  --border: rgba(160, 114, 114, 0.5);
+  --accent: #640404;
+  --accent-deep: #640404;
+  --accent-soft: rgba(210, 91, 91, 0.12);
+  --maroon: #640404;
+  --warning: #640404;
+  --overlay: rgba(236, 233, 233, 0.94);
+}
+
+html[data-theme="light"] body {
+  background-image:
+    linear-gradient(var(--ai-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ai-grid) 1px, transparent 1px),
+    radial-gradient(ellipse 90% 60% at 50% -30%, rgba(100, 4, 4, 0.07), transparent 55%),
+    linear-gradient(180deg, #ece9e9 0%, #ddd8d8 100%);
+}
+
+html[data-theme="light"] .site-header {
+  background: color-mix(in srgb, var(--cs-fog) 92%, transparent);
+  box-shadow: 0 4px 20px rgba(92, 48, 56, 0.08);
+}
+
+html[data-theme="light"] .brand-sub {
+  color: var(--cs-deep);
+}
+
+html[data-theme="light"] .monitor-live-dot {
+  background: var(--cs-deep);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .monitor-hero {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--cs-fog) 95%, transparent) 0%,
+    rgba(210, 91, 91, 0.08) 100%
+  );
+}
+
+html[data-theme="light"] .monitor-cluster {
+  background: var(--cs-deep);
+  border-color: var(--paper-elevated);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, box-shadow 0.12s, background 0.12s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--cs-signal);
+  color: var(--ink);
+  box-shadow: 0 0 12px var(--ai-glow);
+}
+
+.theme-toggle-icon {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+/* Case dossier — higher contrast reading surface */
+.dossier-header {
+  border-bottom: 1px solid var(--line-strong);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--paper) 55%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.dossier-page .display {
+  color: var(--cs-fog);
+}
+
+html[data-theme="light"] .dossier-page .display {
+  color: var(--cs-void);
+}
+
+.dossier-page .lede {
+  color: var(--cs-fog);
+  font-size: 1.1875rem;
+  line-height: 1.7;
+}
+
+html[data-theme="light"] .dossier-page .lede {
+  color: var(--ink-soft);
+}
+
+.dossier-page .body-copy {
+  color: color-mix(in srgb, var(--cs-fog) 92%, white);
+  line-height: 1.75;
+}
+
+html[data-theme="light"] .dossier-page .body-copy {
+  color: var(--ink-soft);
+}
+
+.dossier-callout {
+  border: 1px solid color-mix(in srgb, var(--cs-signal) 45%, var(--line));
+  border-left: 3px solid var(--cs-signal);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cs-deep) 14%, var(--paper));
+}
+
+html[data-theme="light"] .dossier-callout {
+  background: color-mix(in srgb, var(--cs-signal) 8%, var(--paper-elevated));
+}
+
+.dossier-body .card {
+  background: color-mix(in srgb, var(--paper-elevated) 96%, transparent);
+  border-color: var(--line-strong);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"] .dossier-body .card {
+  box-shadow: 0 2px 12px rgba(92, 48, 56, 0.06);
+}
+
+.dossier-body h2.display,
+.dossier-body h3.display {
+  color: var(--cs-fog);
+}
+
+html[data-theme="light"] .dossier-body h2.display,
+html[data-theme="light"] .dossier-body h3.display {
+  color: var(--ink);
+}
+
+.dossier-page .tag {
+  border-color: color-mix(in srgb, var(--cs-signal) 35%, var(--line));
+  color: var(--cs-fog);
+  background: color-mix(in srgb, var(--cs-deep) 20%, transparent);
+}
+
+html[data-theme="light"] .dossier-page .tag {
+  color: var(--cs-deep);
+  background: color-mix(in srgb, var(--cs-signal) 10%, var(--paper));
+}
+
+.dossier-page .note {
+  border-left: 3px solid var(--cs-signal);
+}
+
+.dossier-page .note-warn {
+  background: color-mix(in srgb, var(--cs-deep) 28%, var(--paper));
+  border-color: color-mix(in srgb, var(--cs-signal) 50%, var(--line));
+}
+
+html[data-theme="light"] .dossier-page .note-warn {
+  background: color-mix(in srgb, var(--cs-signal) 12%, var(--paper-elevated));
 }
 
 @theme inline {

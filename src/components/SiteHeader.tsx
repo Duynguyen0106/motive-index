@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function SiteHeader() {
   return (
@@ -15,7 +16,10 @@ export function SiteHeader() {
               Motive Index
             </p>
           </Link>
-          <SiteNav />
+          <div className="flex flex-col items-start gap-3 md:items-end">
+            <ThemeToggle />
+            <SiteNav />
+          </div>
         </div>
       </div>
       <hr className="rule-double" />

@@ -98,8 +98,8 @@ export default async function CasePage({ params, searchParams }: Props) {
   const { analysis } = crimeCase;
 
   return (
-    <article className="pb-16">
-      <header className="site-shell py-10 md:py-12">
+    <article className="dossier-page pb-16">
+      <header className="dossier-header site-shell py-10 md:py-12">
         <Breadcrumbs
           items={[
             { label: "Monitor", href: "/" },
@@ -123,7 +123,7 @@ export default async function CasePage({ params, searchParams }: Props) {
           </p>
         ) : null}
         {crimeCase.primarySourceLanguage ? (
-          <div className="mt-4 max-w-3xl rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+          <div className="dossier-callout mt-4 max-w-3xl p-4">
             <p className="text-xs font-semibold tracking-[0.14em] text-[var(--accent)] uppercase">
               Translated dossier · {crimeCase.primarySourceLanguageLabel}
             </p>
@@ -187,7 +187,7 @@ export default async function CasePage({ params, searchParams }: Props) {
         <CaseTabs slug={crimeCase.slug} />
       </Suspense>
 
-      <div className="site-shell py-8">
+      <div className="dossier-body site-shell py-8">
         {tab === "story" && narrative ? (
           <CaseNarrativeView
             narrative={narrative}
