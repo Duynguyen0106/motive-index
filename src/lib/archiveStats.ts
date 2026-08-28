@@ -31,7 +31,43 @@ function sortByCount<T extends { count: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => b.count - a.count);
 }
 
-export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
+export type ArchiveStatsLimits = {
+  country?: number;
+  category?: number;
+  psychFactor?: number;
+  framework?: number;
+};
+
+const DEFAULT_LIMITS: Required<ArchiveStatsLimits> = {
+  country: 15,
+  category: 10,
+  psychFactor: 10,
+  framework: 8,
+};
+
+let cachedStats: { signature: string; stats: ArchiveStats } | null = null;
+
+export function invalidateArchiveStatsCache(): void {
+  cachedStats = null;
+}
+
+export function getCachedArchiveStats(
+  cases: CrimeCase[],
+  limits: ArchiveStatsLimits = {},
+): ArchiveStats {
+  const merged = { ...DEFAULT_LIMITS, ...limits };
+  const signature = `${cases.length}:${merged.country}:${merged.category}:${merged.psychFactor}:${merged.framework}`;
+  if (cachedStats?.signature === signature) return cachedStats.stats;
+  const stats = buildArchiveStats(cases, merged);
+  cachedStats = { signature, stats };
+  return stats;
+}
+
+export function buildArchiveStats(
+  cases: CrimeCase[],
+  limits: ArchiveStatsLimits = {},
+): ArchiveStats {
+  const lim = { ...DEFAULT_LIMITS, ...limits };
   const imageCoverage = catalogImageCoverage();
   const countryMap = new Map<CountryCode, number>();
   const categoryMap = new Map<CrimeCategory, number>();
@@ -86,14 +122,14 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
         count,
         href: `/archive?country=${code}`,
       })),
-    ).slice(0, 15),
+    ).slice(0, lim.country),
     byCategory: sortByCount(
       [...categoryMap.entries()].map(([cat, count]) => ({
         label: CRIME_CATEGORY_LABELS[cat],
         count,
         href: `/archive?crimeCategory=${cat}`,
       })),
-    ).slice(0, 10),
+    ).slice(0, lim.category),
     byStatus: sortByCount(
       [...statusMap.entries()].map(([status, count]) => ({
         label: status.charAt(0).toUpperCase() + status.slice(1),
@@ -114,13 +150,13 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
         count,
         href: `/search?psychologicalFactor=${factor}`,
       })),
-    ).slice(0, 10),
+    ).slice(0, lim.psychFactor),
     byFramework: sortByCount(
       [...frameworkMap.entries()].map(([framework, count]) => ({
         label: FRAMEWORK_LABELS[framework],
         count,
         href: `/search?theoreticalFramework=${framework}`,
       })),
-    ).slice(0, 8),
+    ).slice(0, lim.framework),
   };
 }

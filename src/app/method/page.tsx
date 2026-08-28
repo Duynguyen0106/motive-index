@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PageHeader } from "@/components/PageHeader";
@@ -40,7 +39,16 @@ export default function MethodPage() {
         ]}
       />
 
-      <section className="mt-12">
+      <nav className="method-toc card mt-8 p-4 md:p-5" aria-label="On this page">
+        <p className="label mb-2 normal-case tracking-normal">On this page</p>
+        <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          <li><a href="#method-pipeline" className="text-link">Pipeline</a></li>
+          <li><a href="#method-rubric" className="text-link">Rubric</a></li>
+          <li><a href="#method-rules" className="text-link">Hard rules</a></li>
+        </ul>
+      </nav>
+
+      <section id="method-pipeline" className="mt-12 scroll-mt-24">
         <h2 className="display text-3xl text-[var(--ink)]">Pipeline</h2>
         <ol className="mt-5 grid gap-3">
           {[
@@ -75,7 +83,7 @@ export default function MethodPage() {
         </ol>
       </section>
 
-      <section className="mt-12">
+      <section id="method-rubric" className="mt-12 scroll-mt-24">
         <h2 className="display text-3xl text-[var(--ink)]">Rubric dimensions</h2>
         <ul className="card mt-5 divide-y divide-[var(--line)] overflow-hidden">
           {dimensions.map(([name, desc]) => (
@@ -90,7 +98,7 @@ export default function MethodPage() {
         </ul>
       </section>
 
-      <section className="mt-12 space-y-5 pb-8">
+      <section id="method-rules" className="mt-12 scroll-mt-24 space-y-5 pb-8">
         <h2 className="display text-3xl text-[var(--ink)]">Hard rules</h2>
         <div className="card p-6">
           <ul className="body-copy space-y-3 text-[var(--ink-soft)] md:text-lg">

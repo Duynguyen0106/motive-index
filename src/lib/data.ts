@@ -24,6 +24,7 @@ import {
   FRAMEWORK_LABELS,
 } from "@/lib/types";
 import { resolveCaseCountry } from "@/lib/country";
+import { invalidateArchiveStatsCache } from "@/lib/archiveStats";
 import { matchesCatalogTier } from "@/lib/caseSummaries";
 import { assertPublishableCase } from "@/lib/validation/caseProvenance";
 import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
@@ -76,6 +77,7 @@ function writeStore(store: Store): void {
 export function invalidateStoreCache(): void {
   const g = globalThis as unknown as { __motiveIndexStore?: Store };
   g.__motiveIndexStore = undefined;
+  invalidateArchiveStatsCache();
 }
 
 export function getStoreSnapshot(): Store {

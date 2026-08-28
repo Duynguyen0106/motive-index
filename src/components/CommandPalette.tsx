@@ -37,6 +37,7 @@ const ROUTES = [
   { href: "/?tab=signals", label: "Monitor · Signals tab", hint: "Archive activity" },
   { href: "/archive", label: "Case archive", hint: "Browse dossiers" },
   { href: "/search", label: "Advanced search", hint: "Deep filters" },
+  { href: "/analyses", label: "Commentary", hint: "Expert analyses" },
   { href: "/stats", label: "Archive stats", hint: "Catalog analytics" },
   { href: "/live", label: "World news", hint: "Regional RSS" },
   { href: "/documents", label: "Documents", hint: "Primary sources" },

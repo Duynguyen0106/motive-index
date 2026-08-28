@@ -3,8 +3,9 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PageHeader } from "@/components/PageHeader";
+import { StatsExpandableChart } from "@/components/StatsExpandableChart";
 import { QuickLinks, StatBar } from "@/components/ui";
-import { buildArchiveStats, type ArchiveStatBucket } from "@/lib/archiveStats";
+import { getCachedArchiveStats } from "@/lib/archiveStats";
 import { getAllCases } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -12,33 +13,13 @@ export const metadata: Metadata = {
   description: "Catalog analytics across 10,000+ forensic psychology dossiers.",
 };
 
-function StatBarChart({ buckets, max, title }: { buckets: ArchiveStatBucket[]; max: number; title: string }) {
-  return (
-    <ul className="stats-bars mt-4 space-y-2" role="list" aria-label={title}>
-      {buckets.map((b) => (
-        <li key={b.label} className="stats-bar-row">
-          <Link href={b.href} className="stats-bar-link group">
-            <span className="stats-bar-label" title={b.label}>{b.label}</span>
-            <div
-              className="stats-bar-track"
-              role="img"
-              aria-label={`${b.label}: ${b.count} dossiers`}
-            >
-              <div
-                className="stats-bar-fill"
-                style={{ width: max ? `${(b.count / max) * 100}%` : "0%" }}
-              />
-            </div>
-            <span className="stats-bar-count">{b.count}</span>
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export default function StatsPage() {
-  const stats = buildArchiveStats(getAllCases());
+  const stats = getCachedArchiveStats(getAllCases(), {
+    country: 50,
+    category: 20,
+    psychFactor: 20,
+    framework: 15,
+  });
   const maxCountry = stats.byCountry[0]?.count ?? 1;
   const maxCategory = stats.byCategory[0]?.count ?? 1;
   const maxDecade = Math.max(...stats.byDecade.map((d) => d.count), 1);
@@ -76,44 +57,88 @@ export default function StatsPage() {
       />
 
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        <section className="card p-6 md:p-8">
-          <h2 className="display text-xl">By country</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">Top 15 jurisdictions — tap to filter archive</p>
-          <StatBarChart buckets={stats.byCountry} max={maxCountry} title="Cases by country" />
-        </section>
+        <StatsExpandableChart
+          title="By country"
+          subtitle="Jurisdictions in catalog — tap to filter archive"
+          buckets={stats.byCountry}
+          max={maxCountry}
+          chartTitle="Cases by country"
+          initialLimit={15}
+          viewAllHref="/archive"
+        />
 
-        <section className="card p-6 md:p-8">
-          <h2 className="display text-xl">By crime category</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">Primary classification tags</p>
-          <StatBarChart buckets={stats.byCategory} max={maxCategory} title="Cases by crime category" />
-        </section>
+        <StatsExpandableChart
+          title="By crime category"
+          subtitle="Primary classification tags"
+          buckets={stats.byCategory}
+          max={maxCategory}
+          chartTitle="Cases by crime category"
+          initialLimit={10}
+          viewAllHref="/archive"
+        />
 
         <section className="card p-6 md:p-8">
           <h2 className="display text-xl">By status</h2>
-          <StatBarChart
-            buckets={stats.byStatus}
-            max={Math.max(...stats.byStatus.map((s) => s.count), 1)}
-            title="Cases by status"
-          />
+          <ul className="stats-bars mt-4 space-y-2" role="list" aria-label="Cases by status">
+            {stats.byStatus.map((b) => (
+              <li key={b.label} className="stats-bar-row">
+                <Link href={b.href} className="stats-bar-link group">
+                  <span className="stats-bar-label">{b.label}</span>
+                  <div className="stats-bar-track" role="img" aria-label={`${b.label}: ${b.count}`}>
+                    <div
+                      className="stats-bar-fill"
+                      style={{
+                        width: `${(b.count / Math.max(...stats.byStatus.map((s) => s.count), 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="stats-bar-count">{b.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="card p-6 md:p-8">
           <h2 className="display text-xl">By decade</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">Case start year distribution</p>
-          <StatBarChart buckets={stats.byDecade} max={maxDecade} title="Cases by decade" />
+          <ul className="stats-bars mt-4 space-y-2" role="list" aria-label="Cases by decade">
+            {stats.byDecade.map((b) => (
+              <li key={b.label} className="stats-bar-row">
+                <Link href={b.href} className="stats-bar-link group">
+                  <span className="stats-bar-label">{b.label}</span>
+                  <div className="stats-bar-track" role="img" aria-label={`${b.label}: ${b.count}`}>
+                    <div
+                      className="stats-bar-fill"
+                      style={{ width: `${(b.count / maxDecade) * 100}%` }}
+                    />
+                  </div>
+                  <span className="stats-bar-count">{b.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
 
-        <section className="card p-6 md:p-8">
-          <h2 className="display text-xl">By psychological factor</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">Top tagged constructs — tap to search</p>
-          <StatBarChart buckets={stats.byPsychFactor} max={maxPsych} title="Cases by psych factor" />
-        </section>
+        <StatsExpandableChart
+          title="By psychological factor"
+          subtitle="Tagged constructs — tap to search"
+          buckets={stats.byPsychFactor}
+          max={maxPsych}
+          chartTitle="Cases by psych factor"
+          initialLimit={10}
+          viewAllHref="/search"
+        />
 
-        <section className="card p-6 md:p-8">
-          <h2 className="display text-xl">By theoretical framework</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">Applied models across dossiers</p>
-          <StatBarChart buckets={stats.byFramework} max={maxFramework} title="Cases by framework" />
-        </section>
+        <StatsExpandableChart
+          title="By theoretical framework"
+          subtitle="Applied models across dossiers"
+          buckets={stats.byFramework}
+          max={maxFramework}
+          chartTitle="Cases by framework"
+          initialLimit={8}
+          viewAllHref="/search"
+        />
       </div>
 
       <section className="card mt-6 p-6 md:p-8">

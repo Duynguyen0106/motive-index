@@ -1178,6 +1178,42 @@ body.has-hot-news-ticker .site-header {
   color: var(--muted);
 }
 
+.monitor-stats-mobile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.monitor-stat-mobile strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.monitor-stat-mobile-alert strong {
+  color: var(--maroon);
+}
+
+.monitor-quick-links-mobile {
+  margin-bottom: 0.65rem;
+}
+
+.monitor-quick-links-mobile .quick-links {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.monitor-quick-links-mobile .quick-links a {
+  flex-shrink: 0;
+}
+
 .monitor-chips {
   display: flex;
   flex-wrap: wrap;

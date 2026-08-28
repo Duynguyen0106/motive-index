@@ -19,7 +19,7 @@ import {
   parseSearchParams,
   sortArchiveCases,
 } from "@/lib/search";
-import { buildArchiveStats } from "@/lib/archiveStats";
+import { getCachedArchiveStats } from "@/lib/archiveStats";
 
 export const metadata: Metadata = {
   title: "Case archive",
@@ -51,7 +51,7 @@ export default async function ArchivePage({ searchParams }: Props) {
   const countryOptions = listCountryOptions(allCases);
   const updates = getUpdates(4);
   const cotw = getCaseOfWeek();
-  const stats = buildArchiveStats(allCases);
+  const stats = getCachedArchiveStats(allCases);
 
   return (
     <>

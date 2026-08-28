@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { EmptyState } from "@/components/ui";
 import { readJsonResponse } from "@/lib/clientFetch";
 import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
 import type { LiveUpdate } from "@/lib/types";
@@ -104,7 +105,16 @@ export function LiveFeedClient({
         </li>
       ))}
       {!archiveUpdates.length ? (
-        <li className="py-8 text-sm text-[var(--muted)]">No archive activity yet.</li>
+        <li className="list-none py-4">
+          <EmptyState
+            title="No archive activity yet"
+            description="Ingest events and analysis revisions will appear here as the catalog grows."
+            actions={[
+              { href: "/archive", label: "Browse archive", primary: true },
+              { href: "/", label: "World monitor" },
+            ]}
+          />
+        </li>
       ) : null}
       </ul>
       {canLoadMore ? (

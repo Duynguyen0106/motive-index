@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { CommandPaletteHost } from "@/components/CommandPalette";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SiteJsonLd } from "@/components/SiteJsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SkipLink } from "@/components/SkipLink";
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <ThemeInitScript />
+        <SiteJsonLd />
       </head>
       <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--ink)]">
         <SkipLink />

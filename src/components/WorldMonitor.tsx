@@ -20,7 +20,7 @@ import { MonitorComparePanel } from "@/components/MonitorComparePanel";
 import { MonitorMapControls } from "@/components/MonitorMapControls";
 import { MonitorSignalsPanel } from "@/components/MonitorSignalsPanel";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
-import { QuickLinks } from "@/components/ui";
+import { EmptyState, QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters, paginateCases, DEFAULT_ARCHIVE_PAGE_SIZE } from "@/lib/search";
 import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
@@ -691,8 +691,31 @@ export function WorldMonitor({ initial }: Props) {
         links={[
           { href: "/archive", label: "Full archive" },
           { href: "/search", label: "Advanced search" },
+          { href: "/stats", label: "Archive stats" },
           { href: "/live", label: "World news" },
           { href: "/search?status=unsolved", label: "Unsolved dossiers" },
+        ]}
+      />
+
+      <div className="monitor-stats-mobile monitor-mobile-only" aria-label="Monitor summary">
+        <span className="monitor-stat-mobile">
+          <strong>{visiblePins.length.toLocaleString()}</strong> on map
+        </span>
+        <span className="monitor-stat-mobile">
+          <strong>{data.filteredCount.toLocaleString()}</strong> cases
+        </span>
+        <span className="monitor-stat-mobile monitor-stat-mobile-alert">
+          <strong>{(visibleUnsolved || unsolvedCount).toLocaleString()}</strong> unsolved
+        </span>
+      </div>
+
+      <QuickLinks
+        className="monitor-quick-links-mobile monitor-mobile-only"
+        links={[
+          { href: "/archive", label: "Archive" },
+          { href: "/search", label: "Search" },
+          { href: "/stats", label: "Stats" },
+          { href: "/live", label: "News" },
         ]}
       />
 
@@ -967,6 +990,22 @@ export function WorldMonitor({ initial }: Props) {
             >
               {compareMode ? "Select second case on map…" : "Compare with another case"}
             </button>
+          ) : null}
+          {!visiblePins.length && data.pins.length > 0 ? (
+            <div className="monitor-map-empty">
+              <p className="display text-lg">No cases match map filters</p>
+              <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                {data.pins.length.toLocaleString()} cases are plotted, but timeline, crime-type, or
+                area filters hide them all.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary mt-3 text-sm"
+                onClick={clearMapFilters}
+              >
+                Clear map filters
+              </button>
+            </div>
           ) : null}
           {!data.pins.length ? (
             <div className="monitor-map-empty">
@@ -1311,10 +1350,23 @@ export function WorldMonitor({ initial }: Props) {
                   );
                 })}
                 {!paginatedCases.items.length ? (
-                  <li className="py-6 text-center text-sm text-[var(--muted)]">
-                    {casesMapVisibleOnly && data.cases.length
-                      ? "No map-visible cases in this filter set."
-                      : "No cases match. Adjust filters in Overview."}
+                  <li className="list-none py-2">
+                    <EmptyState
+                      title={
+                        casesMapVisibleOnly && data.cases.length
+                          ? "No map-visible cases"
+                          : "No cases match"
+                      }
+                      description={
+                        casesMapVisibleOnly && data.cases.length
+                          ? "Toggle off “Map visible only” or adjust filters in Overview."
+                          : "Adjust filters in the Overview tab or clear active chips."
+                      }
+                      actions={[
+                        { href: "/archive", label: "Browse archive", primary: true },
+                        { href: "/search", label: "Advanced search" },
+                      ]}
+                    />
                   </li>
                 ) : null}
               </ul>

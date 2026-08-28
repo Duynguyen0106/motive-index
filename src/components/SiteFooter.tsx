@@ -38,6 +38,12 @@ export function SiteFooter() {
             <Link href="/contribute" className="text-link">
               Contribute
             </Link>
+            <Link href="/stats" className="text-link">
+              Archive stats
+            </Link>
+            <Link href="/analyses" className="text-link">
+              Commentary
+            </Link>
             <Link href="/method" className="text-link">
               Method
             </Link>

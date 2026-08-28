@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PageHeader } from "@/components/PageHeader";
+import { QuickLinks } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "About & ethics",
@@ -12,10 +14,20 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="site-shell page-intro py-10 md:py-14">
+      <Breadcrumbs items={[{ label: "Monitor", href: "/" }, { label: "About & ethics" }]} />
       <PageHeader
+        className="mt-5"
         label="About"
         title="Purpose & ethics"
         description="A searchable educational repository of historical case files, document pointers, and forensic psychological analyses focused on offender behavior, motivation, and mental-state concepts."
+      />
+      <QuickLinks
+        links={[
+          { href: "/method", label: "Method" },
+          { href: "/contribute", label: "Contribute" },
+          { href: "/archive", label: "Case archive" },
+          { href: "/stats", label: "Archive stats" },
+        ]}
       />
 
       <div className="mt-10 space-y-10 pb-8">
@@ -88,7 +100,7 @@ export default function AboutPage() {
         <section className="card p-6 md:p-8">
           <h2 className="display text-2xl">Legal notes</h2>
           <ul className="mt-4 space-y-2 text-[var(--ink-soft)]">
-            <li>Terms of use and privacy policy will govern accounts and submissions.</li>
+            <li>Account terms and privacy policy will govern submissions when auth launches.</li>
             <li>Defamation risk is reduced by sticking to public records and labeled opinion.</li>
             <li>Jurisdiction-specific privacy rules may limit autopsy or sealed materials.</li>
           </ul>
