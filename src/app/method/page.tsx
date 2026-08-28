@@ -124,8 +124,8 @@ export default function MethodPage() {
               "Wikidata/Wikipedia entity links — algorithmic analysis, not human-reviewed.",
             ],
             [
-              "Draft / moderation",
-              "Live ingest and admin stubs. Hidden from public browse until approved.",
+              "Draft / pipeline",
+              "Live ingest stubs. Hidden from public browse until integrity gates pass.",
             ],
           ].map(([name, desc]) => (
             <li

@@ -82,8 +82,8 @@ export default function AboutPage() {
               </li>
               <li>
                 <strong className="text-[var(--ink)]">Anti-fabrication.</strong> Live
-                ingest and AI drafts cannot publish without a verifiable reference and
-                human moderation. Wikipedia-sourced catalog entries are labeled as
+                ingest and AI drafts cannot publish without passing provenance and
+                reference integrity gates. Wikipedia-sourced catalog entries are labeled as
                 encyclopedic, not human-reviewed.
               </li>
             </ul>
@@ -95,7 +95,7 @@ export default function AboutPage() {
           <p className="body-copy mt-3 text-[var(--ink-soft)]">
             This MVP publishes educational summaries openly with warnings. Future
             releases will add age gates and academic registration for graphic
-            primary documents. Contributors must accept moderation and peer review.
+            primary documents. Contributors must accept automated integrity review.
           </p>
           <p className="mt-3 text-sm text-[var(--muted)]">
             Planned: authentication, role-based document access, and audit logs for

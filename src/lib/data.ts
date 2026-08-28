@@ -360,7 +360,11 @@ export function getModerationQueue(): CrimeCase[] {
   });
 }
 
-export function publishCase(slug: string, reviewerEmail: string): CrimeCase | undefined {
+export function publishCase(
+  slug: string,
+  reviewerEmail: string,
+  options?: { viaPipeline?: boolean },
+): CrimeCase | undefined {
   const existing = getCaseBySlug(slug);
   if (!existing) return undefined;
 
@@ -399,18 +403,25 @@ export function publishCase(slug: string, reviewerEmail: string): CrimeCase | un
       ),
   );
   if (!tags.includes("published")) tags.push("published");
+  const viaPipeline = options?.viaPipeline === true;
 
   return upsertCase(
     {
       ...existing,
       tags,
       narrative: existing.narrative
-        ? { ...existing.narrative, reviewNote: undefined, source: "human" as const }
+        ? {
+            ...existing.narrative,
+            reviewNote: viaPipeline
+              ? "AI pipeline narrative — verify against primary sources before citing."
+              : undefined,
+            source: viaPipeline ? existing.narrative.source : ("human" as const),
+          }
         : undefined,
       analysis: {
         ...existing.analysis,
         status: "published",
-        reviewedByHuman: true,
+        reviewedByHuman: !viaPipeline,
         updatedAt: new Date().toISOString(),
         expertCommentary: [
           ...(existing.analysis.expertCommentary ?? []),
@@ -418,9 +429,11 @@ export function publishCase(slug: string, reviewerEmail: string): CrimeCase | un
             id: `mod-${Date.now()}`,
             author: reviewerEmail,
             role: "editor",
-            title: "Moderation approval",
-            body: "Approved for educational publication after human review of public-source draft and narrative.",
-            reviewed: true,
+            title: viaPipeline ? "Pipeline auto-publish" : "Moderation approval",
+            body: viaPipeline
+              ? "Auto-published after passing provenance and reference integrity gates. AI-generated content — not human-verified."
+              : "Approved for educational publication after human review of public-source draft and narrative.",
+            reviewed: !viaPipeline,
             publishedAt: new Date().toISOString(),
           },
         ],

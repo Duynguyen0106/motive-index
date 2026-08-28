@@ -171,13 +171,6 @@ export function SiteNav() {
           >
             Search
           </Link>
-          <Link
-            href="/admin/moderation"
-            className="nav-link nav-link-muted"
-            onClick={closeNav}
-          >
-            Admin
-          </Link>
           <div className="site-nav-theme md:hidden">
             <ThemeToggle />
           </div>

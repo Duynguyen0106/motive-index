@@ -5,6 +5,7 @@ import { requirePrivilegedApiAccess } from "@/lib/apiAuth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
 import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import { applyNarrativeToCase, generateCaseNarrative } from "@/lib/narrativeGenerate";
+import { tryAutoPublishCase } from "@/lib/pipeline/autoPublish";
 import type { CrimeCase } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ function slugify(input: string): string {
 }
 
 export async function POST(req: Request) {
-  const auth = await requirePrivilegedApiAccess(req);
+  const auth = requirePrivilegedApiAccess(req);
   if (!auth.ok) return auth.response;
 
   const json = await req.json().catch(() => null);
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     era: String(year),
     status: "closed",
     crimeCategories: ["other"],
-    tags: ["live-ingest", "draft", "awaiting-moderation"],
+    tags: ["live-ingest", "draft", "awaiting-moderation", "ai-pipeline"],
     psychologicalFactors: [],
     theoreticalFrameworks: [],
     diagnoses: [],
@@ -116,6 +117,25 @@ export async function POST(req: Request) {
 
   upsertCase(crimeCase);
   await syncAfterCaseWrite(crimeCase);
+
+  const publishResult = await tryAutoPublishCase(slug);
+  if (publishResult.published) {
+    const update = addUpdate({
+      id: `upd-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      headline: `New case published: ${name}`,
+      summary: parsed.data.summary.slice(0, 200),
+      caseSlug: slug,
+      kind: "new_case",
+      status: "published",
+    });
+    await syncAfterUpdateWrite(update);
+    return NextResponse.json(
+      { case: publishResult.crimeCase, update, published: true },
+      { status: 201 },
+    );
+  }
+
   const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
@@ -127,7 +147,10 @@ export async function POST(req: Request) {
   });
   await syncAfterUpdateWrite(update);
 
-  return NextResponse.json({ case: crimeCase, update }, { status: 201 });
+  return NextResponse.json(
+    { case: crimeCase, update, published: false, blockers: publishResult.blockers },
+    { status: 201 },
+  );
 }
 
 export async function GET() {
