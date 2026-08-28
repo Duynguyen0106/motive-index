@@ -32,7 +32,7 @@ export function ContributeForm() {
         return;
       }
       setStatus("done");
-      setMessage("Submitted to the moderation queue.");
+      setMessage("Submitted — pending integrity review by the AI pipeline.");
       e.currentTarget.reset();
       router.refresh();
     } catch {

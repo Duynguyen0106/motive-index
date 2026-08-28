@@ -9,6 +9,7 @@ import {
 } from "@/lib/narrativeGenerate";
 import { isHeadlineSeenInDb, markHeadlineSeenInDb } from "@/lib/repository";
 import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
+import { tryAutoPublishCase } from "@/lib/pipeline/autoPublish";
 import { inferCountry } from "@/lib/country";
 import { fetchLiveWorldNews } from "@/lib/worldNews";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
@@ -24,11 +25,14 @@ export type FeedItem = {
 export type PipelineResult = {
   fetched: number;
   created: number;
+  published: number;
   skipped: number;
   analyzed: number;
   narrativesGenerated: number;
   errors: string[];
   createdSlugs: string[];
+  publishedSlugs: string[];
+  publishBlockers: { slug: string; blockers: string[] }[];
 };
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -195,7 +199,7 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
     era: String(year),
     status: "closed",
     crimeCategories: categories,
-    tags: ["live-ingest", "draft", "awaiting-moderation"],
+    tags: ["live-ingest", "draft", "awaiting-moderation", "ai-pipeline"],
     psychologicalFactors: [],
     theoreticalFrameworks: [],
     diagnoses: [],
@@ -225,7 +229,7 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
         date: new Date().toISOString().slice(0, 10),
         label: "Ingested by live-update worker",
         detail: item.title,
-        behavioralNote: "Pending human moderation and primary-source review.",
+        behavioralNote: "Pending integrity gate review by AI pipeline.",
       },
     ],
     signals,
@@ -278,11 +282,14 @@ export async function runLiveUpdatePipeline(options?: {
   const result: PipelineResult = {
     fetched: 0,
     created: 0,
+    published: 0,
     skipped: 0,
     analyzed: 0,
     narrativesGenerated: 0,
     errors: [],
     createdSlugs: [],
+    publishedSlugs: [],
+    publishBlockers: [],
   };
 
   const seen = readSeen();
@@ -358,16 +365,37 @@ export async function runLiveUpdatePipeline(options?: {
 
       upsertCase(draft);
       await syncAfterCaseWrite(draft);
-      const update = addUpdate({
-        id: `upd-${Date.now()}-${result.created}`,
-        createdAt: new Date().toISOString(),
-        headline: `Live draft ingested: ${draft.name.slice(0, 80)}`,
-        summary: "Awaiting moderation before publish. Documentary narrative draft attached.",
-        caseSlug: draft.slug,
-        kind: "new_case",
-        status: "draft",
-      });
-      await syncAfterUpdateWrite(update);
+
+      const publishResult = await tryAutoPublishCase(draft.slug);
+      if (publishResult.published) {
+        result.published += 1;
+        result.publishedSlugs.push(draft.slug);
+        const update = addUpdate({
+          id: `upd-${Date.now()}-${result.created}`,
+          createdAt: new Date().toISOString(),
+          headline: `Live case published: ${draft.name.slice(0, 80)}`,
+          summary: "Auto-published by secured AI pipeline after integrity gates passed.",
+          caseSlug: draft.slug,
+          kind: "new_case",
+          status: "published",
+        });
+        await syncAfterUpdateWrite(update);
+      } else {
+        result.publishBlockers.push({
+          slug: draft.slug,
+          blockers: publishResult.blockers,
+        });
+        const update = addUpdate({
+          id: `upd-${Date.now()}-${result.created}`,
+          createdAt: new Date().toISOString(),
+          headline: `Live draft ingested: ${draft.name.slice(0, 80)}`,
+          summary: `Awaiting integrity gates: ${publishResult.blockers.join(" ")}`,
+          caseSlug: draft.slug,
+          kind: "new_case",
+          status: "draft",
+        });
+        await syncAfterUpdateWrite(update);
+      }
 
       seen[key] = draft.id;
       await markHeadlineSeenInDb(key, { source: item.source, caseSlug: draft.slug });

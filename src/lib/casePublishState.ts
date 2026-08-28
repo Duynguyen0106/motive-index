@@ -4,7 +4,7 @@
  */
 import type { CrimeCase } from "@/lib/types";
 
-/** Live-ingest or admin stubs awaiting human review. */
+/** Live-ingest stubs awaiting integrity gate review. */
 export function isModerationDraftCase(
   c: Pick<CrimeCase, "tags" | "analysis">,
 ): boolean {
@@ -55,7 +55,7 @@ export function assertNoDirectPublish(
 
   if (!wasPublished && nowPublished) {
     throw new Error(
-      "Cannot set analysis.status to published via upsertCase — use publishCase() after moderation",
+      "Cannot set analysis.status to published via upsertCase — use publishCase() after pipeline gates pass",
     );
   }
 

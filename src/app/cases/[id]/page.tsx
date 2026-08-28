@@ -242,7 +242,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 Draft — not published
               </p>
               <p className="mt-1 text-sm text-[var(--ink-soft)]">
-                This dossier is awaiting moderation and primary-source verification. Do not cite
+                This dossier is awaiting integrity gate review. Do not cite
                 behavioral claims until an editor approves publication.
               </p>
             </div>

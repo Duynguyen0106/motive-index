@@ -53,7 +53,7 @@ function heuristicExtract(rawText: string) {
 }
 
 export async function POST(req: Request) {
-  const auth = await requirePrivilegedApiAccess(req);
+  const auth = requirePrivilegedApiAccess(req);
   if (!auth.ok) return auth.response;
 
   const json = await req.json().catch(() => null);

@@ -45,7 +45,7 @@ export function assertRuntimeCaseWrite(
   }
 }
 
-/** Ingest/admin stubs must cite at least one non-template source before moderation approve. */
+/** Ingest stubs must cite at least one non-template source before pipeline publish. */
 export function assertModerationPublishReady(c: ProvenanceInput): void {
   const fromPipeline =
     c.tags?.includes("live-ingest") === true ||

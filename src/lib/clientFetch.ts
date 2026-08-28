@@ -7,7 +7,7 @@ export async function readJsonResponse<T = Record<string, unknown>>(
     throw new Error(
       res.ok
         ? "Server returned an empty response. The request may have timed out — try again with a smaller batch."
-        : `Request failed (HTTP ${res.status}) with an empty response. Check you're logged in and the deploy logs.`,
+        : `Request failed (HTTP ${res.status}) with an empty response. Check deploy logs.`,
     );
   }
   try {
@@ -17,8 +17,3 @@ export async function readJsonResponse<T = Record<string, unknown>>(
     throw new Error(`Invalid server response (HTTP ${res.status}): ${preview}`);
   }
 }
-
-export const adminFetchInit: RequestInit = {
-  credentials: "same-origin",
-  headers: { "content-type": "application/json" },
-};

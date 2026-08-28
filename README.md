@@ -14,7 +14,8 @@ Built for students, academics, researchers, and scholarly readers—with content
 | Live global crime news (17 RSS regions) | ✅ `/live` |
 | Deep dossiers + translated sources | ✅ case pages |
 | Document library | ✅ `/documents` |
-| Contributions & moderation | ✅ `/contribute`, `/admin/moderation` |
+| Contributions | ✅ `/contribute` |
+| Secured AI pipeline (ingest + auto-publish) | ✅ CRON_SECRET APIs |
 | SEO (sitemap, robots, OG) | ✅ |
 | Auth, Postgres, Elasticsearch | 🔜 production phase |
 
@@ -70,21 +71,24 @@ Press **`?`** anywhere (outside form fields) for the full list. Highlights:
 | `GET /api/monitor` | Monitor payload (cases, pins, news, filters) |
 | `GET /api/world-news` | Live + seed news items |
 | `GET /api/cases` | Full case catalog JSON |
-| `POST /api/cron/live-update` | RSS ingest pipeline (Bearer `CRON_SECRET`) |
+| `POST /api/ingest` | Structured case ingest (Bearer `CRON_SECRET`) |
+| `POST /api/cron/live-update` | RSS ingest + auto-publish (Bearer `CRON_SECRET`) |
+| `POST /api/pipeline/publish` | Publish when integrity gates pass |
+| `POST /api/pipeline/narrative` | Regenerate narrative for a slug |
 
 ## Architecture
 
 - **Next.js 16** App Router + TypeScript + Tailwind
 - **Leaflet** map with marker clustering + self-hosted country GeoJSON
 - Local store in `.data/store.json` (seeded from `src/data/seed.ts`, `worldCases.ts`, `multilingualCases.ts`)
-- Without Supabase env vars: local admin auth (`ADMIN_EMAIL` / `ADMIN_PASSWORD`)
-- With Supabase: apply `supabase/schema.sql`, set `NEXT_PUBLIC_SUPABASE_*`
+- Optional Supabase: apply `supabase/schema.sql`, set `NEXT_PUBLIC_SUPABASE_*`, sync with `npm run db:sync`
 
-## Live updates
+## Live updates (secured AI pipeline)
 
-- Admin: `/admin/moderation` → **Run live update now**
-- Cron: `POST /api/cron/live-update` (see `vercel.json`)
-- Flow: RSS → dedupe → draft case → analysis stub → moderation → publish
+- Cron: `GET/POST /api/cron/live-update` with `Authorization: Bearer CRON_SECRET` (see `vercel.json`)
+- Manual ingest: `POST /api/ingest` with the same bearer token
+- Flow: RSS → dedupe → AI draft case → narrative + analysis → **auto-publish only if integrity gates pass**
+- Cases that fail gates (e.g. missing verifiable reference) stay draft-only and hidden from public browse
 
 ## Ethics
 
