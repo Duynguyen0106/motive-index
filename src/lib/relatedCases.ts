@@ -1,5 +1,43 @@
 import { resolveCaseCountry } from "@/lib/country";
 import type { CrimeCase } from "@/lib/types";
+import { CRIME_CATEGORY_LABELS, FACTOR_LABELS } from "@/lib/types";
+
+export type RelatedCaseMatch = {
+  case: CrimeCase;
+  reasons: string[];
+};
+
+function buildMatchReasons(current: CrimeCase, candidate: CrimeCase): string[] {
+  const reasons: string[] = [];
+
+  if ((current.relatedCaseSlugs ?? []).includes(candidate.slug)) {
+    reasons.push("Curated link");
+  }
+
+  if (resolveCaseCountry(current) === resolveCaseCountry(candidate)) {
+    reasons.push("Same country");
+  }
+
+  const sharedCats = candidate.crimeCategories.filter((c) =>
+    current.crimeCategories.includes(c),
+  );
+  if (sharedCats.length) {
+    reasons.push(`Shared type: ${CRIME_CATEGORY_LABELS[sharedCats[0]]}`);
+  }
+
+  const sharedFactors = candidate.psychologicalFactors.filter((f) =>
+    current.psychologicalFactors.includes(f),
+  );
+  if (sharedFactors.length) {
+    reasons.push(`Shared factor: ${FACTOR_LABELS[sharedFactors[0]]}`);
+  }
+
+  if (candidate.status === current.status && current.status === "unsolved") {
+    reasons.push("Also unsolved");
+  }
+
+  return reasons.slice(0, 2);
+}
 
 function scoreRelated(current: CrimeCase, candidate: CrimeCase): number {
   if (current.slug === candidate.slug) return 0;
@@ -26,20 +64,20 @@ function scoreRelated(current: CrimeCase, candidate: CrimeCase): number {
   return score;
 }
 
-/** Curated slugs first, then auto-ranked similar dossiers. */
-export function findRelatedCases(
+/** Curated slugs first, then auto-ranked similar dossiers with match reasons. */
+export function findRelatedCasesWithReasons(
   current: CrimeCase,
   all: CrimeCase[],
   limit = 6,
-): CrimeCase[] {
+): RelatedCaseMatch[] {
   const bySlug = new Map(all.map((c) => [c.slug, c]));
-  const picked: CrimeCase[] = [];
+  const picked: RelatedCaseMatch[] = [];
   const seen = new Set<string>();
 
   for (const slug of current.relatedCaseSlugs ?? []) {
     const c = bySlug.get(slug);
     if (c && !seen.has(c.slug)) {
-      picked.push(c);
+      picked.push({ case: c, reasons: buildMatchReasons(current, c) });
       seen.add(c.slug);
     }
   }
@@ -51,9 +89,17 @@ export function findRelatedCases(
 
   for (const { c } of auto) {
     if (picked.length >= limit) break;
-    picked.push(c);
+    picked.push({ case: c, reasons: buildMatchReasons(current, c) });
     seen.add(c.slug);
   }
 
   return picked.slice(0, limit);
+}
+
+export function findRelatedCases(
+  current: CrimeCase,
+  all: CrimeCase[],
+  limit = 6,
+): CrimeCase[] {
+  return findRelatedCasesWithReasons(current, all, limit).map((m) => m.case);
 }

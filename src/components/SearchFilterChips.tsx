@@ -10,7 +10,8 @@ import {
 } from "@/lib/types";
 
 function withoutFilter(filters: SearchFilters, key: keyof SearchFilters): string {
-  return searchUrlFromFilters({ ...filters, [key]: "" });
+  const next = { ...filters, [key]: key === "catalogTier" ? "all" : "" };
+  return searchUrlFromFilters(next);
 }
 
 export function SearchFilterChips({ filters }: { filters: SearchFilters }) {
@@ -68,6 +69,16 @@ export function SearchFilterChips({ filters }: { filters: SearchFilters }) {
     chips.push({
       label: filters.status.charAt(0).toUpperCase() + filters.status.slice(1),
       href: withoutFilter(filters, "status"),
+    });
+  }
+  if (filters.catalogTier && filters.catalogTier !== "all") {
+    const catalogLabels: Record<string, string> = {
+      curated: "Curated only",
+      composite: "Composite archive",
+    };
+    chips.push({
+      label: catalogLabels[filters.catalogTier] ?? filters.catalogTier,
+      href: withoutFilter(filters, "catalogTier"),
     });
   }
 

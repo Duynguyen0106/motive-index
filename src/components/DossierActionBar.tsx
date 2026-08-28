@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
+import { dossierShareUrl } from "@/lib/case-tabs";
 import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
 import type { SearchFilters } from "@/lib/types";
 
@@ -10,10 +13,36 @@ type Props = {
   slug: string;
   searchSimilar: SearchFilters;
   country: string;
+  hasNarrative?: boolean;
+  siteOrigin?: string;
 };
 
-export function DossierActionBar({ name, slug, searchSimilar, country }: Props) {
+const NEXT_TAB: Record<string, { tab: string; label: string }> = {
+  story: { tab: "overview", label: "Overview" },
+  overview: { tab: "analysis", label: "Psychology" },
+  timeline: { tab: "analysis", label: "Psychology" },
+  analysis: { tab: "documents", label: "Documents" },
+  documents: { tab: "references", label: "References" },
+  references: { tab: "overview", label: "Overview" },
+};
+
+export function DossierActionBar({
+  name,
+  slug,
+  searchSimilar,
+  country,
+  hasNarrative = false,
+  siteOrigin = "",
+}: Props) {
+  const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
+  const activeTab = searchParams.get("tab") ?? (hasNarrative ? "story" : "overview");
+  const next = NEXT_TAB[activeTab] ?? NEXT_TAB.overview;
+
+  const shareUrl = useMemo(
+    () => dossierShareUrl(slug, activeTab, { hasNarrative, siteOrigin: siteOrigin || undefined }),
+    [slug, activeTab, hasNarrative, siteOrigin],
+  );
 
   useEffect(() => {
     function onScroll() {
@@ -46,8 +75,12 @@ export function DossierActionBar({ name, slug, searchSimilar, country }: Props) 
           >
             News
           </Link>
-          <Link href={`/cases/${slug}?tab=analysis`} className="btn btn-primary px-2.5 py-1 text-xs">
-            Analysis
+          <ShareLinkButton url={shareUrl} label="Share" />
+          <Link
+            href={`/cases/${slug}?tab=${next.tab}`}
+            className="btn btn-primary px-2.5 py-1 text-xs"
+          >
+            {next.label}
           </Link>
         </div>
       </div>

@@ -42,6 +42,8 @@ export default function StatsPage() {
   const maxCountry = stats.byCountry[0]?.count ?? 1;
   const maxCategory = stats.byCategory[0]?.count ?? 1;
   const maxDecade = Math.max(...stats.byDecade.map((d) => d.count), 1);
+  const maxPsych = stats.byPsychFactor[0]?.count ?? 1;
+  const maxFramework = stats.byFramework[0]?.count ?? 1;
 
   return (
     <div className="site-shell py-10 md:py-14 pb-16">
@@ -99,6 +101,18 @@ export default function StatsPage() {
           <h2 className="display text-xl">By decade</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">Case start year distribution</p>
           <StatBarChart buckets={stats.byDecade} max={maxDecade} title="Cases by decade" />
+        </section>
+
+        <section className="card p-6 md:p-8">
+          <h2 className="display text-xl">By psychological factor</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">Top tagged constructs — tap to search</p>
+          <StatBarChart buckets={stats.byPsychFactor} max={maxPsych} title="Cases by psych factor" />
+        </section>
+
+        <section className="card p-6 md:p-8">
+          <h2 className="display text-xl">By theoretical framework</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">Applied models across dossiers</p>
+          <StatBarChart buckets={stats.byFramework} max={maxFramework} title="Cases by framework" />
         </section>
       </div>
 

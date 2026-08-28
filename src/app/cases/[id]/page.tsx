@@ -16,7 +16,7 @@ import { Timeline } from "@/components/Timeline";
 import { RelatedCases } from "@/components/RelatedCases";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { CaseStatusBadge } from "@/components/ui";
-import { getActiveTab, CASE_TABS } from "@/lib/case-tabs";
+import { getActiveTab, CASE_TABS, dossierShareUrl } from "@/lib/case-tabs";
 import {
   getAllCases,
   getCaseBySlug,
@@ -109,12 +109,18 @@ export default async function CasePage({ params, searchParams }: Props) {
   const searchSimilar: SearchFilters = {
     country,
     crimeCategory: crimeCase.crimeCategories[0] ?? "",
+    psychologicalFactor: crimeCase.psychologicalFactors[0] ?? "",
+    theoreticalFramework: crimeCase.theoreticalFrameworks[0] ?? "",
+    status: crimeCase.status === "unsolved" ? "unsolved" : "",
   };
 
   const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
   const allCases = getAllCases();
-  const dossierUrl = `${getSiteUrl()}/cases/${crimeCase.slug}`;
+  const dossierUrl = dossierShareUrl(crimeCase.slug, tab, {
+    hasNarrative: Boolean(narrative),
+    siteOrigin: getSiteUrl(),
+  });
   const primaryImage = crimeCase.images?.[0];
 
   const jsonLd = {
@@ -206,10 +212,15 @@ export default async function CasePage({ params, searchParams }: Props) {
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
           {crimeCase.crimeCategories.map((c) => (
-            <span key={c} className="tag">
+            <Link key={c} href={`/archive?crimeCategory=${c}`} className="tag tag-link">
               {CRIME_CATEGORY_LABELS[c]}
-            </span>
+            </Link>
           ))}
+          {crimeCase.status === "unsolved" ? (
+            <Link href="/archive?status=unsolved" className="tag tag-link">
+              Unsolved
+            </Link>
+          ) : null}
         </div>
         <div className="mt-6 max-w-3xl space-y-3">
           <ContentWarning text={crimeCase.warning} level={crimeCase.contentLevel} />
@@ -232,14 +243,16 @@ export default async function CasePage({ params, searchParams }: Props) {
 
       <div className="dossier-sticky-stack">
         <Suspense fallback={null}>
-          <CaseTabKeyboardNav />
-          <CaseTabs slug={crimeCase.slug} defaultTab={tab} />
+          <CaseTabKeyboardNav hasNarrative={Boolean(narrative)} />
+          <CaseTabs slug={crimeCase.slug} defaultTab={tab} hasNarrative={Boolean(narrative)} />
         </Suspense>
         <DossierActionBar
           name={crimeCase.name}
           slug={crimeCase.slug}
           searchSimilar={searchSimilar}
           country={country}
+          hasNarrative={Boolean(narrative)}
+          siteOrigin={getSiteUrl()}
         />
       </div>
 
@@ -424,11 +437,13 @@ export default async function CasePage({ params, searchParams }: Props) {
                   </h3>
                   <ul className="mt-2 flex flex-wrap gap-2">
                     {crimeCase.psychologicalFactors.map((f) => (
-                      <li
-                        key={f}
-                        className="rounded border border-[var(--line)] px-2 py-1 text-sm"
-                      >
-                        {FACTOR_LABELS[f]}
+                      <li key={f}>
+                        <Link
+                          href={searchUrlFromFilters({ psychologicalFactor: f })}
+                          className="rounded border border-[var(--line)] px-2 py-1 text-sm hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        >
+                          {FACTOR_LABELS[f]}
+                        </Link>
                       </li>
                     ))}
                   </ul>

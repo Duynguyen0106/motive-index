@@ -25,6 +25,16 @@ const ROUTES = [
   { href: "/method", label: "Method", hint: "Analysis rubric" },
 ];
 
+const FILTER_SHORTCUTS = [
+  { href: "/search?status=unsolved", label: "Unsolved cases", hint: "Open cases filter" },
+  { href: "/archive?catalogTier=curated", label: "Curated dossiers", hint: "Hand-authored records" },
+  { href: "/archive?catalogTier=composite", label: "Composite archive", hint: "Bulk catalog tier" },
+  { href: "/search?country=US", label: "United States", hint: "Country filter" },
+  { href: "/search?psychologicalFactor=psychopathy_traits", label: "Psychopathy traits", hint: "Psych factor filter" },
+  { href: "/archive?crimeCategory=serial_murder", label: "Serial murder", hint: "Crime type filter" },
+  { href: "/search?documentType=manifesto", label: "Manifestos", hint: "Document type filter" },
+];
+
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
@@ -72,9 +82,16 @@ export function CommandPalette() {
         close();
       }
     }
+    function onOpenRequest() {
+      openPalette();
+    }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, close]);
+    window.addEventListener("command-palette:open", onOpenRequest);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("command-palette:open", onOpenRequest);
+    };
+  }, [open, close, openPalette]);
 
   useEffect(() => {
     if (open) {
@@ -109,12 +126,19 @@ export function CommandPalette() {
     };
   }, [query, open]);
 
-  const routeMatches = query.trim()
-    ? ROUTES.filter((r) => r.label.toLowerCase().includes(query.trim().toLowerCase()))
+  const q = query.trim().toLowerCase();
+  const routeMatches = q
+    ? ROUTES.filter((r) => r.label.toLowerCase().includes(q))
     : ROUTES;
+  const filterMatches = q
+    ? FILTER_SHORTCUTS.filter(
+        (f) => f.label.toLowerCase().includes(q) || f.hint.toLowerCase().includes(q),
+      )
+    : FILTER_SHORTCUTS;
 
-  const items: { type: "route" | "case"; href: string; label: string; hint?: string }[] = [
+  const items: { type: "route" | "filter" | "case"; href: string; label: string; hint?: string }[] = [
     ...routeMatches.map((r) => ({ type: "route" as const, ...r })),
+    ...filterMatches.map((f) => ({ type: "filter" as const, ...f })),
     ...cases.map((c) => ({
       type: "case" as const,
       href: `/cases/${c.slug}`,
@@ -168,7 +192,9 @@ export function CommandPalette() {
         />
         <ul className="command-palette-list" role="listbox">
           {items.length === 0 && !loading ? (
-            <li className="command-palette-empty">Type to search 10,000+ dossiers or pick a page</li>
+            <li className="command-palette-empty">
+              {q ? "No matches — try a dossier name or filter shortcut" : "Type to search 10,000+ dossiers or pick a page"}
+            </li>
           ) : null}
           {items.map((item, idx) => (
             <li key={`${item.type}-${item.href}`}>

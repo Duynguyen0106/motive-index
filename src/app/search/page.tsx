@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { EmptyState, QuickLinks } from "@/components/ui";
+import { getPrimaryCaseImage } from "@/lib/caseImages";
 import { SearchFilterChips } from "@/components/SearchFilterChips";
 import {
   CRIME_CATEGORY_LABELS,
@@ -233,6 +235,19 @@ export default async function SearchPage({ searchParams }: Props) {
           </select>
         </label>
 
+        <label className="block text-sm">
+          <span className="font-medium">Catalog tier</span>
+          <select
+            name="catalogTier"
+            defaultValue={filters.catalogTier || "all"}
+            className="field mt-1"
+          >
+            <option value="all">All dossiers</option>
+            <option value="curated">Curated only</option>
+            <option value="composite">Composite archive</option>
+          </select>
+        </label>
+
           </div>
         </details>
 
@@ -289,9 +304,18 @@ export default async function SearchPage({ searchParams }: Props) {
               ) : null}
             </div>
             <ul className="mt-4 grid gap-3">
-              {cases.map((c) => (
+              {cases.map((c) => {
+                const thumb = getPrimaryCaseImage(c.slug);
+                return (
                 <li key={c.id}>
-                  <div className="card card-hover p-5">
+                  <div className="search-result-card card card-hover p-5">
+                    <div className="search-result-body flex gap-4">
+                      {thumb ? (
+                        <Link href={`/cases/${c.slug}`} className="search-result-thumb shrink-0">
+                          <CaseImagePanel image={thumb} variant="index" hideCaption />
+                        </Link>
+                      ) : null}
+                      <div className="min-w-0 flex-1">
                     <Link href={`/cases/${c.slug}`} className="block">
                       <p className="text-xs text-[var(--muted)] uppercase tracking-[0.12em]">
                         {COUNTRY_LABELS[resolveCaseCountry(c)]} · {c.location} · {c.yearStart}
@@ -309,9 +333,12 @@ export default async function SearchPage({ searchParams }: Props) {
                     >
                       Plot on map
                     </Link>
+                      </div>
+                    </div>
                   </div>
                 </li>
-              ))}
+              );
+              })}
           {!cases.length ? (
             <li>
               <EmptyState

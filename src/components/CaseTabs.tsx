@@ -3,12 +3,21 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { CASE_TABS } from "@/lib/case-tabs";
+import { visibleCaseTabs } from "@/lib/case-tabs";
 
-export function CaseTabs({ slug, defaultTab = "overview" }: { slug: string; defaultTab?: string }) {
+export function CaseTabs({
+  slug,
+  defaultTab = "overview",
+  hasNarrative = false,
+}: {
+  slug: string;
+  defaultTab?: string;
+  hasNarrative?: boolean;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const active = searchParams.get("tab") ?? defaultTab;
+  const tabs = visibleCaseTabs(hasNarrative);
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -25,7 +34,7 @@ export function CaseTabs({ slug, defaultTab = "overview" }: { slug: string; defa
         className="site-shell dossier-tab-scroll flex max-w-full min-w-0 gap-0 overflow-x-auto"
         aria-label="Case sections"
       >
-        {CASE_TABS.map((tab) => {
+        {tabs.map((tab) => {
           const href = `${pathname}?tab=${tab.id}`;
           const isActive = active === tab.id;
           return (

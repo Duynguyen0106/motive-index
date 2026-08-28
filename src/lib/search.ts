@@ -66,6 +66,35 @@ export function searchUrlFromFilters(
 
 export const DEFAULT_ARCHIVE_PAGE_SIZE = 50;
 
+export type ArchiveSort = "featured" | "year-desc" | "year-asc" | "name-asc";
+
+export function parseArchiveSort(value: string | undefined): ArchiveSort {
+  if (value === "year-desc" || value === "year-asc" || value === "name-asc") return value;
+  return "featured";
+}
+
+export function sortArchiveCases<T extends { featured?: boolean; yearStart: number; name: string }>(
+  items: T[],
+  sort: ArchiveSort,
+): T[] {
+  const copy = [...items];
+  switch (sort) {
+    case "year-desc":
+      return copy.sort((a, b) => b.yearStart - a.yearStart || a.name.localeCompare(b.name));
+    case "year-asc":
+      return copy.sort((a, b) => a.yearStart - b.yearStart || a.name.localeCompare(b.name));
+    case "name-asc":
+      return copy.sort((a, b) => a.name.localeCompare(b.name));
+    default:
+      return copy.sort(
+        (a, b) =>
+          Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+          b.yearStart - a.yearStart ||
+          a.name.localeCompare(b.name),
+      );
+  }
+}
+
 export function paginateCases<T>(
   items: T[],
   page: number,
@@ -86,13 +115,14 @@ export function paginateCases<T>(
 
 export function archiveUrlFromFilters(
   filters: SearchFilters,
-  opts?: { page?: number; pageSize?: number },
+  opts?: { page?: number; pageSize?: number; sort?: ArchiveSort },
 ): string {
   const p = new URLSearchParams(filtersToQueryString(filters));
   if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
   if (opts?.pageSize && opts.pageSize !== DEFAULT_ARCHIVE_PAGE_SIZE) {
     p.set("pageSize", String(opts.pageSize));
   }
+  if (opts?.sort && opts.sort !== "featured") p.set("sort", opts.sort);
   const qs = p.toString();
   return qs ? `/archive?${qs}` : "/archive";
 }

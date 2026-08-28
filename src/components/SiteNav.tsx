@@ -132,6 +132,16 @@ export function SiteNav() {
           <div className="site-nav-search md:hidden">
             <p className="label mb-2 normal-case tracking-normal">Search cases</p>
             <SiteSearch />
+            <button
+              type="button"
+              className="nav-palette-trigger btn btn-ghost mt-2 w-full text-sm"
+              onClick={() => {
+                closeNav();
+                window.dispatchEvent(new Event("command-palette:open"));
+              }}
+            >
+              Quick jump (⌘K)
+            </button>
             <Link
               href="/search"
               className="nav-advanced-search"

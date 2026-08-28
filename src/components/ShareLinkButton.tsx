@@ -12,17 +12,29 @@ export function ShareLinkButton({
   const [copied, setCopied] = useState(false);
 
   async function copy() {
+    const absolute =
+      url.startsWith("http") ? url : `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
+
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(absolute);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
+      return;
     } catch {
-      /* fallback ignored */
+      /* try Web Share API on mobile as fallback */
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: document.title, url: absolute });
+      }
+    } catch {
+      /* user cancelled or unavailable */
     }
   }
 
   return (
-    <button type="button" className="btn btn-ghost text-sm" onClick={copy}>
+    <button type="button" className="btn btn-ghost text-sm" onClick={() => void copy()}>
       {copied ? "Copied" : label}
     </button>
   );

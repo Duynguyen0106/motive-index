@@ -6,7 +6,7 @@ import { CaseStatusBadge, EmptyState } from "@/components/ui";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
 import { COUNTRY_LABELS, type CountryCode } from "@/lib/country";
-import { archiveUrlFromFilters } from "@/lib/search";
+import { archiveUrlFromFilters, type ArchiveSort } from "@/lib/search";
 import type { CaseArchiveSummary, CrimeCategory, SearchFilters } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
@@ -18,6 +18,7 @@ type Props = {
   pageSize: number;
   total: number;
   totalPages: number;
+  sort: ArchiveSort;
 };
 
 export function CasesGrid({
@@ -28,6 +29,7 @@ export function CasesGrid({
   pageSize,
   total,
   totalPages,
+  sort,
 }: Props) {
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const rangeEnd = Math.min(page * pageSize, total);
@@ -40,8 +42,8 @@ export function CasesGrid({
       (filters.catalogTier && filters.catalogTier !== "all"),
   );
 
-  function pageHref(p: number) {
-    return archiveUrlFromFilters(filters, { page: p, pageSize });
+  function pageHref(p: number, nextPageSize = pageSize, nextSort = sort) {
+    return archiveUrlFromFilters(filters, { page: p, pageSize: nextPageSize, sort: nextSort });
   }
 
   return (
@@ -92,6 +94,35 @@ export function CasesGrid({
           </select>
         </label>
 
+        <label className="block text-sm lg:col-span-1">
+          <span className="label mb-1 block normal-case tracking-normal">Period / year</span>
+          <input
+            name="period"
+            defaultValue={filters.period ?? ""}
+            placeholder="e.g. 1970s"
+            className="field mt-1"
+          />
+        </label>
+
+        <label className="mobile-hide block text-sm">
+          <span className="label mb-1 block normal-case tracking-normal">Sort by</span>
+          <select name="sort" defaultValue={sort} className="field mt-1">
+            <option value="featured">Featured first</option>
+            <option value="year-desc">Newest year</option>
+            <option value="year-asc">Oldest year</option>
+            <option value="name-asc">Name A–Z</option>
+          </select>
+        </label>
+
+        <label className="mobile-hide block text-sm">
+          <span className="label mb-1 block normal-case tracking-normal">Per page</span>
+          <select name="pageSize" defaultValue={String(pageSize)} className="field mt-1">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+
         <label className="mobile-hide block text-sm lg:col-span-1">
           <span className="label mb-1 block normal-case tracking-normal">Catalog tier</span>
           <select name="catalogTier" defaultValue={filters.catalogTier ?? "all"} className="field mt-1">
@@ -103,7 +134,25 @@ export function CasesGrid({
 
         <details className="archive-more-filters md:hidden md:col-span-2 lg:col-span-4">
           <summary className="archive-more-filters-summary">More filters</summary>
-          <label className="mt-4 block text-sm">
+          <div className="mt-4 grid gap-4">
+          <label className="block text-sm">
+            <span className="label mb-1 block normal-case tracking-normal">Sort by</span>
+            <select name="sort" defaultValue={sort} className="field mt-1">
+              <option value="featured">Featured first</option>
+              <option value="year-desc">Newest year</option>
+              <option value="year-asc">Oldest year</option>
+              <option value="name-asc">Name A–Z</option>
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="label mb-1 block normal-case tracking-normal">Per page</span>
+            <select name="pageSize" defaultValue={String(pageSize)} className="field mt-1">
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+          <label className="block text-sm">
             <span className="label mb-1 block normal-case tracking-normal">Catalog tier</span>
             <select name="catalogTier" defaultValue={filters.catalogTier ?? "all"} className="field mt-1">
               <option value="all">All dossiers</option>
@@ -111,6 +160,7 @@ export function CasesGrid({
               <option value="composite">Composite archive</option>
             </select>
           </label>
+          </div>
         </details>
 
         <div className="search-form-actions archive-form-actions flex gap-2 self-end md:col-span-2 lg:col-span-4">
@@ -187,7 +237,7 @@ export function CasesGrid({
         />
       ) : null}
 
-      {totalPages > 1 ? (
+      {totalPages > 1 || pageSize !== 50 ? (
         <nav
           className="archive-pagination mt-8 flex flex-wrap items-center justify-between gap-4"
           aria-label="Archive pages"
@@ -210,6 +260,7 @@ export function CasesGrid({
           </div>
           <p className="text-sm text-[var(--muted)]">
             Page {page} of {totalPages}
+            {pageSize !== 50 ? ` · ${pageSize} per page` : ""}
           </p>
         </nav>
       ) : null}

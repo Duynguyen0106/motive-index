@@ -14,7 +14,9 @@ import { getAllCases, getCaseOfWeek, getUpdates, searchCasesFrom } from "@/lib/d
 import {
   DEFAULT_ARCHIVE_PAGE_SIZE,
   paginateCases,
+  parseArchiveSort,
   parseSearchParams,
+  sortArchiveCases,
 } from "@/lib/search";
 import { buildArchiveStats } from "@/lib/archiveStats";
 
@@ -39,8 +41,10 @@ export default async function ArchivePage({ searchParams }: Props) {
     Math.max(10, Number(raw.pageSize) || DEFAULT_ARCHIVE_PAGE_SIZE),
   );
 
+  const sort = parseArchiveSort(typeof raw.sort === "string" ? raw.sort : undefined);
+
   const allCases = getAllCases();
-  const filtered = searchCasesFrom(allCases, filters);
+  const filtered = sortArchiveCases(searchCasesFrom(allCases, filters), sort);
   const paginated = paginateCases(filtered, page, pageSize);
   const summaries = paginated.items.map(toCaseArchiveSummary);
   const countryOptions = listCountryOptions(allCases);
@@ -130,6 +134,7 @@ export default async function ArchivePage({ searchParams }: Props) {
             pageSize={paginated.pageSize}
             total={paginated.total}
             totalPages={paginated.totalPages}
+            sort={sort}
           />
         </Suspense>
       </section>

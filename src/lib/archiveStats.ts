@@ -1,8 +1,8 @@
 import { isCompositeCase } from "@/lib/caseSummaries";
 import { catalogImageCoverage } from "@/lib/caseImages";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
-import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
-import { CRIME_CATEGORY_LABELS } from "@/lib/types";
+import type { CrimeCase, CrimeCategory, CountryCode, PsychologicalFactor, TheoreticalFramework } from "@/lib/types";
+import { CRIME_CATEGORY_LABELS, FACTOR_LABELS, FRAMEWORK_LABELS } from "@/lib/types";
 
 export type ArchiveStatBucket = { label: string; count: number; href: string };
 
@@ -18,6 +18,8 @@ export type ArchiveStats = {
   byCategory: ArchiveStatBucket[];
   byStatus: ArchiveStatBucket[];
   byDecade: ArchiveStatBucket[];
+  byPsychFactor: ArchiveStatBucket[];
+  byFramework: ArchiveStatBucket[];
 };
 
 function decadeLabel(year: number): string {
@@ -35,6 +37,8 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
   const categoryMap = new Map<CrimeCategory, number>();
   const statusMap = new Map<string, number>();
   const decadeMap = new Map<string, number>();
+  const factorMap = new Map<PsychologicalFactor, number>();
+  const frameworkMap = new Map<TheoreticalFramework, number>();
 
   let curated = 0;
   let composite = 0;
@@ -52,6 +56,14 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
 
     for (const cat of c.crimeCategories) {
       categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + 1);
+    }
+
+    for (const factor of c.psychologicalFactors) {
+      factorMap.set(factor, (factorMap.get(factor) ?? 0) + 1);
+    }
+
+    for (const framework of c.theoreticalFrameworks) {
+      frameworkMap.set(framework, (frameworkMap.get(framework) ?? 0) + 1);
     }
 
     statusMap.set(c.status, (statusMap.get(c.status) ?? 0) + 1);
@@ -96,5 +108,19 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
         href: `/archive?period=${encodeURIComponent(decade.replace("s", ""))}`,
       })),
     ).sort((a, b) => a.label.localeCompare(b.label)),
+    byPsychFactor: sortByCount(
+      [...factorMap.entries()].map(([factor, count]) => ({
+        label: FACTOR_LABELS[factor],
+        count,
+        href: `/search?psychologicalFactor=${factor}`,
+      })),
+    ).slice(0, 10),
+    byFramework: sortByCount(
+      [...frameworkMap.entries()].map(([framework, count]) => ({
+        label: FRAMEWORK_LABELS[framework],
+        count,
+        href: `/search?theoreticalFramework=${framework}`,
+      })),
+    ).slice(0, 8),
   };
 }
