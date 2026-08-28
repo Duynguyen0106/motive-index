@@ -560,7 +560,7 @@ export function WorldMonitor({ initial }: Props) {
           { viewportLat: lat, viewportLng: lng, viewportZoom: zoom },
           { syncUrl: true },
         );
-      }, 600);
+      }, 900);
     },
     [updateMapView],
   );

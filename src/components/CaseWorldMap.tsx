@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { OpenDossierLink } from "@/components/OpenDossierLink";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
@@ -110,6 +110,24 @@ async function fetchCountryGeoJson(): Promise<GeoJSON.FeatureCollection> {
   throw new Error("Country boundaries unavailable");
 }
 
+function pinSetKey(list: MonitorCasePin[]): string {
+  return list.map((p) => `${p.id}:${p.lat.toFixed(4)}:${p.lng.toFixed(4)}:${p.status}`).join("|");
+}
+
+function mapMatchesViewport(
+  map: LeafletMap,
+  lat: number,
+  lng: number,
+  zoom: number,
+): boolean {
+  const c = map.getCenter();
+  return (
+    Math.abs(c.lat - lat) < 0.02 &&
+    Math.abs(c.lng - lng) < 0.02 &&
+    Math.abs(map.getZoom() - zoom) < 0.25
+  );
+}
+
 export function CaseWorldMap({
   pins,
   ghostPins = [],
@@ -140,7 +158,6 @@ export function CaseWorldMap({
   const heatLayerRef = useRef<Layer | null>(null);
   const arcsLayerRef = useRef<LayerGroup | null>(null);
   const bboxLayerRef = useRef<Layer | null>(null);
-  const highlightRef = useRef<Layer | null>(null);
   const geoJsonRef = useRef<GeoJSONType | null>(null);
   const caseMarkersRef = useRef<Map<string, import("leaflet").Marker>>(new Map());
   const markerPinRef = useRef<Map<string, MonitorCasePin>>(new Map());
@@ -153,6 +170,8 @@ export function CaseWorldMap({
   const onBboxChangeRef = useRef(onBboxChange);
   const onViewportChangeRef = useRef(onViewportChange);
   const viewportSyncSkipRef = useRef(true);
+  const prevSelectedCountryRef = useRef(selectedCountry);
+  const prevFilteredPinKeyRef = useRef("");
   const selectedCountryRef = useRef(selectedCountry);
   const [ready, setReady] = useState(false);
   const [hint, setHint] = useState("Loading map…");
@@ -162,7 +181,19 @@ export function CaseWorldMap({
     setLegendOpen(!window.matchMedia("(max-width: 1023px)").matches);
   }, []);
 
-  const filteredPins = filterVisiblePins(pins, view);
+  const filteredPins = useMemo(
+    () => filterVisiblePins(pins, view),
+    [
+      pins,
+      view.provenanceFilter,
+      view.timelineMinYear,
+      view.timelineMaxYear,
+      view.bboxFilter,
+      view.crimeCategoryFilter,
+      view.coordAccuracyFilter,
+    ],
+  );
+  const filteredPinKey = useMemo(() => pinSetKey(filteredPins), [filteredPins]);
   const unsolvedVisible = filteredPins.filter((p) => p.status === "unsolved").length;
   const filteredOutCount = pins.length - filteredPins.length;
 
@@ -392,50 +423,90 @@ export function CaseWorldMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- init once
   }, []);
 
-  // Case markers / heatmap
+  // Case markers / heatmap — rebuild pins only when the visible set changes; toggle layers without clearing
   useEffect(() => {
     if (!ready || !mapRef.current || !clusterRef.current) return;
 
-    (async () => {
-      const L = await getLeaflet();
-      const map = mapRef.current!;
-      const cluster = clusterRef.current!;
+    let cancelled = false;
 
-      if (heatLayerRef.current) {
+    void (async () => {
+      const L = await getLeaflet();
+      if (cancelled || !mapRef.current || !clusterRef.current) return;
+
+      const map = mapRef.current;
+      const cluster = clusterRef.current;
+      const showCases = view.contentLayer === "cases" || view.contentLayer === "both";
+      const pinsChanged = filteredPinKey !== prevFilteredPinKeyRef.current;
+
+      const hideCaseLayers = () => {
+        if (map.hasLayer(cluster)) map.removeLayer(cluster);
+        if (heatLayerRef.current && map.hasLayer(heatLayerRef.current)) {
+          map.removeLayer(heatLayerRef.current);
+        }
+      };
+
+      if (!showCases) {
+        hideCaseLayers();
+        return;
+      }
+
+      if (view.layerMode === "heatmap") {
+        if (map.hasLayer(cluster)) map.removeLayer(cluster);
+
+        if (heatLayerRef.current) {
+          map.removeLayer(heatLayerRef.current);
+          heatLayerRef.current = null;
+        }
+
+        if (filteredPins.length) {
+          const points = filteredPins.map(
+            (p) => [p.lat, p.lng, p.status === "unsolved" ? 1.2 : 0.8] as [number, number, number],
+          );
+          const heat = (
+            L as typeof L & {
+              heatLayer: (latlngs: [number, number, number][], opts: object) => Layer;
+            }
+          ).heatLayer(points, {
+            radius: 28,
+            blur: 22,
+            maxZoom: 8,
+            minOpacity: 0.35,
+            gradient: { 0.2: "#2a1520", 0.5: "#8b2942", 0.8: "#c94b6a", 1: "#f0a0b8" },
+          });
+          heat.addTo(map);
+          heatLayerRef.current = heat;
+        }
+        prevFilteredPinKeyRef.current = filteredPinKey;
+        return;
+      }
+
+      // Pin mode
+      if (heatLayerRef.current && map.hasLayer(heatLayerRef.current)) {
         map.removeLayer(heatLayerRef.current);
         heatLayerRef.current = null;
       }
 
-      cluster.clearLayers();
-      caseMarkersRef.current.clear();
-      markerPinRef.current.clear();
-
-      const showCases = view.contentLayer === "cases" || view.contentLayer === "both";
-
-      if (view.layerMode === "heatmap" && showCases && filteredPins.length) {
+      if (pinsChanged) {
         cluster.clearLayers();
-        const points = filteredPins.map((p) => [p.lat, p.lng, p.status === "unsolved" ? 1.2 : 0.8] as [number, number, number]);
-        const heat = (L as typeof L & { heatLayer: (latlngs: [number, number, number][], opts: object) => Layer }).heatLayer(
-          points,
-          { radius: 28, blur: 22, maxZoom: 8, minOpacity: 0.35, gradient: { 0.2: "#2a1520", 0.5: "#8b2942", 0.8: "#c94b6a", 1: "#f0a0b8" } },
-        );
-        heat.addTo(map);
-        heatLayerRef.current = heat;
-      } else if (showCases) {
+        caseMarkersRef.current.clear();
+        markerPinRef.current.clear();
+
         for (const pin of filteredPins) {
-          const active = selectedCaseId === pin.id;
           const marker = L.marker([pin.lat, pin.lng], {
             unsolved: pin.status === "unsolved",
             caseId: pin.id,
             icon: L.divIcon({
               className: "monitor-leaflet-icon",
-              html: markerHtml(pin, active, false),
+              html: markerHtml(pin, selectedCaseId === pin.id, false),
               iconSize: [20, 20],
               iconAnchor: [10, 10],
             }),
           } as L.MarkerOptions & { unsolved?: boolean; caseId?: string });
 
-          marker.bindPopup(buildRichPopupHtml(pin), { maxWidth: 280, className: "monitor-leaflet-popup" });
+          marker.bindPopup(buildRichPopupHtml(pin), {
+            maxWidth: 280,
+            className: "monitor-leaflet-popup",
+          });
 
           marker.on("click", () => {
             onSelectCaseRef.current?.(pin.id);
@@ -448,10 +519,16 @@ export function CaseWorldMap({
           markerPinRef.current.set(pin.id, pin);
           cluster.addLayer(marker);
         }
+        prevFilteredPinKeyRef.current = filteredPinKey;
       }
 
+      if (!map.hasLayer(cluster)) cluster.addTo(map);
     })();
-  }, [filteredPins, ready, selectedCaseId, view.contentLayer, view.layerMode]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filteredPinKey, filteredPins, ready, view.contentLayer, view.layerMode]);
 
   // Update marker highlight on hover/select without rebuilding all markers
   useEffect(() => {
@@ -626,30 +703,21 @@ export function CaseWorldMap({
     })();
   }, [ready, view.bboxFilter]);
 
-  // Basemap swap
+  // Basemap swap — setUrl avoids tile-layer remove/add flash
   const prevBasemapRef = useRef(view.basemap);
   useEffect(() => {
-    if (!ready || !mapRef.current || !tileLayerRef.current) return;
+    if (!ready || !tileLayerRef.current) return;
     if (prevBasemapRef.current === view.basemap) return;
     prevBasemapRef.current = view.basemap;
-    void (async () => {
-      const L = await getLeaflet();
-      const map = mapRef.current!;
-      const url = view.basemap === "light" ? MAP_TILE_URL_LIGHT : MAP_TILE_URL_DARK;
-      map.removeLayer(tileLayerRef.current!);
-      const next = L.tileLayer(url, {
-        attribution: MAP_TILE_ATTRIBUTION,
-        maxZoom: MAX_MAP_ZOOM,
-      });
-      next.addTo(map);
-      tileLayerRef.current = next;
-    })();
+    const url = view.basemap === "light" ? MAP_TILE_URL_LIGHT : MAP_TILE_URL_DARK;
+    tileLayerRef.current.setUrl(url);
   }, [ready, view.basemap]);
 
-  // Apply saved viewport from URL / share link
+  // Apply saved viewport from shared URL (skip if map is already there — avoids blink loop)
   useEffect(() => {
     if (!ready || !mapRef.current) return;
     if (view.viewportLat === null || view.viewportLng === null || view.viewportZoom === null) return;
+    if (mapMatchesViewport(mapRef.current, view.viewportLat, view.viewportLng, view.viewportZoom)) return;
     viewportSyncSkipRef.current = true;
     mapRef.current.setView([view.viewportLat, view.viewportLng], view.viewportZoom, { animate: false });
     window.setTimeout(() => {
@@ -665,61 +733,54 @@ export function CaseWorldMap({
     });
   }, [isFullscreen, ready]);
 
-  // Choropleth + country highlight
+  // Choropleth styles only — never move the camera here (prevents blink on layer toggle)
   useEffect(() => {
     if (!ready || !geoJsonRef.current) return;
-    void (async () => {
-      const map = mapRef.current!;
 
-      if (highlightRef.current) {
-        map.removeLayer(highlightRef.current);
-        highlightRef.current = null;
-      }
-
-      geoJsonRef.current?.eachLayer((layer) => {
-        const feature = layerFeature(layer);
-        const iso3 = featureIso3(feature);
-        const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
-        const active = selectedCountry && code === selectedCountry;
-        const stat = code ? statsByCode.get(code) : undefined;
-        const val = view.choroplethEnabled ? choroplethValue(stat, view.choroplethMetric) : 0;
-        const fillOpacity = view.choroplethEnabled
-          ? choroplethFillOpacity(val, choroplethMax)
-          : active
-            ? 0.15
-            : 0.03;
-        (layer as Path).setStyle({
-          color: active ? "var(--accent)" : "var(--line-strong)",
-          weight: active ? 2 : 0.6,
-          fillColor: view.choroplethEnabled && val > 0 ? "var(--accent)" : "var(--line)",
-          fillOpacity,
-        });
+    geoJsonRef.current.eachLayer((layer) => {
+      const feature = layerFeature(layer);
+      const iso3 = featureIso3(feature);
+      const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
+      const active = selectedCountry && code === selectedCountry;
+      const stat = code ? statsByCode.get(code) : undefined;
+      const val = view.choroplethEnabled ? choroplethValue(stat, view.choroplethMetric) : 0;
+      const fillOpacity = view.choroplethEnabled
+        ? choroplethFillOpacity(val, choroplethMax)
+        : active
+          ? 0.15
+          : 0.03;
+      (layer as Path).setStyle({
+        color: active ? "var(--accent)" : "var(--line-strong)",
+        weight: active ? 2 : 0.6,
+        fillColor: view.choroplethEnabled && val > 0 ? "var(--accent)" : "var(--line)",
+        fillOpacity,
       });
-
-      if (selectedCountry) {
-        const iso3 = COUNTRY_ISO3[selectedCountry];
-        if (iso3 && geoJsonRef.current) {
-          const match = geoJsonRef.current.getLayers().find((l) => featureIso3(layerFeature(l)) === iso3);
-          if (match) highlightRef.current = match;
-        }
-        const bounds = COUNTRY_BOUNDS[selectedCountry];
-        if (bounds) map.flyToBounds(bounds, { padding: [24, 24], duration: 0.8, maxZoom: 5 });
-      } else if (filteredPins.length && clusterRef.current && view.layerMode === "pins") {
-        const bounds = clusterRef.current.getBounds();
-        if (bounds.isValid()) map.flyToBounds(bounds, { padding: [32, 32], duration: 0.8, maxZoom: 4 });
-      }
-    })();
+    });
   }, [
     selectedCountry,
     ready,
-    filteredPins.length,
     view.choroplethEnabled,
     view.choroplethMetric,
-    view.layerMode,
     countryStats,
     choroplethMax,
     statsByCode,
   ]);
+
+  // Fly to country only when the user picks a country filter
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+    if (prevSelectedCountryRef.current === selectedCountry) return;
+    prevSelectedCountryRef.current = selectedCountry;
+    if (!selectedCountry) return;
+    const bounds = COUNTRY_BOUNDS[selectedCountry];
+    if (bounds) {
+      viewportSyncSkipRef.current = true;
+      mapRef.current.flyToBounds(bounds, { padding: [24, 24], duration: 0.8, maxZoom: 5 });
+      window.setTimeout(() => {
+        viewportSyncSkipRef.current = false;
+      }, 900);
+    }
+  }, [selectedCountry, ready]);
 
   // Fly to selected case
   useEffect(() => {
