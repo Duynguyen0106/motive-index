@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui";
 import { readJsonResponse } from "@/lib/clientFetch";
+import { detectHotCrimeNews } from "@/lib/hotNewsTicker";
 import type { CountryCode } from "@/lib/types";
 import type { WorldNewsPayload } from "@/lib/worldNewsService";
 import { formatNewsRegion, type WorldNewsItem } from "@/lib/worldNews";
@@ -20,15 +21,18 @@ function NewsRow({
   item,
   onSelectCase,
   compact,
+  hot,
 }: {
   item: WorldNewsItem;
   onSelectCase?: (slug: string) => void;
   compact?: boolean;
+  hot?: boolean;
 }) {
   return (
-    <li className="monitor-news-item">
+    <li className={`monitor-news-item ${hot ? "is-hot" : ""}`}>
       <div className="flex flex-wrap items-center gap-2">
         <time className="monitor-feed-time">{formatDate(item.createdAt)}</time>
+        {hot ? <span className="monitor-news-hot-badge">Hot</span> : null}
         <span className="monitor-news-region">{formatNewsRegion(item)}</span>
         {item.languageLabel && item.language !== "en" ? (
           <span className="monitor-pill monitor-pill-lang">{item.languageLabel}</span>
@@ -110,6 +114,11 @@ export function WorldNewsFeed({ initial, countryFilter = "", onSelectCase, compa
     };
   }, [countryFilter]);
 
+  const hotIds = useMemo(() => {
+    const hot = detectHotCrimeNews([], payload.items);
+    return new Set(hot.map((h) => h.id));
+  }, [payload.items]);
+
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
@@ -127,7 +136,13 @@ export function WorldNewsFeed({ initial, countryFilter = "", onSelectCase, compa
       </div>
       <ul className="monitor-news-list mt-3">
         {payload.items.map((item) => (
-          <NewsRow key={item.id} item={item} onSelectCase={onSelectCase} compact={compact} />
+          <NewsRow
+            key={item.id}
+            item={item}
+            onSelectCase={onSelectCase}
+            compact={compact}
+            hot={hotIds.has(item.id)}
+          />
         ))}
         {!payload.items.length ? (
           <li className="list-none">

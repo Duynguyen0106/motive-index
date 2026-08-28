@@ -150,6 +150,7 @@ export async function buildMonitorPayload(
       cases,
       countryStats,
       filters,
+      worldNewsItems: worldNews.items,
     }),
     featuredCase: (() => {
       const featured =

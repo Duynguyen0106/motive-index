@@ -15,6 +15,7 @@ import {
 } from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { MonitorCountryPicker } from "@/components/MonitorCountryPicker";
+import { HotNewsTicker } from "@/components/HotNewsTicker";
 import { MonitorComparePanel } from "@/components/MonitorComparePanel";
 import { MonitorMapControls } from "@/components/MonitorMapControls";
 import { MonitorSignalsPanel } from "@/components/MonitorSignalsPanel";
@@ -482,6 +483,16 @@ export function WorldMonitor({ initial }: Props) {
   };
 
   return (
+    <>
+      <HotNewsTicker
+        updates={data.updates}
+        worldNewsItems={data.worldNews.items}
+        onOpenNews={() => selectTab("news")}
+        onSelectCase={(slug) => {
+          const id = caseIdFromSlug(data.cases, slug);
+          if (id) selectCase(id, { switchTab: true, syncUrl: true });
+        }}
+      />
     <div
       className={`monitor-dashboard ${isMobileLayout ? "is-mobile" : ""} ${isPending ? "is-loading" : ""} ${isFullscreen ? "is-map-fullscreen" : ""}`}
     >
@@ -1251,5 +1262,6 @@ export function WorldMonitor({ initial }: Props) {
         </nav>
       ) : null}
     </div>
+    </>
   );
 }

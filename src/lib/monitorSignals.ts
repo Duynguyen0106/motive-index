@@ -1,4 +1,5 @@
 import { COUNTRY_LABELS } from "@/lib/country";
+import { detectHotCrimeNews } from "@/lib/hotNewsTicker";
 import type { CountryMonitorStat } from "@/lib/monitor";
 import type {
   CountryCode,
@@ -8,6 +9,7 @@ import type {
   SearchFilters,
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/types";
+import type { WorldNewsItem } from "@/lib/worldNews";
 
 export type MonitorSignalKind = LiveUpdate["kind"];
 
@@ -75,9 +77,22 @@ export function buildSignalAlerts(input: {
   cases: CrimeCase[];
   countryStats: CountryMonitorStat[];
   filters: SearchFilters;
+  worldNewsItems?: WorldNewsItem[];
 }): MonitorSignalAlert[] {
   const alerts: MonitorSignalAlert[] = [];
-  const { cases, countryStats, filters, updates } = input;
+  const { cases, countryStats, filters, updates, worldNewsItems = [] } = input;
+
+  const hotNews = detectHotCrimeNews(updates, worldNewsItems, 3);
+  for (const item of hotNews) {
+    alerts.push({
+      id: `hot-news-${item.id}`,
+      severity: item.isBreaking ? "hot" : "watch",
+      title: item.isBreaking ? "Breaking crime news" : "Hot crime news",
+      detail: item.headline,
+      caseSlug: item.caseSlug,
+      country: item.country,
+    });
+  }
 
   const unsolvedInFilter = cases.filter((c) => c.status === "unsolved").length;
   if (unsolvedInFilter > 0) {
@@ -126,7 +141,7 @@ export function buildSignalAlerts(input: {
     });
   }
 
-  return alerts.slice(0, 4);
+  return alerts.slice(0, 6);
 }
 
 export function buildBehaviorHighlights(
@@ -180,6 +195,7 @@ export function buildMonitorSignals(input: {
   cases: CrimeCase[];
   countryStats: CountryMonitorStat[];
   filters: SearchFilters;
+  worldNewsItems?: WorldNewsItem[];
 }): MonitorSignalsPayload {
   return {
     stats: buildSignalStats(input.updates),
