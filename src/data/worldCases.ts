@@ -95,7 +95,7 @@ function toSeed(d: WorldCaseDef): SeedCase {
     status: d.status,
     tags: [...(d.tags ?? []), "world-catalog", "public-record", "deep-dossier"],
     warning: "Public-record behavioral analysis. Minimal graphic detail. Not legal or clinical advice.",
-    overview: d.overview,
+    overview: deep.expandedOverview,
     featured: d.featured ?? false,
     timeline: deep.timeline,
     signals: deep.signals,
@@ -134,7 +134,7 @@ function toEnrichment(d: WorldCaseDef): CaseEnrichment {
         background: d.offenderBackground ?? "See public trial and biographical records.",
       },
     ],
-    victims: [
+    victims: patch.victims ?? [
       {
         id: `vic-${d.slug}`,
         name: "Multiple victims (public record)",
@@ -155,7 +155,7 @@ function toEnrichment(d: WorldCaseDef): CaseEnrichment {
     ],
     relatedCaseSlugs: d.relatedCaseSlugs ?? [],
     documentIds: [],
-    references: [
+    references: patch.references ?? [
       {
         id: `ref-${d.slug}`,
         citation: "Public court records and established case literature.",

@@ -126,7 +126,7 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
     tags: [...(d.tags ?? []), "multilingual-source", "translated-en", "deep-dossier"],
     warning:
       "English summary translated from non-English public sources. Consult original-language citations. Not legal or clinical advice.",
-    overview: d.overview,
+    overview: deep.expandedOverview,
     primarySourceLanguage: d.primarySourceLanguage,
     primarySourceLanguageLabel: d.primarySourceLanguageLabel,
     translationNote: d.translationNote,
