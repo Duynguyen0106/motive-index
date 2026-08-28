@@ -91,86 +91,103 @@ export function CaseWorldMap({
   useEffect(() => {
     let cancelled = false;
     const container = containerRef.current;
-    if (!container || mapRef.current) return;
+    if (!container) return;
 
     (async () => {
-      const L = await getLeafletWithCluster();
-
-      if (cancelled || !containerRef.current) return;
-
-      const map = L.map(containerRef.current, {
-        center: DEFAULT_MAP_CENTER,
-        zoom: DEFAULT_MAP_ZOOM,
-        minZoom: MIN_MAP_ZOOM,
-        maxZoom: MAX_MAP_ZOOM,
-        worldCopyJump: true,
-        scrollWheelZoom: true,
-        zoomControl: true,
-      });
-
-      L.tileLayer(MAP_TILE_URL, {
-        attribution: MAP_TILE_ATTRIBUTION,
-        subdomains: "abcd",
-        maxZoom: MAX_MAP_ZOOM,
-      }).addTo(map);
-
-      const cluster = L.markerClusterGroup({
-        showCoverageOnHover: false,
-        maxClusterRadius: 52,
-        spiderfyOnMaxZoom: true,
-        disableClusteringAtZoom: 8,
-        iconCreateFunction: (group: { getChildCount: () => number; getAllChildMarkers: () => L.Marker[] }) => {
-          const count = group.getChildCount();
-          const hasUnsolved = group
-            .getAllChildMarkers()
-            .some((m: L.Marker) => (m.options as { unsolved?: boolean }).unsolved);
-          const size = count < 10 ? 36 : count < 25 ? 42 : 48;
-          return L.divIcon({
-            html: `<span class="monitor-cluster ${hasUnsolved ? "has-unsolved" : ""}">${count}</span>`,
-            className: "monitor-cluster-icon",
-            iconSize: [size, size],
-          });
-        },
-      });
-      cluster.addTo(map);
-      clusterRef.current = cluster;
-
-      mapRef.current = map;
-      setReady(true);
-      setHint("Drag to pan · Scroll or pinch to zoom · Click clusters to expand");
-
       try {
-        const data = await fetchCountryGeoJson();
-        if (cancelled || !mapRef.current) return;
+        const L = await getLeafletWithCluster();
 
-        const layer = L.geoJSON(data, {
-          style: (feature?: GeoJSON.Feature) => {
-            const iso3 = featureIso3(feature);
-            const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
-            const active = selectedCountry && code === selectedCountry;
-            return {
-              color: active ? "var(--accent)" : "var(--line-strong)",
-              weight: active ? 2 : 0.6,
-              fillColor: active ? "var(--accent)" : "var(--line)",
-              fillOpacity: active ? 0.12 : 0.03,
-            };
-          },
-          onEachFeature: (feature: GeoJSON.Feature, featureLayer: Layer) => {
-            const iso3 = featureIso3(feature);
-            const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
-            if (!code) return;
-            featureLayer.on({
-              click: () => {
-                const current = selectedCountryRef.current;
-                onSelectCountryRef.current?.(current === code ? "" : code);
-              },
+        if (cancelled || !containerRef.current) return;
+
+        const el = containerRef.current;
+        const stamped = el as HTMLDivElement & { _leaflet_id?: number };
+        if (stamped._leaflet_id) {
+          delete stamped._leaflet_id;
+        }
+
+        const map = L.map(el, {
+          center: DEFAULT_MAP_CENTER,
+          zoom: DEFAULT_MAP_ZOOM,
+          minZoom: MIN_MAP_ZOOM,
+          maxZoom: MAX_MAP_ZOOM,
+          worldCopyJump: true,
+          scrollWheelZoom: true,
+          zoomControl: true,
+        });
+
+        L.tileLayer(MAP_TILE_URL, {
+          attribution: MAP_TILE_ATTRIBUTION,
+          subdomains: "abcd",
+          maxZoom: MAX_MAP_ZOOM,
+        }).addTo(map);
+
+        const cluster = L.markerClusterGroup({
+          showCoverageOnHover: false,
+          maxClusterRadius: 52,
+          spiderfyOnMaxZoom: true,
+          disableClusteringAtZoom: 8,
+          iconCreateFunction: (group: {
+            getChildCount: () => number;
+            getAllChildMarkers: () => L.Marker[];
+          }) => {
+            const count = group.getChildCount();
+            const hasUnsolved = group
+              .getAllChildMarkers()
+              .some((m: L.Marker) => (m.options as { unsolved?: boolean }).unsolved);
+            const size = count < 10 ? 36 : count < 25 ? 42 : 48;
+            return L.divIcon({
+              html: `<span class="monitor-cluster ${hasUnsolved ? "has-unsolved" : ""}">${count}</span>`,
+              className: "monitor-cluster-icon",
+              iconSize: [size, size],
             });
           },
         });
-        layer.addTo(map);
-        geoJsonRef.current = layer;
+        cluster.addTo(map);
+        clusterRef.current = cluster;
+
+        mapRef.current = map;
+        setReady(true);
+        setHint("Drag to pan · Scroll or pinch to zoom · Click clusters to expand");
+
+        requestAnimationFrame(() => {
+          map.invalidateSize();
+        });
+
+        try {
+          const data = await fetchCountryGeoJson();
+          if (cancelled || !mapRef.current) return;
+
+          const layer = L.geoJSON(data, {
+            style: (feature?: GeoJSON.Feature) => {
+              const iso3 = featureIso3(feature);
+              const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
+              const active = selectedCountry && code === selectedCountry;
+              return {
+                color: active ? "var(--accent)" : "var(--line-strong)",
+                weight: active ? 2 : 0.6,
+                fillColor: active ? "var(--accent)" : "var(--line)",
+                fillOpacity: active ? 0.12 : 0.03,
+              };
+            },
+            onEachFeature: (feature: GeoJSON.Feature, featureLayer: Layer) => {
+              const iso3 = featureIso3(feature);
+              const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
+              if (!code) return;
+              featureLayer.on({
+                click: () => {
+                  const current = selectedCountryRef.current;
+                  onSelectCountryRef.current?.(current === code ? "" : code);
+                },
+              });
+            },
+          });
+          layer.addTo(map);
+          geoJsonRef.current = layer;
+        } catch {
+          setHint("Map loaded · country boundaries unavailable");
+        }
       } catch {
-        setHint("Map loaded · country boundaries unavailable");
+        setHint("Map failed to load — refresh the page");
       }
     })();
 
@@ -180,6 +197,7 @@ export function CaseWorldMap({
       mapRef.current?.remove();
       mapRef.current = null;
       geoJsonRef.current = null;
+      setReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- init once
   }, []);
