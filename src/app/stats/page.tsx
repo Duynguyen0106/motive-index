@@ -9,7 +9,7 @@ import { getAllCases } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Archive statistics",
-  description: "Catalog analytics across 1,000 forensic psychology dossiers.",
+  description: "Catalog analytics across 10,000+ forensic psychology dossiers.",
 };
 
 function StatBarChart({ buckets, max, title }: { buckets: ArchiveStatBucket[]; max: number; title: string }) {

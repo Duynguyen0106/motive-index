@@ -166,7 +166,7 @@ export function CommandPalette() {
         />
         <ul className="command-palette-list" role="listbox">
           {items.length === 0 && !loading ? (
-            <li className="command-palette-empty">Type to search 1,000 dossiers or pick a page</li>
+            <li className="command-palette-empty">Type to search 10,000+ dossiers or pick a page</li>
           ) : null}
           {items.map((item, idx) => (
             <li key={`${item.type}-${item.href}`}>
