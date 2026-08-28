@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { analyzeFromSignals } from "@/lib/analyze";
 import { requirePrivilegedApiAccess } from "@/lib/apiAuth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
 import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
-import { applyNarrativeToCase, generateCaseNarrative } from "@/lib/narrativeGenerate";
+import { enrichIngestCase } from "@/lib/pipeline/enrichIngestCase";
 import { tryAutoPublishCase } from "@/lib/pipeline/autoPublish";
 import type { CrimeCase } from "@/lib/types";
 
@@ -44,9 +43,7 @@ export async function POST(req: Request) {
   if (getCaseBySlug(slug)) slug = `${slug}-${Date.now().toString(36)}`;
 
   const year = new Date().getFullYear();
-  const analysis = analyzeFromSignals([], name);
-
-  let crimeCase: CrimeCase = {
+  const stub: CrimeCase = {
     id: `case-${Date.now()}`,
     slug,
     name,
@@ -65,7 +62,7 @@ export async function POST(req: Request) {
     victims: [],
     legalOutcome: { summary: "Draft stub — legal outcome not verified." },
     behavioralProfile: {
-      modusOperandi: "Awaiting extraction.",
+      modusOperandi: "Awaiting AI pipeline enrichment.",
       organizationLevel: "unknown",
     },
     motivationalFactors: [],
@@ -80,7 +77,7 @@ export async function POST(req: Request) {
         date: new Date().toISOString().slice(0, 10),
         label: "Ingested from public source cluster",
         detail: parsed.data.headline,
-        behavioralNote: "Awaiting signal extraction.",
+        behavioralNote: "Awaiting AI pipeline enrichment.",
       },
     ],
     signals: [],
@@ -102,18 +99,28 @@ export async function POST(req: Request) {
         kind: "news" as const,
       },
     ],
-    analysis,
+    analysis: {
+      status: "pending",
+      summary: "Awaiting AI pipeline enrichment.",
+      constructs: [],
+      alternativeExplanations: [],
+      whatWeCannotKnow: [],
+      modelVersion: "pending",
+      reviewedByHuman: false,
+      updatedAt: new Date().toISOString(),
+    },
     featured: false,
   };
 
-  const narrativeResult = await generateCaseNarrative({
-    caseName: name,
-    overview: parsed.data.summary,
-    subtitle: crimeCase.subtitle,
-    sourceTitle: parsed.data.headline,
-    yearStart: year,
-  });
-  crimeCase = applyNarrativeToCase(crimeCase, narrativeResult, parsed.data.headline);
+  const enriched = await enrichIngestCase(
+    stub,
+    {
+      title: parsed.data.headline,
+      summary: parsed.data.summary,
+      link: parsed.data.sourceUrl,
+    },
+  );
+  const crimeCase = enriched.crimeCase;
 
   upsertCase(crimeCase);
   await syncAfterCaseWrite(crimeCase);
@@ -131,7 +138,12 @@ export async function POST(req: Request) {
     });
     await syncAfterUpdateWrite(update);
     return NextResponse.json(
-      { case: publishResult.crimeCase, update, published: true },
+      {
+        case: publishResult.crimeCase,
+        update,
+        published: true,
+        providers: enriched.providers,
+      },
       { status: 201 },
     );
   }
@@ -148,7 +160,13 @@ export async function POST(req: Request) {
   await syncAfterUpdateWrite(update);
 
   return NextResponse.json(
-    { case: crimeCase, update, published: false, blockers: publishResult.blockers },
+    {
+      case: crimeCase,
+      update,
+      published: false,
+      blockers: publishResult.blockers,
+      providers: enriched.providers,
+    },
     { status: 201 },
   );
 }
@@ -157,11 +175,13 @@ export async function GET() {
   return NextResponse.json({
     usage: {
       method: "POST",
+      auth: "Authorization: Bearer CRON_SECRET",
       body: {
         headline: "string",
         summary: "string",
         jurisdiction: "optional string",
         name: "optional string",
+        sourceUrl: "optional URL — required for auto-publish",
       },
     },
   });

@@ -1,14 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { analyzeFromSignals } from "@/lib/analyze";
 import { addUpdate, getAllCases, getCaseBySlug, upsertCase } from "@/lib/data";
-import {
-  applyNarrativeToCase,
-  generateCaseNarrative,
-  heuristicNarrativeFromSources,
-} from "@/lib/narrativeGenerate";
 import { isHeadlineSeenInDb, markHeadlineSeenInDb } from "@/lib/repository";
 import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
+import { enrichIngestCase, isLlmEnabled } from "@/lib/pipeline/enrichIngestCase";
 import { tryAutoPublishCase } from "@/lib/pipeline/autoPublish";
 import { inferCountry } from "@/lib/country";
 import { fetchLiveWorldNews } from "@/lib/worldNews";
@@ -29,10 +24,12 @@ export type PipelineResult = {
   skipped: number;
   analyzed: number;
   narrativesGenerated: number;
+  llmEnriched: number;
   errors: string[];
   createdSlugs: string[];
   publishedSlugs: string[];
   publishBlockers: { slug: string; blockers: string[] }[];
+  enrichmentProviders: Record<string, { extract: string; signals: string; analysis: string; narrative: string }>;
 };
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -177,16 +174,6 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
   const categories = inferCategories(`${item.title} ${item.summary}`);
   const id = `case-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-  const signals = [
-    {
-      id: `${id}-s1`,
-      dimension: "planning" as const,
-      observation:
-        "Public reporting mentions alleged offense circumstances; planning level not yet verified from primary records.",
-      sourceIds: ["rss"],
-    },
-  ];
-
   return {
     id,
     slug,
@@ -214,7 +201,7 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
     victims: [],
     legalOutcome: { summary: "Draft only — legal outcome not verified." },
     behavioralProfile: {
-      modusOperandi: "Awaiting primary-source extraction.",
+      modusOperandi: "Awaiting AI pipeline enrichment.",
       organizationLevel: "unknown",
     },
     motivationalFactors: [],
@@ -229,10 +216,10 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
         date: new Date().toISOString().slice(0, 10),
         label: "Ingested by live-update worker",
         detail: item.title,
-        behavioralNote: "Pending integrity gate review by AI pipeline.",
+        behavioralNote: "Pending AI pipeline enrichment.",
       },
     ],
-    signals,
+    signals: [] as CrimeCase["signals"],
     documentIds: [],
     references: item.link
       ? [
@@ -252,10 +239,14 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
       },
     ],
     analysis: {
-      ...analyzeFromSignals(signals, item.title.slice(0, 80)),
-      status: "draft",
+      status: "pending",
+      summary: "Awaiting AI pipeline enrichment.",
+      constructs: [],
+      alternativeExplanations: [],
+      whatWeCannotKnow: [],
+      modelVersion: "pending",
       reviewedByHuman: false,
-      expertCommentary: [],
+      updatedAt: new Date().toISOString(),
     },
     featured: false,
   };
@@ -264,10 +255,8 @@ function draftCaseFromItem(item: FeedItem): CrimeCase {
 export async function runLiveUpdatePipeline(options?: {
   feeds?: string[];
   limit?: number;
-  analyze?: boolean;
-  generateNarrative?: boolean;
-  /** When false (default), uses fast template narratives — LLM only if true. */
-  llmNarrative?: boolean;
+  /** When omitted, LLM runs if OPENAI_API_KEY is set. */
+  useLlm?: boolean;
 }): Promise<PipelineResult> {
   const feeds =
     options?.feeds ??
@@ -275,9 +264,7 @@ export async function runLiveUpdatePipeline(options?: {
       ? process.env.LIVE_UPDATE_FEEDS.split(",").map((s) => s.trim()).filter(Boolean)
       : DEFAULT_FEEDS);
   const limit = options?.limit ?? Number(process.env.LIVE_UPDATE_LIMIT ?? 8);
-  const analyze = options?.analyze ?? true;
-  const generateNarrative = options?.generateNarrative ?? true;
-  const llmNarrative = options?.llmNarrative ?? false;
+  const useLlm = isLlmEnabled({ useLlm: options?.useLlm });
 
   const result: PipelineResult = {
     fetched: 0,
@@ -286,10 +273,12 @@ export async function runLiveUpdatePipeline(options?: {
     skipped: 0,
     analyzed: 0,
     narrativesGenerated: 0,
+    llmEnriched: 0,
     errors: [],
     createdSlugs: [],
     publishedSlugs: [],
     publishBlockers: [],
+    enrichmentProviders: {},
   };
 
   const seen = readSeen();
@@ -323,45 +312,17 @@ export async function runLiveUpdatePipeline(options?: {
     }
 
     try {
-      let draft = draftCaseFromItem(item);
-      if (!analyze) {
-        draft.analysis.status = "pending";
-        draft.analysis.constructs = [];
-      } else {
-        result.analyzed += 1;
-      }
-
-      if (generateNarrative) {
-        try {
-          const narrativeResult = llmNarrative
-            ? await generateCaseNarrative({
-                caseName: draft.name,
-                overview: item.summary,
-                subtitle: draft.subtitle,
-                sourceTitle: item.title,
-                sourceUrl: item.link,
-                yearStart: draft.yearStart,
-              })
-            : {
-                narrative: heuristicNarrativeFromSources({
-                  caseName: draft.name,
-                  overview: item.summary,
-                  subtitle: draft.subtitle,
-                  sourceTitle: item.title,
-                  sourceUrl: item.link,
-                  yearStart: draft.yearStart,
-                }),
-                provider: "heuristic" as const,
-                note: "Fast template narrative — use Regenerate story for LLM.",
-              };
-          draft = applyNarrativeToCase(draft, narrativeResult, item.title);
-          result.narrativesGenerated += 1;
-        } catch (err) {
-          result.errors.push(
-            `Narrative ${draft.slug}: ${err instanceof Error ? err.message : String(err)}`,
-          );
-        }
-      }
+      const stub = draftCaseFromItem(item);
+      const enriched = await enrichIngestCase(
+        stub,
+        { title: item.title, summary: item.summary, link: item.link },
+        { useLlm },
+      );
+      let draft = enriched.crimeCase;
+      result.enrichmentProviders[draft.slug] = enriched.providers;
+      if (useLlm) result.llmEnriched += 1;
+      if (draft.analysis.constructs.length) result.analyzed += 1;
+      if (draft.narrative) result.narrativesGenerated += 1;
 
       upsertCase(draft);
       await syncAfterCaseWrite(draft);

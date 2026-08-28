@@ -74,7 +74,7 @@ Press **`?`** anywhere (outside form fields) for the full list. Highlights:
 | `POST /api/ingest` | Structured case ingest (Bearer `CRON_SECRET`) |
 | `POST /api/cron/live-update` | RSS ingest + auto-publish (Bearer `CRON_SECRET`) |
 | `POST /api/pipeline/publish` | Publish when integrity gates pass |
-| `POST /api/pipeline/narrative` | Regenerate narrative for a slug |
+| `GET /api/pipeline/status` | Queue blockers, recent jobs, LLM availability |
 
 ## Architecture
 

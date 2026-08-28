@@ -20,9 +20,7 @@ export async function POST(req: Request) {
     const [result, worldNews, publishRetry] = await Promise.all([
       runLiveUpdatePipeline({
         limit: typeof body.limit === "number" ? body.limit : undefined,
-        analyze: body.analyze !== false,
-        generateNarrative: body.generateNarrative !== false,
-        llmNarrative: body.llmNarrative === true,
+        useLlm: body.useLlm,
       }),
       runWorldNewsPipeline(8),
       body.retryDrafts !== false ? autoPublishReadyDrafts() : Promise.resolve(null),
@@ -52,7 +50,7 @@ export async function GET(req: Request) {
 
   try {
     const [result, worldNews, publishRetry] = await Promise.all([
-      runLiveUpdatePipeline({ limit: 5, llmNarrative: false }),
+      runLiveUpdatePipeline({ limit: 5 }),
       runWorldNewsPipeline(6),
       autoPublishReadyDrafts(),
     ]);
