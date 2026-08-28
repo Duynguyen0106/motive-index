@@ -20,7 +20,13 @@ import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { MonitorCaseSummary } from "@/lib/types";
-import { CRIME_CATEGORY_LABELS } from "@/lib/types";
+import {
+  CRIME_CATEGORY_LABELS,
+  type CountryCode,
+  type CrimeCategory,
+  type LiveUpdate,
+  type SearchFilters,
+} from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
 type Props = { initial: MonitorPayload };

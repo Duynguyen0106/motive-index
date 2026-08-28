@@ -1249,6 +1249,9 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
       {
         id: "ref-altaei-2",
         citation: "The Independent (23 Mar 2006) — Insurgent doctor killed dozens of wounded soldiers.",
+        originalCitation: "Insurgent doctor killed dozens of wounded soldiers",
+        language: "en",
+        languageLabel: "English",
         kind: "media",
         url: "https://www.independent.co.uk/news/world/middle-east/insurgent-doctor-killed-dozens-of-wounded-soldiers-6105814.html",
         note: "English-language contemporaneous reporting; verify victim counts against Arabic primary files.",
