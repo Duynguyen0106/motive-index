@@ -105,13 +105,17 @@ export function CaseWorldMap({
           delete stamped._leaflet_id;
         }
 
+        const isTouch =
+          typeof window !== "undefined" &&
+          window.matchMedia("(pointer: coarse)").matches;
+
         const map = L.map(el, {
           center: DEFAULT_MAP_CENTER,
           zoom: DEFAULT_MAP_ZOOM,
           minZoom: MIN_MAP_ZOOM,
           maxZoom: MAX_MAP_ZOOM,
           worldCopyJump: true,
-          scrollWheelZoom: true,
+          scrollWheelZoom: !isTouch,
           zoomControl: true,
         });
 
@@ -146,7 +150,11 @@ export function CaseWorldMap({
 
         mapRef.current = map;
         setReady(true);
-        setHint("Drag to pan · Scroll or pinch to zoom · Click clusters to expand");
+        setHint(
+          isTouch
+            ? "Pinch to zoom · Tap markers and clusters"
+            : "Drag to pan · Scroll or pinch to zoom · Click clusters to expand",
+        );
 
         requestAnimationFrame(() => {
           map.invalidateSize();

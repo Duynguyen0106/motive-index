@@ -76,11 +76,12 @@ export function WorldMonitor({ initial }: Props) {
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [showAllCountries, setShowAllCountries] = useState(false);
   const [keyword, setKeyword] = useState(initial.filters.q ?? "");
   const [mountedAt] = useState(() => Date.now());
   const caseCardRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const keywordDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const filters = data.filters;
@@ -134,7 +135,12 @@ export function WorldMonitor({ initial }: Props) {
   const selectTab = useCallback(
     (tab: SidebarTab) => {
       setSidebarTab(tab);
-      if (isMobileLayout) setSidebarOpen(true);
+      if (isMobileLayout) {
+        setSidebarOpen(true);
+        requestAnimationFrame(() => {
+          sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
       syncMonitorUrl({ tab });
     },
     [isMobileLayout, syncMonitorUrl],
@@ -281,16 +287,26 @@ export function WorldMonitor({ initial }: Props) {
     signals: "Signals",
   };
 
+  const sidebarTabShortLabels: Record<SidebarTab, string> = {
+    overview: "Overview",
+    cases: "Cases",
+    news: "News",
+    signals: "Signals",
+  };
+
   return (
-    <div className={`monitor-dashboard ${isPending ? "is-loading" : ""}`}>
+    <div className={`monitor-dashboard ${isMobileLayout ? "is-mobile" : ""} ${isPending ? "is-loading" : ""}`}>
       <div className="monitor-top">
       <header className="monitor-hero">
         <div className="monitor-hero-main">
           <p className="label">Live intelligence · forensic archive</p>
           <h1 className="display monitor-title">World crime monitor</h1>
-          <p className="monitor-lede">
+          <p className="monitor-lede monitor-desktop-only">
             Live global crime map with {data.totalCases} archived dossiers, regional news feeds in
             English, and forensic filters — click clusters to drill down.
+          </p>
+          <p className="monitor-lede-compact monitor-mobile-only">
+            {data.filteredCount} cases · {data.plottedCount} on map · {unsolvedCount} unsolved
           </p>
         </div>
         <div className="monitor-hero-meta">
@@ -305,7 +321,7 @@ export function WorldMonitor({ initial }: Props) {
       </header>
 
       {data.featuredCase ? (
-        <div className="monitor-discovery">
+        <div className="monitor-discovery monitor-desktop-only">
           <p className="label mb-0">Featured dossier</p>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -354,7 +370,7 @@ export function WorldMonitor({ initial }: Props) {
       </div>
 
       <QuickLinks
-        className="monitor-quick-links"
+        className="monitor-quick-links monitor-desktop-only"
         links={[
           { href: "/archive", label: "Full archive" },
           { href: "/search", label: "Advanced search" },
@@ -460,17 +476,18 @@ export function WorldMonitor({ initial }: Props) {
         {isMobileLayout ? (
           <button
             type="button"
-            className="monitor-sidebar-fab"
+            className="monitor-sidebar-fab monitor-desktop-only-fab"
             aria-expanded={sidebarOpen}
             aria-controls="monitor-sidebar"
             onClick={() => setSidebarOpen((open) => !open)}
           >
-            {sidebarOpen ? "Hide panels" : `Show ${sidebarTabLabels[sidebarTab]}`}
+            {sidebarOpen ? "Hide panels" : `Show ${sidebarTabShortLabels[sidebarTab]}`}
           </button>
         ) : null}
 
         <aside
           id="monitor-sidebar"
+          ref={sidebarRef}
           className={`monitor-sidebar ${isMobileLayout && !sidebarOpen ? "is-collapsed" : ""}`}
         >
           <div className="monitor-tabs" role="tablist" aria-label="Monitor panels">
@@ -482,12 +499,14 @@ export function WorldMonitor({ initial }: Props) {
                 id={`monitor-tab-${id}`}
                 aria-selected={sidebarTab === id}
                 aria-controls={`monitor-panel-${id}`}
+                aria-label={sidebarTabLabels[id]}
                 tabIndex={sidebarTab === id ? 0 : -1}
                 className={`monitor-tab ${sidebarTab === id ? "is-active" : ""}`}
                 onClick={() => selectTab(id)}
                 onKeyDown={(e) => handleTabKey(e, id)}
               >
-                {sidebarTabLabels[id]}
+                <span className="monitor-tab-short">{sidebarTabShortLabels[id]}</span>
+                <span className="monitor-tab-long">{sidebarTabLabels[id]}</span>
               </button>
             ))}
           </div>
@@ -825,6 +844,28 @@ export function WorldMonitor({ initial }: Props) {
         </aside>
       </div>
       </div>
+
+      {isMobileLayout ? (
+        <nav className="monitor-bottom-tabs" aria-label="Monitor panels">
+          {TAB_IDS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={`monitor-bottom-tab ${sidebarTab === id ? "is-active" : ""}`}
+              aria-current={sidebarTab === id ? "page" : undefined}
+              onClick={() => selectTab(id)}
+            >
+              <span>{sidebarTabShortLabels[id]}</span>
+              {id === "cases" ? (
+                <span className="monitor-bottom-tab-count">{data.cases.length}</span>
+              ) : null}
+              {id === "news" ? (
+                <span className="monitor-bottom-tab-count">{data.worldNews.items.length}</span>
+              ) : null}
+            </button>
+          ))}
+        </nav>
+      ) : null}
     </div>
   );
 }

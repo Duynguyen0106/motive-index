@@ -134,7 +134,7 @@ export default async function CasePage({ params, searchParams }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="dossier-header site-shell py-10 md:py-12">
+      <header className="dossier-header site-shell py-6 md:py-12">
         <Breadcrumbs
           items={[
             { label: "Monitor", href: "/" },
@@ -187,13 +187,19 @@ export default async function CasePage({ params, searchParams }: Props) {
           <Link href={monitorUrlFromFilters({}, crimeCase.slug)} className="btn btn-primary text-sm">
             View on map
           </Link>
-          <Link href={searchUrlFromFilters(searchSimilar)} className="btn btn-ghost text-sm">
+          <Link
+            href={searchUrlFromFilters(searchSimilar)}
+            className="btn btn-ghost dossier-action-secondary text-sm"
+          >
             Similar cases
           </Link>
-          <Link href={`/live?country=${country}`} className="btn btn-ghost text-sm">
+          <Link
+            href={`/live?country=${country}`}
+            className="btn btn-ghost dossier-action-secondary text-sm"
+          >
             Regional news
           </Link>
-          <Link href="/archive" className="btn btn-ghost text-sm">
+          <Link href="/archive" className="btn btn-ghost dossier-action-secondary text-sm">
             Full archive
           </Link>
           <ShareLinkButton url={dossierUrl} label="Share dossier" />

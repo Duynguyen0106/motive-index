@@ -91,6 +91,16 @@ export function CaseNarrativeView({
           <p className="text-[var(--ink-soft)]">{narrative.reviewNote}</p>
         </div>
       ) : null}
+      <nav className="story-chapter-nav lg:hidden" aria-label="Story chapters">
+        <p className="label mb-2">Jump to section</p>
+        <div className="story-chapter-scroll">
+          {chapters.map((c) => (
+            <a key={c.id} href={`#chapter-${c.id}`} className="story-chapter-pill">
+              {chapterNavLabel(c.id)}
+            </a>
+          ))}
+        </div>
+      </nav>
       <nav className="hidden lg:block" aria-label="Story chapters">
         <p className="label mb-3">In this dossier</p>
         <ol className="space-y-2 text-sm">

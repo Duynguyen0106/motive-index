@@ -65,7 +65,7 @@ export default async function SearchPage({ searchParams }: Props) {
       <form
         action="/search"
         method="get"
-        className="filter-toolbar card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3"
+        className="filter-toolbar search-form card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3"
       >
         <label className="block text-sm md:col-span-2 lg:col-span-3">
           <span className="font-medium text-[var(--ink)]">Full-text query</span>
@@ -94,6 +94,39 @@ export default async function SearchPage({ searchParams }: Props) {
           </select>
         </label>
 
+        <label className="block text-sm">
+          <span className="font-medium">Country</span>
+          <select
+            name="country"
+            defaultValue={filters.country ?? ""}
+            className="field mt-1"
+          >
+            <option value="">Any</option>
+            {countryOptions.map((code) => (
+              <option key={code} value={code}>
+                {COUNTRY_LABELS[code]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block text-sm">
+          <span className="font-medium">Case status</span>
+          <select
+            name="status"
+            defaultValue={filters.status ?? ""}
+            className="field mt-1"
+          >
+            <option value="">Any</option>
+            <option value="closed">Closed</option>
+            <option value="unsolved">Unsolved</option>
+            <option value="historical">Historical</option>
+          </select>
+        </label>
+
+        <details className="search-more-filters md:col-span-2 lg:col-span-3">
+          <summary className="search-more-filters-summary">More filters</summary>
+          <div className="search-more-filters-grid mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <label className="block text-sm">
           <span className="font-medium">Psychological factor</span>
           <select
@@ -134,22 +167,6 @@ export default async function SearchPage({ searchParams }: Props) {
             placeholder="e.g. psychopathy"
             className="field mt-1"
           />
-        </label>
-
-        <label className="block text-sm">
-          <span className="font-medium">Country</span>
-          <select
-            name="country"
-            defaultValue={filters.country ?? ""}
-            className="field mt-1"
-          >
-            <option value="">Any</option>
-            {countryOptions.map((code) => (
-              <option key={code} value={code}>
-                {COUNTRY_LABELS[code]}
-              </option>
-            ))}
-          </select>
         </label>
 
         <label className="block text-sm">
@@ -202,21 +219,10 @@ export default async function SearchPage({ searchParams }: Props) {
           </select>
         </label>
 
-        <label className="block text-sm">
-          <span className="font-medium">Case status</span>
-          <select
-            name="status"
-            defaultValue={filters.status ?? ""}
-            className="field mt-1"
-          >
-            <option value="">Any</option>
-            <option value="closed">Closed</option>
-            <option value="unsolved">Unsolved</option>
-            <option value="historical">Historical</option>
-          </select>
-        </label>
+          </div>
+        </details>
 
-        <div className="flex items-end gap-3 md:col-span-2 lg:col-span-3">
+        <div className="search-form-actions flex items-end gap-3 md:col-span-2 lg:col-span-3">
           <button type="submit" className="btn btn-primary">
             Apply filters
           </button>

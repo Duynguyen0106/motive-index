@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SiteSearch } from "@/components/SiteSearch";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const links = [
   { href: "/", label: "Monitor", match: (p: string) => p === "/" || p.startsWith("/monitor") },
@@ -86,6 +87,9 @@ export function SiteNav() {
           >
             Admin
           </Link>
+          <div className="site-nav-theme md:hidden">
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
     </>

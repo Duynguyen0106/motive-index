@@ -2590,3 +2590,5 @@ html[data-theme="light"] .keyboard-help-fab {
   border-top: 1px solid var(--line);
   padding-top: 1rem;
 }
+
+@import "./mobile.css";
