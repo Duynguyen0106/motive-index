@@ -146,13 +146,50 @@ function generatedReferences(ctx: ParsedCaseContext): CaseReference[] {
   return refs;
 }
 
+function normalizeRefUrl(url: string): string {
+  try {
+    const u = new URL(url.trim());
+    u.hash = "";
+    if (u.pathname.endsWith("/") && u.pathname.length > 1) {
+      u.pathname = u.pathname.slice(0, -1);
+    }
+    return u.toString();
+  } catch {
+    return url.trim();
+  }
+}
+
+function mergeReferenceFields(keep: CaseReference, drop: CaseReference): CaseReference {
+  return {
+    ...keep,
+    originalCitation: keep.originalCitation?.trim() || drop.originalCitation?.trim() || undefined,
+    language: keep.language ?? drop.language,
+    languageLabel: keep.languageLabel ?? drop.languageLabel,
+    note: keep.note?.trim() || drop.note?.trim() || undefined,
+    year: keep.year ?? drop.year,
+  };
+}
+
 function dedupeReferences(refs: CaseReference[]): CaseReference[] {
-  const seen = new Set<string>();
+  const citationSeen = new Set<string>();
+  const urlIndex = new Map<string, number>();
   const out: CaseReference[] = [];
+
   for (const r of refs) {
-    const key = r.citation.slice(0, 80);
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const citationKey = r.citation.slice(0, 80);
+    if (citationSeen.has(citationKey)) continue;
+
+    if (r.url?.trim()) {
+      const urlKey = normalizeRefUrl(r.url);
+      const existingIdx = urlIndex.get(urlKey);
+      if (existingIdx !== undefined) {
+        out[existingIdx] = mergeReferenceFields(out[existingIdx], r);
+        continue;
+      }
+      urlIndex.set(urlKey, out.length);
+    }
+
+    citationSeen.add(citationKey);
     out.push(r);
   }
   return out;

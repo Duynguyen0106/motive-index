@@ -518,17 +518,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://pl.wikipedia.org/wiki/Karol_Kot",
       },
     ],
-    references: [
-      {
-        id: "ref-kot-1",
-        citation: "Kraków District Court, Karol Kot judgment (14 July 1967).",
-        originalCitation: "Sąd Okręgowy w Krakowie — wyrok wobec Karola Kota",
-        language: "pl",
-        languageLabel: "Polish",
-        kind: "court",
-      url: "https://pl.wikipedia.org/wiki/Karol_Kot",
-      },
-    ],
+    references: [],
   },
   {
     slug: "john-ausonius",
@@ -1239,27 +1229,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://www.independent.co.uk/news/world/middle-east/insurgent-doctor-killed-dozens-of-wounded-soldiers-6105814.html",
       },
     ],
-    references: [
-      {
-        id: "ref-altaei-1",
-        citation: "The Guardian (17 Apr 2006) — reporting on Kirkuk police investigation of Dr Louay al-Taei.",
-        originalCitation: "الجزيرة / تقارير محاكمة لؤي عمر محمد الطائي — كركوك",
-        language: "ar",
-        languageLabel: "Arabic",
-        kind: "media",
-        url: "https://www.theguardian.com/world/2006/apr/17/iraq.topstories3",
-      },
-      {
-        id: "ref-altaei-2",
-        citation: "The Independent (23 Mar 2006) — Insurgent doctor killed dozens of wounded soldiers.",
-        originalCitation: "Insurgent doctor killed dozens of wounded soldiers",
-        language: "en",
-        languageLabel: "English",
-        kind: "media",
-        url: "https://www.independent.co.uk/news/world/middle-east/insurgent-doctor-killed-dozens-of-wounded-soldiers-6105814.html",
-        note: "English-language contemporaneous reporting; verify victim counts against Arabic primary files.",
-      },
-    ],
+    references: [],
   },
   {
     slug: "kang-ho-sun",
@@ -1339,17 +1309,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://en.wikipedia.org/wiki/Somkid_Pumpuang",
       },
     ],
-    references: [
-      {
-        id: "ref-somkid-1",
-        citation: "Khon Kaen Provincial Court, Pumpuang (2021); 2005 life sentence for five murders.",
-        originalCitation: "ศาลจังหวัดขอนแก่น — คดีสมคิด พุ่มพวง",
-        language: "th",
-        languageLabel: "Thai",
-        kind: "court",
-      url: "https://en.wikipedia.org/wiki/Somkid_Pumpuang",
-      },
-    ],
+    references: [],
     psychologicalFactors: ["antisocial_traits", "compartmentalization"],
   },
   {
@@ -1474,17 +1434,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://en.wikipedia.org/wiki/Andr%C3%A1s_P%C3%A1ndy",
       },
     ],
-    references: [
-      {
-        id: "ref-pandy-1",
-        citation: "Brussels Court of Assizes, Pándy trial (6 March 2002).",
-        originalCitation: "Cour d'assises de Bruxelles — Andras Pandy",
-        language: "fr",
-        languageLabel: "French",
-        kind: "court",
-      url: "https://en.wikipedia.org/wiki/Andr%C3%A1s_P%C3%A1ndy",
-      },
-    ],
+    references: [],
   },
   {
     slug: "romulus-veres",
@@ -1518,17 +1468,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://ro.wikipedia.org/wiki/Romulus_Vere%C8%99",
       },
     ],
-    references: [
-      {
-        id: "ref-veres-1",
-        citation: "Cluj court and psychiatric commitment records via Romanian press (1974–1976).",
-        originalCitation: "Tribunalul Cluj — Romulus Vereș",
-        language: "ro",
-        languageLabel: "Romanian",
-        kind: "court",
-      url: "https://ro.wikipedia.org/wiki/Romulus_Vere%C8%99",
-      },
-    ],
+    references: [],
   },
   {
     slug: "ozgur-dengiz",
@@ -1831,17 +1771,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://vi.wikipedia.org/wiki/L%C3%AA_V%C4%83n_Luy%E1%BB%87n",
       },
     ],
-    references: [
-      {
-        id: "ref-luyen-1",
-        citation: "Bắc Giang People's Court, Luyện verdict (11 January 2012).",
-        originalCitation: "Tòa án nhân dân tỉnh Bắc Giang — Lê Văn Luyện",
-        language: "vi",
-        languageLabel: "Vietnamese",
-        kind: "court",
-      url: "https://vi.wikipedia.org/wiki/L%C3%AA_V%C4%83n_Luy%E1%BB%87n",
-      },
-    ],
+    references: [],
   },
   {
     slug: "antonis-daglis",
@@ -1876,17 +1806,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://en.wikipedia.org/wiki/Antonis_Daglis",
       },
     ],
-    references: [
-      {
-        id: "ref-daglis-1",
-        citation: "Athens Mixed Jury Court, Daglis (23 January 1997).",
-        originalCitation: "Μικτό Κακουργιοδικείο Αθηνών — Αντώνης Δαγκλής",
-        language: "el",
-        languageLabel: "Greek",
-        kind: "court",
-      url: "https://en.wikipedia.org/wiki/Antonis_Daglis",
-      },
-    ],
+    references: [],
   },
   {
     slug: "yishai-schlissel-he",
@@ -1974,17 +1894,7 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
         url: "https://en.wikipedia.org/wiki/Fritzl_case",
       },
     ],
-    references: [
-      {
-        id: "ref-fritzl-de-1",
-        citation: "Regional Court St. Pölten, Fritzl (2009). Life imprisonment.",
-        originalCitation: "Landesgericht St. Pölten — Josef Fritzl (2009)",
-        language: "de",
-        languageLabel: "German",
-        kind: "court",
-      url: "https://en.wikipedia.org/wiki/Fritzl_case",
-      },
-    ],
+    references: [],
     psychologicalFactors: ["power_control", "compartmentalization", "impression_management"],
     theoreticalFrameworks: ["psychodynamic", "attachment", "personality"],
     tags: ["captivity", "family-abuse"],

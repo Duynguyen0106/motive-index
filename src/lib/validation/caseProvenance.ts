@@ -284,14 +284,18 @@ export function validateCaseDef(def: MinimalCaseDef, opts?: { multilingual?: boo
         message: `Multilingual case requires sources[]: ${def.slug}`,
       });
     }
-    if (!def.references?.length) {
+    const overrideRefs = CASE_REFERENCE_OVERRIDES[def.slug];
+    const effectiveRefs =
+      overrideRefs?.length ? overrideRefs : (def.references ?? []);
+    if (!effectiveRefs.length) {
       violations.push({
         level: "error",
         code: "missing-references",
         message: `Multilingual case requires references[]: ${def.slug}`,
       });
-    } else {
-      const withOriginal = def.references.filter((r) => r.originalCitation?.trim());
+    } else if (!overrideRefs?.length) {
+      const refs = def.references ?? [];
+      const withOriginal = refs.filter((r) => r.originalCitation?.trim());
       if (withOriginal.length === 0) {
         violations.push({
           level: "error",
@@ -299,7 +303,7 @@ export function validateCaseDef(def: MinimalCaseDef, opts?: { multilingual?: boo
           message: `Multilingual case needs ≥1 reference with originalCitation: ${def.slug}`,
         });
       }
-      const primary = def.references.filter(isPrimarySourceReference);
+      const primary = refs.filter(isPrimarySourceReference);
       if (primary.length === 0) {
         violations.push({
           level: "error",

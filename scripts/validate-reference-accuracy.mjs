@@ -44,8 +44,9 @@ async function main() {
     }
   }
 
-  // 2. Multilingual defs
+  // 2. Multilingual defs (skip when canonical override covers references)
   for (const def of MULTILINGUAL_CASE_DEFS) {
+    if (CASE_REFERENCE_OVERRIDES[def.slug]?.length) continue;
     const violations = validateCaseReferenceSet({
       slug: def.slug,
       references: def.references ?? [],
