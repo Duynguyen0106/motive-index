@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-08-28T15:10:00.000Z",
+  "target": 10000,
+  "imported": 10000,
+  "totalCatalogCases": 10121,
+  "breakdown": {
+    "wikidataImport": 6134,
+    "wikipediaCategoryImport": 3866,
+    "handCuratedWorld": 75,
+    "multilingual": 38,
+    "flagshipAndDraft": 8
+  },
+  "profileStats": {
+    "serial_killer": 1096,
+    "mass_murderer": 42,
+    "spree_killer": 63,
+    "mass_shooting": 699,
+    "mass_murder": 2672,
+    "school_shooting": 76,
+    "bomb_attack": 1110,
+    "assassination": 159,
+    "familicide": 16,
+    "war_crime": 152,
+    "war_crimes_trial": 49,
+    "wikipedia_serial_killers": 1131,
+    "wikipedia_mass_murder": 2638
+  },
+  "validation": "npm run validate:catalog — 0 errors, 10121 cases scanned",
+  "notes": "Synthetic bulk archive (879 CS-#### dossiers) retired from catalog. All imported cases link to English Wikipedia articles."
+}

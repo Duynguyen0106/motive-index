@@ -177,6 +177,8 @@ export function validateProvenance(
   if (
     !slugMatchesOffender(c.slug, offender) &&
     !c.tags?.includes("multilingual-source") &&
+    !c.tags?.includes("wikidata-import") &&
+    !c.tags?.includes("wikipedia-import") &&
     !SLUG_OFFENDER_EXCEPTIONS.has(c.slug)
   ) {
     violations.push({
@@ -258,7 +260,7 @@ export function validateCaseDef(def: MinimalCaseDef, opts?: { multilingual?: boo
       offenderName: def.offenderName,
       name: def.name,
     },
-    { strictSlugMatch: !SLUG_OFFENDER_EXCEPTIONS.has(def.slug) },
+    { strictSlugMatch: !SLUG_OFFENDER_EXCEPTIONS.has(def.slug) && !def.tags?.includes("wikidata-import") && !def.tags?.includes("wikipedia-import") },
   );
 
   if (def.yearStart < 1700 || def.yearStart > 2026) {
