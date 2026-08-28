@@ -117,7 +117,6 @@ export function CaseWorldMap({
 
         L.tileLayer(MAP_TILE_URL, {
           attribution: MAP_TILE_ATTRIBUTION,
-          subdomains: "abcd",
           maxZoom: MAX_MAP_ZOOM,
         }).addTo(map);
 
@@ -362,7 +361,7 @@ export function CaseWorldMap({
           <span className="monitor-dot monitor-dot-unsolved" /> Unsolved
         </span>
         <span className="monitor-legend-meta">
-          {pins.length} cases · {clusterCount} markers · OpenStreetMap
+          {pins.length} cases · {clusterCount} markers · Esri dark canvas
         </span>
       </div>
     </div>

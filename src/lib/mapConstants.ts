@@ -145,11 +145,12 @@ export const WORLD_GEOJSON_FALLBACK =
 /** @deprecated Use WORLD_GEOJSON_LOCAL */
 export const WORLD_GEOJSON_URL = WORLD_GEOJSON_LOCAL;
 
+/** Dark basemap — Esri Canvas (no API key; fits crime-scene palette). */
 export const MAP_TILE_URL =
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
 
 export const MAP_TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  '&copy; <a href="https://www.esri.com/">Esri</a> &mdash; DeLorme, NAVTEQ';
 
 export const DEFAULT_MAP_CENTER: [number, number] = [20, 0];
 export const DEFAULT_MAP_ZOOM = 2;
