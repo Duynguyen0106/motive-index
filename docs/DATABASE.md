@@ -2,15 +2,22 @@
 
 Motive Index uses a **local JSON store** (`.data/store.json`) for development and an optional **Supabase Postgres** backend for production.
 
-## Case catalog (103+ dossiers)
+## Case catalog (1000 dossiers)
 
 Cases are defined in TypeScript seed modules and merged at runtime:
 
 | Source | File | Count (approx.) |
 |--------|------|-----------------|
 | Flagship seed | `src/data/seed.ts` | 7 hand-authored + 1 draft stub |
-| World catalog | `src/data/worldCases.ts` | 70+ public-record cases |
+| World catalog | `src/data/worldCases.ts` | 75 curated public-record cases |
+| Bulk archive | `src/data/bulkCaseDefs.generated.json` | 879 composite teaching dossiers |
 | Multilingual | `src/data/multilingualCases.ts` | 38+ translated-source cases |
+
+Regenerate bulk defs:
+
+```bash
+npm run db:generate-bulk
+```
 
 Pipeline:
 

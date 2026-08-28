@@ -1,9 +1,9 @@
 /**
- * Deep dossier registry — narratives, timelines, and enrichment patches
+ * Deep dossier registry — lazy narratives, timelines, and enrichment patches
  * for world and multilingual catalog cases.
  */
 import { MULTILINGUAL_CASE_DEFS } from "@/data/multilingualCases";
-import { WORLD_CASE_DEFS } from "@/data/worldCases";
+import { ALL_WORLD_CASE_DEFS } from "@/data/worldCases";
 import {
   buildMultilingualDeep,
   buildWorldDeep,
@@ -38,7 +38,7 @@ function defToMultilingualInput(d: (typeof MULTILINGUAL_CASE_DEFS)[number]) {
   };
 }
 
-function defToWorldInput(d: (typeof WORLD_CASE_DEFS)[number]) {
+function defToWorldInput(d: (typeof ALL_WORLD_CASE_DEFS)[number]) {
   return {
     slug: d.slug,
     name: d.name,
@@ -56,25 +56,19 @@ function defToWorldInput(d: (typeof WORLD_CASE_DEFS)[number]) {
   };
 }
 
-const multilingualBundles = Object.fromEntries(
-  MULTILINGUAL_CASE_DEFS.map((d) => [d.slug, buildMultilingualDeep(defToMultilingualInput(d))]),
-) as Record<string, DeepCaseBundle>;
-
-const worldBundles = Object.fromEntries(
-  WORLD_CASE_DEFS.map((d) => [d.slug, buildWorldDeep(defToWorldInput(d))]),
-) as Record<string, DeepCaseBundle>;
-
-export const deepCaseBundles: Record<string, DeepCaseBundle> = {
-  ...worldBundles,
-  ...multilingualBundles,
-};
+const worldDefBySlug = new Map(ALL_WORLD_CASE_DEFS.map((d) => [d.slug, d]));
+const multilingualDefBySlug = new Map(MULTILINGUAL_CASE_DEFS.map((d) => [d.slug, d]));
 
 export function getDeepCaseBundle(slug: string): DeepCaseBundle | undefined {
-  return deepCaseBundles[slug];
+  const world = worldDefBySlug.get(slug);
+  if (world) return buildWorldDeep(defToWorldInput(world));
+  const ml = multilingualDefBySlug.get(slug);
+  if (ml) return buildMultilingualDeep(defToMultilingualInput(ml));
+  return undefined;
 }
 
 export function getDeepNarrative(slug: string): CaseNarrative | undefined {
-  return deepCaseBundles[slug]?.narrative;
+  return getDeepCaseBundle(slug)?.narrative;
 }
 
-export const deepNarrativeCount = Object.keys(deepCaseBundles).length;
+export const deepNarrativeCount = ALL_WORLD_CASE_DEFS.length + MULTILINGUAL_CASE_DEFS.length;

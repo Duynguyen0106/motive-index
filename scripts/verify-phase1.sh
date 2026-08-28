@@ -60,6 +60,8 @@ expect_contains "Keyboard shortcuts control" "$BASE/" "Keyboard shortcuts"
 expect_contains "Header site search" "$BASE/" "site-search-input"
 expect_200 "GET /archive" "$BASE/archive"
 expect_contains "Archive featured dossier" "$BASE/archive" "Featured dossier"
+expect_contains "Archive 1000 dossiers" "$BASE/archive" "1000"
+expect_contains "Bulk archive slug" "$BASE/cases/archive-us-0001" "Composite archival dossier"
 code=$(http_code "$BASE/cases")
 if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /cases redirects" 1; else check "GET /cases redirects [got $code]" 0; fi
 expect_200 "GET /search" "$BASE/search"

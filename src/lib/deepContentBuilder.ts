@@ -283,8 +283,27 @@ function assembleBundle(
   };
 }
 
+/** Build deep dossier for an English-primary world catalog case. */
+const worldDeepCache = new Map<string, DeepCaseBundle>();
+
+export function buildWorldDeep(d: WorldDeepInput): DeepCaseBundle {
+  const cached = worldDeepCache.get(d.slug);
+  if (cached) return cached;
+  const narrative = buildCoreNarrative(d, {
+    reviewNote:
+      "English-language public record dossier with expanded contextual narrative. Verify claims against court documents and established case literature in References.",
+  });
+  const bundle = assembleBundle(d, narrative);
+  worldDeepCache.set(d.slug, bundle);
+  return bundle;
+}
+
+const multilingualDeepCache = new Map<string, DeepCaseBundle>();
+
 /** Build full deep dossier for a multilingual (translated-source) case. */
 export function buildMultilingualDeep(d: MultilingualDeepInput): DeepCaseBundle {
+  const cached = multilingualDeepCache.get(d.slug);
+  if (cached) return cached;
   const originalNameLine = d.offenderNameOriginal
     ? `In ${d.primarySourceLanguageLabel} sources the offender is recorded as ${d.offenderNameOriginal} (${d.offenderName}).`
     : d.nameOriginal
@@ -301,7 +320,7 @@ export function buildMultilingualDeep(d: MultilingualDeepInput): DeepCaseBundle 
     reviewNote: `English dossier translated/synthesized from ${d.primarySourceLanguageLabel} public records. ${d.translationNote} Consult original-language citations before citing in academic work.`,
   });
 
-  return assembleBundle(d, narrative, {
+  const bundle = assembleBundle(d, narrative, {
     extra: {
       nameOriginal: d.nameOriginal,
       primarySourceLanguage: d.primarySourceLanguage,
@@ -310,16 +329,8 @@ export function buildMultilingualDeep(d: MultilingualDeepInput): DeepCaseBundle 
     },
     existingReferences: d.references,
   });
-}
-
-/** Build deep dossier for an English-primary world catalog case. */
-export function buildWorldDeep(d: WorldDeepInput): DeepCaseBundle {
-  const narrative = buildCoreNarrative(d, {
-    reviewNote:
-      "English-language public record dossier with expanded contextual narrative. Verify claims against court documents and established case literature in References.",
-  });
-
-  return assembleBundle(d, narrative);
+  multilingualDeepCache.set(d.slug, bundle);
+  return bundle;
 }
 
 /** Re-export for seed pipeline */

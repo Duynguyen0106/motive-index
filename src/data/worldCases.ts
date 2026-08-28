@@ -4,6 +4,7 @@
  */
 import type { CaseEnrichment } from "@/data/catalog";
 import type { SeedCase } from "@/data/seed";
+import bulkCaseDefs from "@/data/bulkCaseDefs.generated.json";
 import { buildWorldDeep } from "@/lib/deepContentBuilder";
 import { buildDeepForensicAnalysis } from "@/lib/deepAnalysis";
 import type {
@@ -1613,13 +1614,19 @@ export const WORLD_CASE_DEFS: WorldCaseDef[] = [
   },
 ];
 
-export const worldSeedCases: SeedCase[] = WORLD_CASE_DEFS.map(toSeed);
+/** Procedurally generated composite archive dossiers (bulk catalog). */
+export const BULK_CASE_DEFS = bulkCaseDefs as WorldCaseDef[];
+
+/** Curated + bulk world catalog entries. */
+export const ALL_WORLD_CASE_DEFS: WorldCaseDef[] = [...WORLD_CASE_DEFS, ...BULK_CASE_DEFS];
+
+export const worldSeedCases: SeedCase[] = ALL_WORLD_CASE_DEFS.map(toSeed);
 
 export const worldEnrichments: Record<string, CaseEnrichment> = Object.fromEntries(
-  WORLD_CASE_DEFS.map((d) => [d.slug, toEnrichment(d)]),
+  ALL_WORLD_CASE_DEFS.map((d) => [d.slug, toEnrichment(d)]),
 );
 
 /** Lat/lng lookup for map pins keyed by slug. */
 export const WORLD_CASE_COORDS: Record<string, { lat: number; lng: number }> = Object.fromEntries(
-  WORLD_CASE_DEFS.map((d) => [d.slug, { lat: d.lat, lng: d.lng }]),
+  ALL_WORLD_CASE_DEFS.map((d) => [d.slug, { lat: d.lat, lng: d.lng }]),
 );

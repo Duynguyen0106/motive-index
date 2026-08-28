@@ -54,7 +54,10 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  return getAllCases().map((c) => ({ id: c.slug }));
+  return getAllCases()
+    .filter((c) => c.featured)
+    .slice(0, 24)
+    .map((c) => ({ id: c.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
