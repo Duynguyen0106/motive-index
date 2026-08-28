@@ -28,6 +28,7 @@ import { invalidateArchiveStatsCache } from "@/lib/archiveStats";
 import { matchesCatalogTier } from "@/lib/caseSummaries";
 import { assertPublishableCase } from "@/lib/validation/caseProvenance";
 import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
+import { assertNoDirectPublish } from "@/lib/casePublishState";
 
 type Store = {
   cases: CrimeCase[];
@@ -290,12 +291,19 @@ export function searchDocuments(filters: SearchFilters): CaseDocument[] {
   });
 }
 
-export function upsertCase(next: CrimeCase): CrimeCase {
+export function upsertCase(
+  next: CrimeCase,
+  opts?: { bypassPublishGate?: boolean },
+): CrimeCase {
   if (isRetiredSlug(next.slug)) {
     throw new Error(`Cannot upsert retired slug: ${next.slug}`);
   }
   const store = getStore();
   const idx = store.cases.findIndex((c) => c.id === next.id || c.slug === next.slug);
+  const existing = idx >= 0 ? store.cases[idx] : undefined;
+  if (!opts?.bypassPublishGate) {
+    assertNoDirectPublish(existing, next);
+  }
   if (idx >= 0) store.cases[idx] = next;
   else store.cases = [next, ...store.cases];
   persist();
@@ -364,31 +372,34 @@ export function publishCase(slug: string, reviewerEmail: string): CrimeCase | un
   );
   if (!tags.includes("published")) tags.push("published");
 
-  return upsertCase({
-    ...existing,
-    tags,
-    narrative: existing.narrative
-      ? { ...existing.narrative, reviewNote: undefined, source: "human" as const }
-      : undefined,
-    analysis: {
-      ...existing.analysis,
-      status: "published",
-      reviewedByHuman: true,
-      updatedAt: new Date().toISOString(),
-      expertCommentary: [
-        ...(existing.analysis.expertCommentary ?? []),
-        {
-          id: `mod-${Date.now()}`,
-          author: reviewerEmail,
-          role: "editor",
-          title: "Moderation approval",
-          body: "Approved for educational publication after human review of public-source draft and narrative.",
-          reviewed: true,
-          publishedAt: new Date().toISOString(),
-        },
-      ],
+  return upsertCase(
+    {
+      ...existing,
+      tags,
+      narrative: existing.narrative
+        ? { ...existing.narrative, reviewNote: undefined, source: "human" as const }
+        : undefined,
+      analysis: {
+        ...existing.analysis,
+        status: "published",
+        reviewedByHuman: true,
+        updatedAt: new Date().toISOString(),
+        expertCommentary: [
+          ...(existing.analysis.expertCommentary ?? []),
+          {
+            id: `mod-${Date.now()}`,
+            author: reviewerEmail,
+            role: "editor",
+            title: "Moderation approval",
+            body: "Approved for educational publication after human review of public-source draft and narrative.",
+            reviewed: true,
+            publishedAt: new Date().toISOString(),
+          },
+        ],
+      },
     },
-  });
+    { bypassPublishGate: true },
+  );
 }
 
 export function rejectCase(

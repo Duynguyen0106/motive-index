@@ -64,8 +64,21 @@ Rules enforced:
 - World defs without overrides ship as `provenance-curated`, not `public-record`
 - Composite cases cannot be tagged `public-record`
 - `publishCase()` rejects cases failing provenance gates
+- `upsertCase()` blocks direct publication — only `publishCase()` (moderation approve) can set `analysis.status = published`
+- Ingest, analyze, and extract APIs require admin session or `CRON_SECRET` bearer token
 
-## Local development
+### Runtime write security
+
+| Route | Auth | Writes to store |
+|-------|------|-----------------|
+| `POST /api/ingest` | Admin or CRON_SECRET | Draft stub → moderation queue |
+| `POST /api/analyze` | Admin or CRON_SECRET | Analysis draft only |
+| `POST /api/extract` | Admin or CRON_SECRET | None (extraction only) |
+| `POST /api/admin/moderate` | Admin | Approve → `publishCase()` gate |
+| `POST /api/contribute` | Public | Contributions queue only |
+
+Draft/moderation dossiers are excluded from `sitemap.xml` and carry `noindex` robots metadata.
+
 
 - Data is seeded from `src/data/seed.ts` and catalog enrichments on first run.
 - Writes persist atomically to `.data/store.json`.

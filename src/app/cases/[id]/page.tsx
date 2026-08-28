@@ -38,6 +38,11 @@ import { getPrimaryCaseImage } from "@/lib/caseImages";
 import type { SearchFilters } from "@/lib/types";
 import { getPrimaryDirectReferences } from "@/lib/validation/referenceAccuracy";
 import { ReferenceQualityBadge } from "@/components/ReferenceQualityBadge";
+import {
+  isEncyclopedicImportCase,
+  isModerationDraftCase,
+  shouldIndexCase,
+} from "@/lib/casePublishState";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
   const key = decodeURIComponent(idOrSlug);
@@ -69,10 +74,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!c) return { title: "Case not found" };
   const url = `${getSiteUrl()}/cases/${c.slug}`;
   const primaryImage = getPrimaryCaseImage(c.slug);
+  const indexable = shouldIndexCase(c);
   return {
     title: c.name,
     description: c.subtitle,
     alternates: { canonical: url },
+    robots: indexable ? undefined : { index: false, follow: false },
     openGraph: {
       type: "article",
       title: c.name,
@@ -229,6 +236,29 @@ export default async function CasePage({ params, searchParams }: Props) {
         </div>
         <div className="mt-6 max-w-3xl space-y-3">
           <ContentWarning text={crimeCase.warning} level={crimeCase.contentLevel} />
+          {isModerationDraftCase(crimeCase) ? (
+            <div className="card border-[var(--maroon)]/30 bg-[color-mix(in_srgb,var(--maroon)_6%,var(--paper))] p-4">
+              <p className="text-xs font-semibold tracking-[0.12em] text-[var(--maroon)] uppercase">
+                Draft — not published
+              </p>
+              <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                This dossier is awaiting moderation and primary-source verification. Do not cite
+                behavioral claims until an editor approves publication.
+              </p>
+            </div>
+          ) : null}
+          {isEncyclopedicImportCase(crimeCase) ? (
+            <div className="card p-4">
+              <p className="text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
+                Wikipedia-sourced catalog entry
+              </p>
+              <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                Entity identity is linked to a Wikipedia article. Forensic analysis is algorithmic and
+                not human-reviewed — verify facts against court records and primary sources before
+                citation.
+              </p>
+            </div>
+          ) : null}
         </div>
         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
           <span>Analysis: {analysis.status}</span>

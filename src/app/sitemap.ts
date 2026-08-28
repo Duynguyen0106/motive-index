@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllCases, getTheories } from "@/lib/data";
+import { shouldIndexCase } from "@/lib/casePublishState";
 import { getSiteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -20,7 +21,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/contribute`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
   ];
 
-  const caseRoutes: MetadataRoute.Sitemap = getAllCases().map((c) => ({
+  const caseRoutes: MetadataRoute.Sitemap = getAllCases()
+    .filter(shouldIndexCase)
+    .map((c) => ({
     url: `${base}/cases/${c.slug}`,
     lastModified: now,
     changeFrequency: "monthly" as const,

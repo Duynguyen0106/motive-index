@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyzeFromSignals } from "@/lib/analyze";
+import { requirePrivilegedApiAccess } from "@/lib/apiAuth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
 import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import { applyNarrativeToCase, generateCaseNarrative } from "@/lib/narrativeGenerate";
@@ -24,6 +25,9 @@ function slugify(input: string): string {
 }
 
 export async function POST(req: Request) {
+  const auth = await requirePrivilegedApiAccess(req);
+  if (!auth.ok) return auth.response;
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -51,7 +55,7 @@ export async function POST(req: Request) {
     era: String(year),
     status: "closed",
     crimeCategories: ["other"],
-    tags: ["live-ingest", "draft"],
+    tags: ["live-ingest", "draft", "awaiting-moderation"],
     psychologicalFactors: [],
     theoreticalFrameworks: [],
     diagnoses: [],

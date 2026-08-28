@@ -46,6 +46,7 @@ export type WorldCaseDef = {
 };
 
 function buildAnalysis(d: WorldCaseDef, deep: ReturnType<typeof buildWorldDeep>) {
+  const isEncyclopedic = d.tags?.includes("wikidata-import") === true;
   return buildDeepForensicAnalysis({
     slug: d.slug,
     name: d.name,
@@ -66,7 +67,7 @@ function buildAnalysis(d: WorldCaseDef, deep: ReturnType<typeof buildWorldDeep>)
     motivationalFactors: deep.enrichmentPatch.motivationalFactors,
     psychologicalFactors: d.psychologicalFactors ?? ["antisocial_traits", "power_control"],
     theoreticalFrameworks: d.theoreticalFrameworks ?? ["personality", "situational"],
-    published: true,
+    published: !isEncyclopedic,
   });
 }
 
@@ -114,9 +115,11 @@ function toSeed(d: WorldCaseDef): SeedCase {
     ),
     warning: isComposite
       ? "Synthetic composite dossier for forensic-psychology instruction. Subject identifiers (CS-####) are not real people. Not legal or clinical advice."
-      : tier === "verified"
-        ? "Public-record behavioral analysis. Minimal graphic detail. Not legal or clinical advice."
-        : "Curated dossier pending full primary-source bibliography. Verify against court and press records before citation. Not legal or clinical advice.",
+      : d.tags?.includes("wikidata-import")
+        ? "Wikipedia-sourced catalog entry. Overview is encyclopedic; behavioral analysis is algorithmic and not human-reviewed. Verify all facts against court records and primary sources before citation. Not legal or clinical advice."
+        : tier === "verified"
+          ? "Public-record behavioral analysis. Minimal graphic detail. Not legal or clinical advice."
+          : "Curated dossier pending full primary-source bibliography. Verify against court and press records before citation. Not legal or clinical advice.",
     overview: deep.expandedOverview,
     featured: d.featured ?? false,
     timeline: deep.timeline,
