@@ -277,6 +277,8 @@ export interface CaseReference {
   year?: string;
   /** Why this source matters for forensic reading of the dossier. */
   note?: string;
+  /** When true, citation is a teaching template — not a verified primary source. */
+  synthetic?: boolean;
 }
 
 export type DossierChapterId =

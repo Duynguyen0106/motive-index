@@ -2,7 +2,7 @@ import type { CaseImage } from "@/lib/types";
 
 /** Auto-resolved Wikimedia Commons images (location/context/portrait fallbacks). */
 export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
-  "abdul-latif-rashid": [
+  "louay-al-taei": [
     {
       id: "img-abdul-latif-rashid",
       url: "https://upload.wikimedia.org/wikipedia/commons/d/d8/U.S._Army_Sgt._Brian_Holm_puts_handcuffs_on_a_prisoners_after_the_prisoner%27s_trial_at_the_courthouse_in_Baghdad%2C_Iraq%2C_Aug_060803-F-MM807-092.jpg",
@@ -145,7 +145,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: true,
     },
   ],
-  "andres-bustamante": [
+  "juan-severino-mallari": [
     {
       id: "img-andres-bustamante",
       url: "https://upload.wikimedia.org/wikipedia/commons/d/d9/Bantayan_legislative_building.jpg",
@@ -405,7 +405,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "gheorghe-solovan": [
+  "ion-rimaru": [
     {
       id: "img-gheorghe-solovan",
       url: "https://upload.wikimedia.org/wikipedia/commons/d/db/Bucharest_-_Palace_of_Justice_%28Justizpalast%29_-_no_filter_%2829340923631%29.jpg",
@@ -678,7 +678,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "mehmet-oktas": [
+  "medeni-oztas": [
     {
       id: "img-mehmet-oktas",
       url: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Turkish_Court_of_Cassation.jpg",
@@ -717,7 +717,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "mira-bare": [
+  "olga-heparnova": [
     {
       id: "img-mira-bare",
       url: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Interior_of_a_gun_safe_for_visitors_at_a_courthouse_in_Prague%2C_Czech_Republic.jpg",
@@ -769,7 +769,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "nguyen-thanh-vu": [
+  "le-thanh-van": [
     {
       id: "img-nguyen-thanh-vu",
       url: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Saigon_courthouse%2C_Ho_Chi_Minh_City_%285679606510%29.jpg",
@@ -1055,7 +1055,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "volkmar-heinrich": [
+  "julio-perez-silva": [
     {
       id: "img-volkmar-heinrich",
       url: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Edificio_de_Avenida_Espa%C3%B1a_503%2C_Santiago_20220626.jpg",
@@ -1081,7 +1081,7 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "werner-fischer": [
+  "werner-ferrari": [
     {
       id: "img-werner-fischer",
       url: "https://upload.wikimedia.org/wikipedia/commons/2/25/Regionalgericht_Bern-Mittelland_Zivilabteilung.jpeg",

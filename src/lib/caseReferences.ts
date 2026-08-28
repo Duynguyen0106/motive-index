@@ -91,48 +91,53 @@ function generatedReferences(ctx: ParsedCaseContext): CaseReference[] {
     {
       id: `ref-${ctx.slug}-court-primary`,
       citation: ctx.offenderUnknown
-        ? `${ctx.jurisdiction} — open-case investigative file summaries and coroner findings (${ctx.yearStart}–${endYear}).`
-        : `${ctx.jurisdiction} superior court proceedings: ${ctx.name} (${endYear}).`,
+        ? `[Template] ${ctx.jurisdiction} — open-case investigative summaries (${ctx.yearStart}–${endYear}). Verify in primary archives.`
+        : `[Template] ${ctx.jurisdiction} court record pointer for ${ctx.name} (${endYear}). Verify docket before citing.`,
       kind: "court",
       year: endYear,
+      synthetic: true,
       note: ctx.isUnsolved
-        ? "Primary unsolved-case file pointers; attribution may be contested."
-        : "Conviction, sentencing, and admitted evidence — anchor behavioral claims here.",
+        ? "Teaching placeholder — unsolved-case pointers; attribution may be contested."
+        : "Teaching placeholder — anchor behavioral claims to verified primary sources, not this template.",
     },
     {
       id: `ref-${ctx.slug}-press`,
-      citation: pressArchive(ctx),
+      citation: `[Template] ${pressArchive(ctx)}`,
       kind: "media",
       year: ctx.era,
-      note: "Contemporaneous reporting; cross-check sensational claims against court record.",
+      synthetic: true,
+      note: "Teaching placeholder for contemporaneous reporting; cross-check sensational claims against court record.",
     },
   ];
 
   if (ctx.isSerial || ctx.isMass) {
     refs.push({
       id: `ref-${ctx.slug}-inquiry`,
-      citation: `Official inquiry, commission report, or parliamentary review related to ${ctx.name} (${ctx.jurisdiction}).`,
+      citation: `[Template] Official inquiry or commission report related to ${ctx.name} (${ctx.jurisdiction}).`,
       kind: "report",
       year: endYear,
-      note: "Institutional failure analysis and victim-impact documentation where commissioned.",
+      synthetic: true,
+      note: "Teaching placeholder — institutional failure analysis where a commission exists.",
     });
   }
 
   if (ctx.isHistorical) {
     refs.push({
       id: `ref-${ctx.slug}-archive`,
-      citation: `National archives and digitized newspaper collections — ${ctx.location}, ${ctx.era}.`,
+      citation: `[Template] National archives and digitized newspaper collections — ${ctx.location}, ${ctx.era}.`,
       kind: "report",
       year: String(ctx.yearStart),
-      note: "Historical cases require archival verification; victim counts may be disputed.",
+      synthetic: true,
+      note: "Teaching placeholder — historical cases require archival verification; victim counts may be disputed.",
     });
   }
 
   refs.push({
     id: `ref-${ctx.slug}-academic-case`,
-    citation: `Peer-reviewed case study literature: ${ctx.categoryLabel.toLowerCase()} in ${ctx.jurisdiction} (${ctx.era}).`,
+    citation: `[Template] Peer-reviewed case study literature: ${ctx.categoryLabel.toLowerCase()} in ${ctx.jurisdiction} (${ctx.era}).`,
     kind: "journal",
-    note: "Search criminology and forensic psychology databases for indexed case analyses.",
+    synthetic: true,
+    note: "Teaching placeholder — search criminology and forensic psychology databases for indexed analyses.",
   });
 
   refs.push(...academicRefs(ctx));

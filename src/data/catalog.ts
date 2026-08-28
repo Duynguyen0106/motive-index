@@ -319,15 +319,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: [],
     documentIds: ["doc-wuornos-trial-coverage"],
-    references: CASE_REFERENCE_OVERRIDES["aileen-wuornos"] ?? [
-      {
-        id: "ref-aw-1",
-        citation: "Florida v. Aileen Wuornos (1992) — murder trials and execution.",
-        kind: "court",
-        year: "2002",
-        note: "Female serial offender; trauma narrative vs legal culpability debates.",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["aileen-wuornos"] ?? [],
     contentLevel: "standard",
   },
   "zodiac-killer": {

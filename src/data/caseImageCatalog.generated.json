@@ -459,16 +459,6 @@
     "artist": "W. Bulach",
     "license": "CC BY-SA 4.0"
   },
-  "mira-bare": {
-    "slug": "mira-bare",
-    "query": "Prague Czech Republic courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Interior of a gun safe for visitors at a courthouse in Prague, Czech Republic.jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Interior_of_a_gun_safe_for_visitors_at_a_courthouse_in_Prague%2C_Czech_Republic.jpg",
-    "artist": "Cimmerian praetor",
-    "license": "CC BY-SA 4.0"
-  },
   "mona-fandey": {
     "slug": "mona-fandey",
     "query": "Kuala Lumpur city",
@@ -519,16 +509,6 @@
     "artist": "Hossam el-Hamalawy",
     "license": "CC BY-SA 2.0"
   },
-  "volkmar-heinrich": {
-    "slug": "volkmar-heinrich",
-    "query": "Santiago Chile courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Edificio de Avenida España 503, Santiago 20220626.jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Edificio_de_Avenida_Espa%C3%B1a_503%2C_Santiago_20220626.jpg",
-    "artist": "Carlos Figueroa Rojas",
-    "license": "CC BY-SA 4.0"
-  },
   "abimael-guzman": {
     "slug": "abimael-guzman",
     "query": "Lima Peru courthouse",
@@ -548,56 +528,6 @@
     "url": "https://upload.wikimedia.org/wikipedia/commons/1/1c/District_Court_building_in_Wroc%C5%82aw%2C_20240811.jpg",
     "artist": "Abzeronow",
     "license": "CC BY 4.0"
-  },
-  "werner-fischer": {
-    "slug": "werner-fischer",
-    "query": "Bern Switzerland courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Regionalgericht Bern-Mittelland Zivilabteilung.jpeg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/Regionalgericht_Bern-Mittelland_Zivilabteilung.jpeg",
-    "artist": "Albinfo",
-    "license": "CC BY-SA 4.0"
-  },
-  "nguyen-thanh-vu": {
-    "slug": "nguyen-thanh-vu",
-    "query": "Ho Chi Minh City courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Saigon courthouse, Ho Chi Minh City (5679606510).jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Saigon_courthouse%2C_Ho_Chi_Minh_City_%285679606510%29.jpg",
-    "artist": "Andrea Schaffer from Sydney, Australia",
-    "license": "CC BY 2.0"
-  },
-  "andres-bustamante": {
-    "slug": "andres-bustamante",
-    "query": "Cebu Philippines courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Bantayan legislative building.jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Bantayan_legislative_building.jpg",
-    "artist": "John Martin PERRY",
-    "license": "CC BY-SA 3.0"
-  },
-  "gheorghe-solovan": {
-    "slug": "gheorghe-solovan",
-    "query": "Bucharest Romania courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Bucharest - Palace of Justice (Justizpalast) - no filter (29340923631).jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Bucharest_-_Palace_of_Justice_%28Justizpalast%29_-_no_filter_%2829340923631%29.jpg",
-    "artist": "Ștefan Jurcă from Munich, Germany",
-    "license": "CC BY 2.0"
-  },
-  "mehmet-oktas": {
-    "slug": "mehmet-oktas",
-    "query": "Ankara Turkey courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "Turkish Court of Cassation.jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Turkish_Court_of_Cassation.jpg",
-    "artist": "Yıldız Yazıcıoğlu",
-    "license": "Public domain"
   },
   "dimitris-papageorgiou": {
     "slug": "dimitris-papageorgiou",
@@ -789,16 +719,6 @@
     "artist": "Hay Kranen",
     "license": "CC BY 4.0"
   },
-  "abdul-latif-rashid": {
-    "slug": "abdul-latif-rashid",
-    "query": "Baghdad Iraq courthouse",
-    "kind": "location",
-    "sensitive": false,
-    "title": "U.S. Army Sgt. Brian Holm puts handcuffs on a prisoners after the prisoner's trial at the courthouse in Baghdad, Iraq, Aug 060803-F-MM807-092.jpg",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/U.S._Army_Sgt._Brian_Holm_puts_handcuffs_on_a_prisoners_after_the_prisoner%27s_trial_at_the_courthouse_in_Baghdad%2C_Iraq%2C_Aug_060803-F-MM807-092.jpg",
-    "artist": "SENIOR AIRMAN RICHARD ROSE",
-    "license": "Public domain"
-  },
   "kang-ho-sun": {
     "slug": "kang-ho-sun",
     "query": "Seoul South Korea courthouse",
@@ -918,5 +838,85 @@
     "url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Lotte_Center_Hanoi_2.jpg",
     "artist": "Jspeed1310 at Vietnamese Wikipedia",
     "license": "CC BY-SA 3.0"
+  },
+  "louay-al-taei": {
+    "slug": "louay-al-taei",
+    "query": "Baghdad Iraq courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "U.S. Army Sgt. Brian Holm puts handcuffs on a prisoners after the prisoner's trial at the courthouse in Baghdad, Iraq, Aug 060803-F-MM807-092.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/U.S._Army_Sgt._Brian_Holm_puts_handcuffs_on_a_prisoners_after_the_prisoner%27s_trial_at_the_courthouse_in_Baghdad%2C_Iraq%2C_Aug_060803-F-MM807-092.jpg",
+    "artist": "SENIOR AIRMAN RICHARD ROSE",
+    "license": "Public domain"
+  },
+  "olga-heparnova": {
+    "slug": "olga-heparnova",
+    "query": "Prague Czech Republic courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Interior of a gun safe for visitors at a courthouse in Prague, Czech Republic.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Interior_of_a_gun_safe_for_visitors_at_a_courthouse_in_Prague%2C_Czech_Republic.jpg",
+    "artist": "Cimmerian praetor",
+    "license": "CC BY-SA 4.0"
+  },
+  "julio-perez-silva": {
+    "slug": "julio-perez-silva",
+    "query": "Santiago Chile courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Edificio de Avenida España 503, Santiago 20220626.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Edificio_de_Avenida_Espa%C3%B1a_503%2C_Santiago_20220626.jpg",
+    "artist": "Carlos Figueroa Rojas",
+    "license": "CC BY-SA 4.0"
+  },
+  "werner-ferrari": {
+    "slug": "werner-ferrari",
+    "query": "Bern Switzerland courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Regionalgericht Bern-Mittelland Zivilabteilung.jpeg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/Regionalgericht_Bern-Mittelland_Zivilabteilung.jpeg",
+    "artist": "Albinfo",
+    "license": "CC BY-SA 4.0"
+  },
+  "le-thanh-van": {
+    "slug": "le-thanh-van",
+    "query": "Ho Chi Minh City courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Saigon courthouse, Ho Chi Minh City (5679606510).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Saigon_courthouse%2C_Ho_Chi_Minh_City_%285679606510%29.jpg",
+    "artist": "Andrea Schaffer from Sydney, Australia",
+    "license": "CC BY 2.0"
+  },
+  "juan-severino-mallari": {
+    "slug": "juan-severino-mallari",
+    "query": "Cebu Philippines courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Bantayan legislative building.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Bantayan_legislative_building.jpg",
+    "artist": "John Martin PERRY",
+    "license": "CC BY-SA 3.0"
+  },
+  "ion-rimaru": {
+    "slug": "ion-rimaru",
+    "query": "Bucharest Romania courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Bucharest - Palace of Justice (Justizpalast) - no filter (29340923631).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Bucharest_-_Palace_of_Justice_%28Justizpalast%29_-_no_filter_%2829340923631%29.jpg",
+    "artist": "Ștefan Jurcă from Munich, Germany",
+    "license": "CC BY 2.0"
+  },
+  "medeni-oztas": {
+    "slug": "medeni-oztas",
+    "query": "Ankara Turkey courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Turkish Court of Cassation.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Turkish_Court_of_Cassation.jpg",
+    "artist": "Yıldız Yazıcıoğlu",
+    "license": "Public domain"
   }
 }

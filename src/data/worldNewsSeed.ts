@@ -274,7 +274,7 @@ export const WORLD_NEWS_SEED: WorldNewsItem[] = [
     language: "ar",
     languageLabel: "Arabic",
     originalHeadline: "قضية التسميم في بغداد",
-    caseSlug: "abdul-latif-rashid",
+    caseSlug: "louay-al-taei",
   },
   {
     id: "wn-seed-17",

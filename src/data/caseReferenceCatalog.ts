@@ -425,4 +425,133 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       note: "Investigative chronology and victim marginalization themes.",
     },
   ],
+  "aileen-wuornos": [
+    {
+      id: "ref-wuornos-trial",
+      citation: "Florida v. Aileen Wuornos (1992–2002) — Marion County murder trials.",
+      kind: "court",
+      year: "2002",
+      note: "Seven murder convictions; trauma narrative vs legal culpability debates.",
+    },
+    {
+      id: "ref-wuornos-rule",
+      citation: "Rule, A. Dear Dawn: Aileen Wuornos in Her Own Words. W. W. Norton.",
+      kind: "book",
+      year: "2013",
+      note: "Letter archive; compare self-report to trial and investigative record.",
+    },
+    {
+      id: "ref-wuornos-doc",
+      citation: "Nick Broomfield documentaries Aileen Wuornos: The Selling of a Serial Killer (1992) and Aileen: Life and Death of a Serial Killer (2003).",
+      kind: "media",
+      note: "Interview-based; media ethics and impression-management lens.",
+    },
+  ],
+  "louay-al-taei": [
+    {
+      id: "ref-altaei-guardian",
+      citation: "Howard, M. (17 Apr 2006). I made a mixture of drugs and injected them. The Guardian.",
+      kind: "media",
+      url: "https://www.theguardian.com/world/2006/apr/17/iraq.topstories3",
+      note: "Kirkuk hospital killings; 43 victims Oct 2005–Mar 2006.",
+    },
+    {
+      id: "ref-altaei-independent",
+      citation: "The Independent (23 Mar 2006). Insurgent doctor killed dozens of wounded soldiers.",
+      kind: "media",
+      url: "https://www.independent.co.uk/news/world/middle-east/insurgent-doctor-killed-dozens-of-wounded-soldiers-6105814.html",
+    },
+  ],
+  "krzysztof-gawlik": [
+    {
+      id: "ref-gawlik-rmf",
+      citation: "RMF24 — Dożywocie dla pięciokrotnego mordercy Krzysztofa Gawlika ('Skorpion'), 2002.",
+      kind: "media",
+      note: "Five murders Feb–Mar 2001; life sentence Wrocław regional court.",
+    },
+  ],
+  "werner-ferrari": [
+    {
+      id: "ref-ferrari-wiki",
+      citation: "Swiss Federal criminal proceedings — Werner Ferrari life sentence (1995).",
+      kind: "court",
+      year: "1995",
+      note: "Five child murders 1971–1989 across Swiss cantons.",
+    },
+  ],
+  "le-thanh-van": [
+    {
+      id: "ref-van-bbc",
+      citation: "BBC News (25 Aug 2004). Vietnamese serial killer on trial — Le Thanh Van, Binh Duong.",
+      kind: "media",
+      url: "http://news.bbc.co.uk/2/hi/asia-pacific/3597358.stm",
+      note: "13 cyanide victims 1998–2001; executed 2005.",
+    },
+  ],
+  "olga-heparnova": [
+    {
+      id: "ref-heparnova-court",
+      citation: "City Court of Prague (6 Apr 1974) — Olga Hepnarová public endangerment/murder conviction.",
+      kind: "court",
+      year: "1974",
+      note: "8 killed, 12 injured in 10 July 1973 truck attack; executed 1975.",
+    },
+  ],
+  "julio-perez-silva": [
+    {
+      id: "ref-perez-silva-lt",
+      citation: "La Tercera — Psicópata de Alto Hospicio case coverage (2001–2004).",
+      kind: "media",
+      note: "14 victims; life sentence 2004.",
+    },
+  ],
+  "juan-severino-mallari": [
+    {
+      id: "ref-mallari-wiki",
+      citation: "Spanish colonial judicial records — Juan Severino Mallari execution (1840, Manila).",
+      kind: "court",
+      year: "1840",
+      note: "Magalang parish priest; confessed 57 killings — count debated by historians.",
+    },
+  ],
+  "ion-rimaru": [
+    {
+      id: "ref-rimaru-execution",
+      citation: "Romanian People's Republic — Ion Rîmaru execution (23 Oct 1971, Jilava).",
+      kind: "court",
+      year: "1971",
+      note: "Four confirmed murders; Bucharest 1970–71 axe series.",
+    },
+  ],
+  "medeni-oztas": [
+    {
+      id: "ref-oztas-hurriyet",
+      citation: "Hürriyet (2026) — Ankara 2015 serial bludgeoning series linked to Medeni Öztaş.",
+      kind: "media",
+      note: "3 murders, 6 attempted; pattern linked while imprisoned for Antalya homicide.",
+    },
+  ],
+  "sture-bergwall": [
+    {
+      id: "ref-bergwall-book",
+      citation: "Grünewald, S. The Thomas Quick Case: A Study in False Confessions. (Swedish inquiry literature).",
+      kind: "book",
+      note: "False-confessor case — murder attributions vacated; do not cite as convictions.",
+    },
+    {
+      id: "ref-bergwall-doc",
+      citation: "Hannes Holm documentary The Confessions of Thomas Quick (2016).",
+      kind: "media",
+      note: "Institutional confirmation bias and suggestive interviewing.",
+    },
+  ],
+  "david-bain": [
+    {
+      id: "ref-bain-retrial",
+      citation: "R v David Bain (2009 retrial) — Christchurch High Court acquittal.",
+      kind: "court",
+      year: "2009",
+      note: "1994 family murders; contested attribution — convicted 1995, acquitted on retrial.",
+    },
+  ],
 };

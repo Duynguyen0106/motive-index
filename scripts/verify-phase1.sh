@@ -237,6 +237,15 @@ else
 fi
 
 echo
+echo "-- Source validation --"
+if npx tsx scripts/validate-sources.mjs >/tmp/mi_sources.txt 2>&1; then
+  check "Source validation clean" 1
+else
+  check "Source validation clean" 0
+  tail -20 /tmp/mi_sources.txt
+fi
+
+echo
 echo "=== Results: $PASS passed, $FAIL failed ==="
 if (( FAIL > 0 )); then
   echo "Failures:"
