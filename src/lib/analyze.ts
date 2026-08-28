@@ -220,7 +220,7 @@ export async function analyzeWithOptionalLLM(input: {
     const parsed = forensicAnalysisSchema.safeParse({
       ...raw,
       status: "draft",
-      modelVersion: ANALYSIS_MODEL_VERSION,
+      modelVersion: `${ANALYSIS_MODEL_VERSION}-llm`,
       reviewedByHuman: false,
       updatedAt: new Date().toISOString(),
     });

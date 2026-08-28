@@ -114,7 +114,7 @@ export function heuristicNarrativeFromSources(input: NarrativeGenerateInput): Ca
       stub(
         "aftermath",
         "Outcomes and open questions",
-        `Sentencing, appeals, and long-term case significance remain to be filled from verified legal outcomes. This draft stays unpublished until moderation approves sources.`,
+        `Sentencing, appeals, and long-term case significance remain to be filled from verified legal outcomes. This draft stays unpublished until integrity gates pass.`,
       ),
     ],
   };
