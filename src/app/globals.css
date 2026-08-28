@@ -1075,6 +1075,12 @@ a.monitor-news-headline:hover {
   animation: none;
 }
 
+.monitor-live-dot.is-stale {
+  background: var(--map-pin-unsolved);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--map-pin-unsolved) 45%, transparent);
+  animation: none;
+}
+
 @keyframes monitor-pulse {
   0%,
   100% {
@@ -1378,6 +1384,11 @@ a.monitor-news-headline:hover {
   background: var(--accent-soft);
 }
 
+.monitor-map-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .monitor-map-select {
   font-size: 0.75rem;
   max-width: 11rem;
@@ -1447,11 +1458,59 @@ a.monitor-news-headline:hover {
   background: var(--accent-soft);
 }
 
+.monitor-case-row.is-map-hidden {
+  opacity: 0.55;
+}
+
+.monitor-cases-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.monitor-pill-hidden {
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
 .monitor-compare-btn {
   position: absolute;
   bottom: 5.5rem;
   left: 1rem;
   z-index: 460;
+}
+
+.monitor-compare-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--map-pin-unsolved) 12%, var(--paper));
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.monitor-compare-banner-cancel {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.monitor-compare-banner-cancel:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .monitor-case-card-img {
@@ -1509,6 +1568,15 @@ a.monitor-news-headline:hover {
 
 .monitor-legend-news {
   font-size: 0.75rem;
+}
+
+.monitor-legend-ghost {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  font-size: 0.5rem;
+  line-height: 0.65rem;
+  vertical-align: middle;
 }
 
 .monitor-ghost-marker {

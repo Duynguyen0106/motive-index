@@ -1,4 +1,6 @@
 import type { MonitorCasePin } from "@/lib/geo";
+import { COUNTRY_LABELS } from "@/lib/country";
+import type { CountryMonitorStat } from "@/lib/monitor";
 import type {
   ChoroplethMetric,
   MapContentLayer,
@@ -8,6 +10,7 @@ import type {
 } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
 import { defaultTimelineRange } from "@/lib/monitorMapUtils";
+import { CRIME_CATEGORY_LABELS, type CountryCode } from "@/lib/types";
 
 export function pinPassesProvenance(
   pin: MonitorCasePin,
@@ -56,6 +59,44 @@ export function filterVisiblePins(
       pinPassesProvenance(p, view.provenanceFilter) &&
       pinInTimeline(p, view.timelineMinYear, view.timelineMaxYear) &&
       pinInBbox(p, view.bboxFilter),
+  );
+}
+
+/** Country stats derived from visible map pins (timeline / provenance / bbox aware). */
+export function buildCountryStatsFromPins(pins: MonitorCasePin[]): CountryMonitorStat[] {
+  const byCountry = new Map<CountryCode, CountryMonitorStat>();
+
+  for (const pin of pins) {
+    const existing = byCountry.get(pin.country) ?? {
+      code: pin.country,
+      label: COUNTRY_LABELS[pin.country],
+      caseCount: 0,
+      unsolvedCount: 0,
+      categories: [],
+    };
+    existing.caseCount += 1;
+    if (pin.status === "unsolved") existing.unsolvedCount += 1;
+    for (const cat of pin.crimeCategories) {
+      const label = CRIME_CATEGORY_LABELS[cat];
+      if (!existing.categories.includes(label)) existing.categories.push(label);
+    }
+    byCountry.set(pin.country, existing);
+  }
+
+  return [...byCountry.values()].sort((a, b) => b.caseCount - a.caseCount);
+}
+
+export function mapFiltersAffectPins(
+  view: Pick<
+    MonitorMapViewState,
+    "provenanceFilter" | "timelineMinYear" | "timelineMaxYear" | "bboxFilter"
+  >,
+): boolean {
+  return (
+    view.provenanceFilter !== "hide-composite" ||
+    view.timelineMinYear !== TIMELINE_YEAR_MIN ||
+    view.timelineMaxYear !== TIMELINE_YEAR_MAX ||
+    view.bboxFilter !== null
   );
 }
 

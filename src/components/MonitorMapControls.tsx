@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type {
   ChoroplethMetric,
   MapContentLayer,
@@ -20,7 +21,8 @@ type Props = {
   newsCount: number;
   isFullscreen: boolean;
   isDrawingBbox: boolean;
-  compareSlug?: string;
+  compareMode?: boolean;
+  compareCaseName?: string;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
   onExplore: () => void;
@@ -44,7 +46,8 @@ export function MonitorMapControls({
   newsCount,
   isFullscreen,
   isDrawingBbox,
-  compareSlug,
+  compareMode,
+  compareCaseName,
   collapsed = false,
   onToggleCollapsed,
   onExplore,
@@ -61,6 +64,15 @@ export function MonitorMapControls({
 }: Props) {
   const decades = decadeMarkers(view.timelineMinYear, view.timelineMaxYear);
   const filtered = visibleCount !== caseCount;
+  const [coarsePointer, setCoarsePointer] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const update = () => setCoarsePointer(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   return (
     <div className={`monitor-map-controls ${collapsed ? "is-collapsed" : ""}`}>
@@ -265,6 +277,8 @@ export function MonitorMapControls({
               type="button"
               className={`monitor-map-toggle ${isDrawingBbox ? "is-active" : ""}`}
               onClick={onDrawBbox}
+              disabled={coarsePointer}
+              title={coarsePointer ? "Area filter requires a mouse — use region presets on touch devices" : undefined}
             >
               {isDrawingBbox ? "Drawing…" : "Draw area filter"}
             </button>
@@ -278,9 +292,13 @@ export function MonitorMapControls({
             </button>
           </div>
 
-          {compareSlug ? (
+          {compareMode ? (
             <p className="monitor-compare-hint text-xs text-[var(--muted)]">
-              Compare mode: second selection is <strong>{compareSlug}</strong>
+              Compare mode: click a second case on the map or list.
+            </p>
+          ) : compareCaseName ? (
+            <p className="monitor-compare-hint text-xs text-[var(--muted)]">
+              Comparing with <strong>{compareCaseName}</strong>
             </p>
           ) : null}
 

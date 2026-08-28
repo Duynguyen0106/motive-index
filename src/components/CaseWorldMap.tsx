@@ -45,6 +45,7 @@ type Props = {
   pinIndex?: Record<string, { lat: number; lng: number; slug: string }>;
   selectedCountry?: CountryCode | "";
   selectedCaseId?: string;
+  compareCaseId?: string;
   hoveredCaseId?: string;
   view: MonitorMapViewState;
   onSelectCountry?: (code: CountryCode | "") => void;
@@ -54,6 +55,7 @@ type Props = {
   onBboxChange?: (bbox: MonitorMapViewState["bboxFilter"]) => void;
   regionFlyRequest?: RegionPreset | null;
   isDrawingBbox?: boolean;
+  isFullscreen?: boolean;
   cardRef?: RefObject<HTMLDivElement | null>;
 };
 
@@ -108,6 +110,7 @@ export function CaseWorldMap({
   pinIndex = {},
   selectedCountry = "",
   selectedCaseId = "",
+  compareCaseId = "",
   hoveredCaseId = "",
   view,
   onSelectCountry,
@@ -115,6 +118,7 @@ export function CaseWorldMap({
   onHoverCase,
   regionFlyRequest,
   isDrawingBbox = false,
+  isFullscreen = false,
   onBboxChange,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,6 +128,7 @@ export function CaseWorldMap({
   const ghostLayerRef = useRef<LayerGroup | null>(null);
   const heatLayerRef = useRef<Layer | null>(null);
   const arcsLayerRef = useRef<LayerGroup | null>(null);
+  const bboxLayerRef = useRef<Layer | null>(null);
   const highlightRef = useRef<Layer | null>(null);
   const geoJsonRef = useRef<GeoJSONType | null>(null);
   const drawStartRef = useRef<{ lat: number; lng: number } | null>(null);
@@ -287,6 +292,7 @@ export function CaseWorldMap({
       ghostLayerRef.current = null;
       heatLayerRef.current = null;
       arcsLayerRef.current = null;
+      bboxLayerRef.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
       geoJsonRef.current = null;
@@ -408,33 +414,110 @@ export function CaseWorldMap({
     })();
   }, [ghostPins, ready, view.showGhostPins]);
 
-  // Related arcs
+  // Related arcs + compare arc
   useEffect(() => {
     if (!ready || !arcsLayerRef.current) return;
     void (async () => {
       const L = await getLeaflet();
       const layer = arcsLayerRef.current!;
       layer.clearLayers();
-      if (!view.showRelatedArcs || !selectedCaseId) return;
       const origin = filteredPins.find((p) => p.id === selectedCaseId);
       if (!origin) return;
+
+      const compareTarget = compareCaseId
+        ? filteredPins.find((p) => p.id === compareCaseId)
+        : undefined;
+      if (compareTarget) {
+        const compareArc = L.polyline(
+          [
+            [origin.lat, origin.lng],
+            [compareTarget.lat, compareTarget.lng],
+          ],
+          {
+            color: "var(--map-pin-unsolved)",
+            weight: 2.5,
+            opacity: 0.75,
+            dashArray: "4 6",
+          },
+        );
+        layer.addLayer(compareArc);
+        return;
+      }
+
+      if (!view.showRelatedArcs) return;
       for (const slug of origin.relatedCaseSlugs) {
         const target = pinIndex[slug] ?? filteredPins.find((p) => p.slug === slug);
         if (!target) continue;
-        const latlngs: [number, number][] = [
-          [origin.lat, origin.lng],
-          [target.lat, target.lng],
-        ];
-        const arc = L.polyline(latlngs, {
-          color: "var(--accent)",
-          weight: 1.5,
-          opacity: 0.55,
-          dashArray: "6 8",
-        });
+        const arc = L.polyline(
+          [
+            [origin.lat, origin.lng],
+            [target.lat, target.lng],
+          ],
+          {
+            color: "var(--accent)",
+            weight: 1.5,
+            opacity: 0.55,
+            dashArray: "6 8",
+          },
+        );
         layer.addLayer(arc);
       }
     })();
-  }, [filteredPins, pinIndex, ready, selectedCaseId, view.showRelatedArcs]);
+  }, [filteredPins, pinIndex, ready, selectedCaseId, compareCaseId, view.showRelatedArcs]);
+
+  // Fly to both pins when comparing
+  useEffect(() => {
+    if (!ready || !mapRef.current || !selectedCaseId || !compareCaseId) return;
+    const pinA = filteredPins.find((p) => p.id === selectedCaseId);
+    const pinB = filteredPins.find((p) => p.id === compareCaseId);
+    if (!pinA || !pinB) return;
+    void getLeaflet().then((L) => {
+      if (!mapRef.current) return;
+      const bounds = L.latLngBounds([
+        [pinA.lat, pinA.lng],
+        [pinB.lat, pinB.lng],
+      ]);
+      mapRef.current.flyToBounds(bounds, { padding: [48, 48], duration: 0.9, maxZoom: 6 });
+    });
+  }, [compareCaseId, filteredPins, ready, selectedCaseId]);
+
+  // Persistent bbox overlay
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+    void (async () => {
+      const L = await getLeaflet();
+      const map = mapRef.current!;
+      if (bboxLayerRef.current) {
+        map.removeLayer(bboxLayerRef.current);
+        bboxLayerRef.current = null;
+      }
+      if (!view.bboxFilter) return;
+      const [[south, west], [north, east]] = view.bboxFilter;
+      const rect = L.rectangle(
+        [
+          [south, west],
+          [north, east],
+        ],
+        {
+          color: "var(--accent)",
+          weight: 1.5,
+          dashArray: "6 4",
+          fillColor: "var(--accent)",
+          fillOpacity: 0.06,
+        },
+      );
+      rect.addTo(map);
+      bboxLayerRef.current = rect;
+    })();
+  }, [ready, view.bboxFilter]);
+
+  // Recalculate map size on fullscreen toggle
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+    requestAnimationFrame(() => {
+      mapRef.current?.invalidateSize();
+    });
+  }, [isFullscreen, ready]);
 
   // Choropleth + country highlight
   useEffect(() => {
@@ -626,6 +709,14 @@ export function CaseWorldMap({
         <span className="monitor-legend-item">
           <span className="monitor-news-marker monitor-legend-news">◆</span> News
         </span>
+        {view.showGhostPins ? (
+          <span className="monitor-legend-item">
+            <span className="monitor-ghost-marker monitor-legend-ghost">?</span> Estimated pin
+          </span>
+        ) : null}
+        {compareCaseId ? (
+          <span className="monitor-legend-item">Compare arc</span>
+        ) : null}
         {view.choroplethEnabled ? (
           <span className="monitor-legend-item">Choropleth: {view.choroplethMetric}</span>
         ) : null}
