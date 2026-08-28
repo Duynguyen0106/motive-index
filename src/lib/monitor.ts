@@ -11,6 +11,7 @@ import type { CountryCode, LiveUpdate, MonitorCaseSummary, SearchFilters } from 
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 import type { CrimeCase } from "@/lib/types";
 import { buildWorldNewsPayload, type WorldNewsPayload } from "@/lib/worldNewsService";
+import { buildMonitorSignals, type MonitorSignalsPayload } from "@/lib/monitorSignals";
 
 export type CountryMonitorStat = {
   code: CountryCode;
@@ -45,6 +46,7 @@ export type MonitorPayload = {
   newsPins: MonitorNewsPin[];
   ghostPins: MonitorGhostPin[];
   pinIndex: Record<string, { lat: number; lng: number; slug: string }>;
+  signals: MonitorSignalsPayload;
 };
 
 function buildCountryStats(cases: CrimeCase[], allCases: CrimeCase[]): CountryMonitorStat[] {
@@ -77,7 +79,7 @@ function buildCountryStats(cases: CrimeCase[], allCases: CrimeCase[]): CountryMo
 
 export async function buildMonitorPayload(
   params: Record<string, string | string[] | undefined>,
-  updateLimit = 12,
+  updateLimit = 24,
 ): Promise<MonitorPayload> {
   const filters = parseSearchParams(params);
   const all = await getAllCasesAsync();
@@ -124,6 +126,9 @@ export async function buildMonitorPayload(
     pinIndex[p.slug] = { lat: p.lat, lng: p.lng, slug: p.slug };
   }
 
+  const updates = await getUpdatesAsync(updateLimit);
+  const countryStats = buildCountryStats(cases, all);
+
   return {
     generatedAt: new Date().toISOString(),
     filters,
@@ -132,14 +137,20 @@ export async function buildMonitorPayload(
     plottedCount: rawPins.length,
     unplottedCases,
     countryOptions: listCountryOptions(all),
-    countryStats: buildCountryStats(cases, all),
+    countryStats,
     pins: spreadPins(rawPins),
     cases: cases.map(toMonitorCaseSummary),
-    updates: await getUpdatesAsync(updateLimit),
+    updates,
     worldNews,
     newsPins,
     ghostPins,
     pinIndex,
+    signals: buildMonitorSignals({
+      updates,
+      cases,
+      countryStats,
+      filters,
+    }),
     featuredCase: (() => {
       const featured =
         all.find((c) => c.caseOfWeek) ??

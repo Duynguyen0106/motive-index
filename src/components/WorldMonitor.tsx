@@ -16,6 +16,7 @@ import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { MonitorCountryPicker } from "@/components/MonitorCountryPicker";
 import { MonitorComparePanel } from "@/components/MonitorComparePanel";
 import { MonitorMapControls } from "@/components/MonitorMapControls";
+import { MonitorSignalsPanel } from "@/components/MonitorSignalsPanel";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
@@ -37,7 +38,6 @@ import {
   CRIME_CATEGORY_LABELS,
   type CountryCode,
   type CrimeCategory,
-  type LiveUpdate,
   type SearchFilters,
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -1151,38 +1151,22 @@ export function WorldMonitor({ initial }: Props) {
               aria-labelledby="monitor-tab-signals"
               className="monitor-panel monitor-panel-scroll"
             >
-              <h2 className="display text-base">Live signals</h2>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                Refreshes every 30 seconds ·{" "}
-                <Link href="/live" className="text-[var(--accent)] hover:underline">
-                  Full feed
-                </Link>
-              </p>
-              <ul className="monitor-feed mt-4">
-                {data.updates.map((u: LiveUpdate) => (
-                  <li key={u.id} className="monitor-feed-item">
-                    <time className="monitor-feed-time">{formatDate(u.createdAt)}</time>
-                    <span className="monitor-feed-kind">{u.kind.replaceAll("_", " ")}</span>
-                    {u.caseSlug ? (
-                      <Link
-                        href={`/?case=${u.caseSlug}`}
-                        className="monitor-feed-link"
-                        onClick={() => {
-                          const id = caseIdFromSlug(data.cases, u.caseSlug!);
-                          if (id) selectCase(id, { switchTab: true, syncUrl: false });
-                        }}
-                      >
-                        {u.headline}
-                      </Link>
-                    ) : (
-                      <p className="text-sm text-[var(--ink-soft)]">{u.headline}</p>
-                    )}
-                  </li>
-                ))}
-                {!data.updates.length ? (
-                  <li className="text-sm text-[var(--muted)]">No recent updates.</li>
-                ) : null}
-              </ul>
+              <MonitorSignalsPanel
+                updates={data.updates}
+                stats={data.signals.stats}
+                alerts={data.signals.alerts}
+                behaviorHighlights={data.signals.behaviorHighlights}
+                onSelectCase={(slug) => {
+                  const id = caseIdFromSlug(data.cases, slug);
+                  if (id) selectCase(id, { switchTab: true, syncUrl: true });
+                  else window.open(`/cases/${slug}`, "_blank");
+                }}
+                onSelectCountry={(code) => {
+                  if (!code) return;
+                  applyFilters({ country: code });
+                  setSidebarTab("overview");
+                }}
+              />
             </section>
           ) : null}
         </aside>
@@ -1202,6 +1186,9 @@ export function WorldMonitor({ initial }: Props) {
               <span>{sidebarTabShortLabels[id]}</span>
               {id === "cases" ? (
                 <span className="monitor-bottom-tab-count">{data.cases.length}</span>
+              ) : null}
+              {id === "signals" ? (
+                <span className="monitor-bottom-tab-count">{data.updates.length}</span>
               ) : null}
               {id === "news" ? (
                 <span className="monitor-bottom-tab-count">{data.worldNews.items.length}</span>
