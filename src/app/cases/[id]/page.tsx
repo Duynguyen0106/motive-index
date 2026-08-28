@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseTabs } from "@/components/CaseTabs";
 import { CaseTabKeyboardNav } from "@/components/CaseTabKeyboardNav";
@@ -31,6 +32,7 @@ import { formatDate } from "@/lib/utils";
 import { resolveCaseCountry } from "@/lib/country";
 import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
 import { getSiteUrl } from "@/lib/seo";
+import { getPrimaryCaseImage } from "@/lib/caseImages";
 import type { SearchFilters } from "@/lib/types";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
@@ -59,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = getCaseByIdOrSlug(id);
   if (!c) return { title: "Case not found" };
   const url = `${getSiteUrl()}/cases/${c.slug}`;
+  const primaryImage = getPrimaryCaseImage(c.slug);
   return {
     title: c.name,
     description: c.subtitle,
@@ -68,11 +71,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: c.name,
       description: c.subtitle,
       url,
+      ...(primaryImage
+        ? { images: [{ url: primaryImage.url, alt: primaryImage.alt }] }
+        : {}),
     },
     twitter: {
-      card: "summary",
+      card: primaryImage ? "summary_large_image" : "summary",
       title: c.name,
       description: c.subtitle,
+      ...(primaryImage ? { images: [primaryImage.url] } : {}),
     },
   };
 }
@@ -102,6 +109,7 @@ export default async function CasePage({ params, searchParams }: Props) {
   const { analysis } = crimeCase;
   const allCases = getAllCases();
   const dossierUrl = `${getSiteUrl()}/cases/${crimeCase.slug}`;
+  const primaryImage = crimeCase.images?.[0];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -129,7 +137,9 @@ export default async function CasePage({ params, searchParams }: Props) {
             { label: tabLabel },
           ]}
         />
-        <p className="label mt-5 flex flex-wrap items-center gap-2">
+        <div className="dossier-header-grid mt-5">
+          <div className="dossier-header-main">
+        <p className="label flex flex-wrap items-center gap-2">
           <span>
             {crimeCase.yearStart}
             {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location}
@@ -198,6 +208,13 @@ export default async function CasePage({ params, searchParams }: Props) {
             Review: {analysis.reviewedByHuman ? "human-reviewed" : "awaiting review"}
           </span>
           <span>Updated {formatDate(analysis.updatedAt)}</span>
+        </div>
+          </div>
+          {primaryImage ? (
+            <div className="dossier-header-media">
+              <CaseImagePanel image={primaryImage} variant="hero" priority />
+            </div>
+          ) : null}
         </div>
       </header>
 

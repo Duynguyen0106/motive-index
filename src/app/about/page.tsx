@@ -55,6 +55,12 @@ export default function AboutPage() {
                 Anonymize when appropriate; stick to public facts for public figures.
               </li>
               <li>
+                <strong className="text-[var(--ink)]">Photographs.</strong> Flagship
+                dossiers may include attributed public-record images—courthouses,
+                memorials, and historical context preferred over crime-scene or victim
+                imagery. Mugshots and arrest photos are click-to-reveal.
+              </li>
+              <li>
                 <strong className="text-[var(--ink)]">Copyright.</strong> Host only
                 public-domain or permitted materials; otherwise link out.
               </li>

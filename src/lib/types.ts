@@ -247,6 +247,22 @@ export interface CaseDocument {
   hosted: boolean;
 }
 
+/** Editorial photograph attached to a dossier (Wikimedia / public archive). */
+export type CaseImageKind = "context" | "location" | "portrait";
+
+export interface CaseImage {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
+  kind: CaseImageKind;
+  source: string;
+  attribution: string;
+  license?: string;
+  /** Mugshots and arrest photos require click-to-reveal in the UI. */
+  sensitive?: boolean;
+}
+
 export interface CaseReference {
   id: string;
   citation: string;
@@ -340,6 +356,8 @@ export interface CrimeCase {
   signals: BehaviorSignal[];
   documentIds: string[];
   references: CaseReference[];
+  /** Optional documentary or contextual photograph (see editorial policy on /about). */
+  images?: CaseImage[];
   sources: SourceRef[];
   analysis: ForensicAnalysis;
   featured?: boolean;

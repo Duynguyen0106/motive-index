@@ -22,6 +22,7 @@ import { getCaseNarrative } from "@/data/narratives";
 import { worldEnrichments } from "@/data/worldCases";
 import { multilingualEnrichments } from "@/data/multilingualCases";
 import { augmentForensicAnalysis } from "@/lib/deepAnalysis";
+import { attachCaseImages } from "@/lib/caseImages";
 import { inferCountry } from "@/lib/country";
 
 export interface CaseEnrichment {
@@ -930,7 +931,7 @@ export function applyEnrichment(
   const e = enrichments[base.slug];
   if (!e) {
     const location = base.location ?? base.jurisdiction;
-    return {
+    return attachCaseImages({
       ...base,
       location,
       country: base.country ?? inferCountry(base.jurisdiction, location),
@@ -973,10 +974,10 @@ export function applyEnrichment(
           expertCommentary: base.analysis.expertCommentary ?? [],
         },
       ),
-    } as CrimeCase;
+    } as CrimeCase);
   }
 
-  return {
+  return attachCaseImages({
     ...base,
     aliases: e.aliases,
     caseNumber: e.caseNumber,
@@ -1023,5 +1024,5 @@ export function applyEnrichment(
         expertCommentary: e.expertCommentary ?? [],
       },
     ),
-  } as CrimeCase;
+  } as CrimeCase);
 }

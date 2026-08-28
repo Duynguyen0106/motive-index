@@ -122,6 +122,12 @@ expect_contains "Share dossier button" "$BASE/cases/ted-bundy" "Share dossier"
 expect_contains "Case JSON-LD article" "$BASE/cases/ted-bundy" '"@type":"Article"'
 expect_contains "Content warning present" "$BASE/cases/ted-bundy" "Content warning"
 expect_contains "Psych factors tagged" "$BASE/cases/ted-bundy?tab=analysis" "Impression management"
+expect_contains "Case photo panel" "$BASE/cases/ted-bundy" "case-image-hero"
+expect_contains "Bundy photo caption" "$BASE/cases/ted-bundy" "Florida court proceedings"
+expect_contains "Gacy courthouse photo" "$BASE/cases/john-wayne-gacy" "Cook County Criminal Court"
+expect_contains "McVeigh memorial photo" "$BASE/cases/timothy-mcveigh" "Oklahoma City National Memorial"
+expect_contains "Sensitive photo reveal" "$BASE/cases/richard-ramirez" "Sensitive photograph"
+expect_contains "About photo policy" "$BASE/about" "click-to-reveal"
 
 echo
 echo "-- Theories --"

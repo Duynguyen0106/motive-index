@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { CasesGrid } from "@/components/CasesGrid";
 import { Disclaimer } from "@/components/Disclaimer";
 import { LiveTicker } from "@/components/LiveTicker";
@@ -59,20 +60,25 @@ export default function ArchivePage() {
         <section className="site-shell pt-6">
           <article className="featured-card">
             <div className="featured-card-accent" />
-            <div className="featured-card-body md:flex md:items-end md:justify-between md:gap-8">
-              <div>
+            <div className="featured-card-body md:flex md:items-stretch md:justify-between md:gap-8">
+              <div className="featured-card-copy md:flex-1">
                 <p className="label">Featured dossier</p>
                 <h2 className="display mt-2 text-3xl text-[var(--ink)]">{cotw.name}</h2>
                 <p className="mt-2 max-w-2xl text-[var(--ink-soft)]">{cotw.subtitle}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href={`/cases/${cotw.slug}`} className="btn btn-primary">
+                    Read dossier
+                  </Link>
+                  <Link href={`/?case=${cotw.slug}`} className="btn btn-ghost">
+                    Plot on map
+                  </Link>
+                </div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2 md:mt-0 md:shrink-0">
-                <Link href={`/cases/${cotw.slug}`} className="btn btn-primary">
-                  Read dossier
-                </Link>
-                <Link href={`/?case=${cotw.slug}`} className="btn btn-ghost">
-                  Plot on map
-                </Link>
-              </div>
+              {cotw.images?.[0] ? (
+                <div className="featured-card-media mt-4 md:mt-0 md:w-56 md:shrink-0">
+                  <CaseImagePanel image={cotw.images[0]} variant="thumb" />
+                </div>
+              ) : null}
             </div>
           </article>
         </section>
