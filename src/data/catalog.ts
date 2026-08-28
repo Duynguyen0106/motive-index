@@ -24,6 +24,7 @@ import { multilingualEnrichments } from "@/data/multilingualCases";
 import { augmentForensicAnalysis } from "@/lib/deepAnalysis";
 import { attachCaseImages } from "@/lib/caseImages";
 import { inferCountry } from "@/lib/country";
+import { getCatalogCoords } from "@/lib/geo";
 
 export interface CaseEnrichment {
   aliases?: string[];
@@ -903,6 +904,13 @@ function finalizeAnalysis(
   return augmentForensicAnalysis(analysisContextFromCase(base), analysis);
 }
 
+function withCatalogCoords<T extends CrimeCase>(c: T): T {
+  if (typeof c.lat === "number" && typeof c.lng === "number") return c;
+  const coords = getCatalogCoords(c.slug);
+  if (!coords) return c;
+  return { ...c, lat: coords.lat, lng: coords.lng };
+}
+
 export function applyEnrichment(
   base: Omit<
     CrimeCase,
@@ -931,7 +939,7 @@ export function applyEnrichment(
   const e = enrichments[base.slug];
   if (!e) {
     const location = base.location ?? base.jurisdiction;
-    return attachCaseImages({
+    return withCatalogCoords(attachCaseImages({
       ...base,
       location,
       country: base.country ?? inferCountry(base.jurisdiction, location),
@@ -974,10 +982,10 @@ export function applyEnrichment(
           expertCommentary: base.analysis.expertCommentary ?? [],
         },
       ),
-    } as CrimeCase);
+    } as CrimeCase));
   }
 
-  return attachCaseImages({
+  return withCatalogCoords(attachCaseImages({
     ...base,
     aliases: e.aliases,
     caseNumber: e.caseNumber,
@@ -1024,5 +1032,5 @@ export function applyEnrichment(
         expertCommentary: e.expertCommentary ?? [],
       },
     ),
-  } as CrimeCase);
+  } as CrimeCase));
 }

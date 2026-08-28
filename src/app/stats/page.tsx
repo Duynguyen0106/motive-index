@@ -62,6 +62,7 @@ export default function StatsPage() {
           { label: "Total dossiers", value: stats.total },
           { label: "Curated", value: stats.curated },
           { label: "Composite", value: stats.composite },
+          { label: "Multilingual", value: stats.multilingual },
           { label: "Countries", value: stats.countries },
           { label: "Unsolved", value: stats.unsolved, highlight: true },
           { label: "With photos", value: stats.withPhotos },

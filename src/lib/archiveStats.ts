@@ -10,6 +10,7 @@ export type ArchiveStats = {
   total: number;
   curated: number;
   composite: number;
+  multilingual: number;
   unsolved: number;
   countries: number;
   withPhotos: number;
@@ -33,11 +34,13 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
 
   let curated = 0;
   let composite = 0;
+  let multilingual = 0;
   let unsolved = 0;
 
   for (const c of cases) {
     if (isCompositeCase(c)) composite += 1;
     else curated += 1;
+    if (c.tags.includes("multilingual-source")) multilingual += 1;
     if (c.status === "unsolved") unsolved += 1;
 
     const country = resolveCaseCountry(c);
@@ -63,6 +66,7 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
     total: cases.length,
     curated,
     composite,
+    multilingual,
     unsolved,
     countries: countryMap.size,
     withPhotos: imageCoverage.withImages,

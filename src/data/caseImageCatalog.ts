@@ -379,18 +379,6 @@ export const CASE_IMAGE_CATALOG: Record<string, CaseImage[]> = {
       license: "CC BY-SA 3.0",
     },
   ],
-  "pedro-lopez": [
-    {
-      id: "img-lopez-bogota",
-      url: "https://upload.wikimedia.org/wikipedia/commons/6/6d/Palacio_de_Justicia_de_Colombia%2C_Bogot%C3%A1.jpg",
-      alt: "Palace of Justice in Bogotá, Colombia",
-      caption: "Palace of Justice, Bogotá — Colombian jurisdictional context for the Monster of the Andes case.",
-      kind: "location",
-      source: "Wikimedia Commons",
-      attribution: "Wikimedia Commons",
-      license: "CC BY-SA 3.0",
-    },
-  ],
   "pedro-lopez-colombia": [
     {
       id: "img-lopez-col-bogota",

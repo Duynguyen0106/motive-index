@@ -6,7 +6,7 @@ import { resolveCaseCountry } from "@/lib/country";
 export type GeoPoint = { lat: number; lng: number };
 
 /** Approximate coordinates for catalog cases (city-level where known). */
-const SLUG_COORDS: Record<string, GeoPoint> = {
+export const SLUG_COORDS: Record<string, GeoPoint> = {
   ...WORLD_CASE_COORDS,
   ...MULTILINGUAL_CASE_COORDS,
   "ted-bundy": { lat: 47.6062, lng: -122.3321 },
@@ -82,6 +82,11 @@ export const COUNTRY_CENTROIDS: Record<CountryCode, GeoPoint> = {
   UZ: { lat: 41.3775, lng: 64.5853 },
   OTHER: { lat: 20, lng: 0 },
 };
+
+/** Static catalog coordinates keyed by slug (world, multilingual, flagship). */
+export function getCatalogCoords(slug: string): GeoPoint | undefined {
+  return SLUG_COORDS[slug];
+}
 
 export function resolveCaseCoordinates(
   c: Pick<CrimeCase, "slug" | "location" | "jurisdiction" | "country" | "lat" | "lng">,

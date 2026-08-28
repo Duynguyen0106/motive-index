@@ -225,9 +225,8 @@ for (let i = 0; i < BULK_COUNT; i++) {
   const yearStart = 1955 + (seed % 68);
   const yearSpan = crime === "serial_murder" ? 2 + (seed % 6) : seed % 3;
   const yearEnd = yearStart + yearSpan;
-  const given = pick(GIVEN, seed * 11);
-  const family = pick(FAMILY, seed * 13);
-  const offenderName = `${given} ${family}`;
+  const subjectId = `CS-${String(seed).padStart(4, "0")}`;
+  const offenderName = subjectId;
   const slug = `archive-${city.country.toLowerCase()}-${String(seed).padStart(4, "0")}`;
   if (usedSlugs.has(slug)) continue;
   usedSlugs.add(slug);
@@ -240,7 +239,7 @@ for (let i = 0; i < BULK_COUNT; i++) {
 
   defs.push({
     slug,
-    name: `${caseLabel}: ${offenderName}`,
+    name: `${caseLabel}: ${subjectId}`,
     subtitle,
     country: city.country,
     location,
@@ -251,14 +250,14 @@ for (let i = 0; i < BULK_COUNT; i++) {
     status,
     crimeCategories: [crime],
     offenderName,
-    offenderBackground: `Composite teaching dossier modeled on ${jurisdiction} public-record patterns; verify against primary sources before citation.`,
-    tags: ["bulk-catalog", "composite-dossier", "public-record"],
+    offenderBackground: `Synthetic teaching identifier ${subjectId}; procedurally generated from ${jurisdiction} public-record patterns. Not a real person — verify against primary sources before citation.`,
+    tags: ["bulk-catalog", "composite-dossier", "synthetic-subject"],
     psychologicalFactors: [
       pick(PSYCH_FACTORS, seed),
       pick(PSYCH_FACTORS, seed + 5),
     ],
     theoreticalFrameworks: [pick(FRAMEWORKS, seed), pick(FRAMEWORKS, seed + 2)],
-    overview: `Composite archival dossier (${yearStart}${yearEnd > yearStart ? `–${yearEnd}` : ""}, ${location}) synthesizing documented patterns of ${crime.replace(/_/g, " ")} prosecutions in ${jurisdiction}. ${offenderName} appears in the teaching record as the attributed subject; narrative and analysis are procedurally generated from jurisdictional templates for forensic-psychology instruction—not a verbatim transcription of a single trial file.`,
+    overview: `Composite archival dossier (${yearStart}${yearEnd > yearStart ? `–${yearEnd}` : ""}, ${location}) synthesizing documented patterns of ${crime.replace(/_/g, " ")} prosecutions in ${jurisdiction}. Subject ${subjectId} is a synthetic teaching identifier — narrative and analysis are procedurally generated from jurisdictional templates for forensic-psychology instruction, not a verbatim transcription of a single trial file or real named offender.`,
     lat: jitter(city.lat, seed),
     lng: jitter(city.lng, seed + 17),
   });

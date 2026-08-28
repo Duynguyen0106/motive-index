@@ -301,19 +301,6 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "dimitris-papageorgiou": [
-    {
-      id: "img-dimitris-papageorgiou",
-      url: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Palace_of_Justice_-_Pretoria.jpg",
-      alt: "Location photograph for the Dimitris Papageorgiou dossier jurisdiction",
-      caption: "Jurisdictional context for the Dimitris Papageorgiou dossier (Palace of Justice - Pretoria jpg).",
-      kind: "location",
-      source: "Wikimedia Commons",
-      attribution: "The Wandering Angel from Makati City, Philippines",
-      license: "CC BY 2.0",
-      sensitive: false,
-    },
-  ],
   "dimitris-papageorgiou-el": [
     {
       id: "img-dimitris-papageorgiou-el",
@@ -493,19 +480,6 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       source: "Wikimedia Commons",
       attribution: "Dnalor 01",
       license: "CC BY-SA 3.0 at",
-      sensitive: false,
-    },
-  ],
-  "javed-iqbal": [
-    {
-      id: "img-javed-iqbal",
-      url: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Lahore_High_Court_Building.jpg",
-      alt: "Location photograph for the Javed Iqbal dossier jurisdiction",
-      caption: "Jurisdictional context for the Javed Iqbal dossier (Lahore High Court Building jpg).",
-      kind: "location",
-      source: "Wikimedia Commons",
-      attribution: "MariyamAftab",
-      license: "CC BY-SA 4.0",
       sensitive: false,
     },
   ],
@@ -951,19 +925,6 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "saeed-hanaei": [
-    {
-      id: "img-saeed-hanaei",
-      url: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Main_Gate_of_Imam_Riza%2C_Mashhad%2C_Iran-1850s.jpg",
-      alt: "Context photograph for the Saeed Hanaei dossier",
-      caption: "Historical or archival context for the Saeed Hanaei dossier (Main Gate of Imam Riza, Mashhad, Iran-1850s jpg).",
-      kind: "context",
-      source: "Wikimedia Commons",
-      attribution: "Possibly by Luigi Pesce (Italian, 1818\u20131891)",
-      license: "Public domain",
-      sensitive: false,
-    },
-  ],
   "saeed-hanaei-esfahan": [
     {
       id: "img-saeed-hanaei-esfahan",
@@ -1156,19 +1117,6 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       source: "Wikimedia Commons",
       attribution: "Windmemories",
       license: "CC BY-SA 4.0",
-      sensitive: false,
-    },
-  ],
-  "yishai-schlissel": [
-    {
-      id: "img-yishai-schlissel",
-      url: "https://upload.wikimedia.org/wikipedia/commons/2/27/Jerusalem_Municipal_Court.JPG",
-      alt: "Location photograph for the Yishai Schlissel dossier jurisdiction",
-      caption: "Jurisdictional context for the Yishai Schlissel dossier (Jerusalem Municipal Court JPG).",
-      kind: "location",
-      source: "Wikimedia Commons",
-      attribution: "Yagasi",
-      license: "CC0",
       sensitive: false,
     },
   ],

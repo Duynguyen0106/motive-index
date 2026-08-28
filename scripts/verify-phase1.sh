@@ -228,6 +228,15 @@ expect_contains "Method breadcrumbs" "$BASE/method" "Behavior first"
 expect_contains "Documents library" "$BASE/documents" "Shipman Inquiry"
 
 echo
+echo "-- Database audit --"
+if npx tsx scripts/audit-database.mjs >/tmp/mi_audit.txt 2>&1; then
+  check "Database audit clean" 1
+else
+  check "Database audit clean" 0
+  tail -20 /tmp/mi_audit.txt
+fi
+
+echo
 echo "=== Results: $PASS passed, $FAIL failed ==="
 if (( FAIL > 0 )); then
   echo "Failures:"
