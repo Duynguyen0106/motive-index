@@ -17,11 +17,16 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function HomePage({ searchParams }: Props) {
   const raw = await searchParams;
   const initial = await buildMonitorPayload(raw);
+  const syncKey = new URLSearchParams(
+    Object.entries(raw).flatMap(([k, v]) =>
+      typeof v === "string" ? [[k, v]] : Array.isArray(v) ? v.map((item) => [k, item]) : [],
+    ) as [string, string][],
+  ).toString();
 
   return (
     <div className="monitor-page">
       <Suspense fallback={<MonitorSkeleton />}>
-        <WorldMonitorClient initial={initial} />
+        <WorldMonitorClient initial={initial} syncKey={`${syncKey}|${initial.generatedAt}`} />
       </Suspense>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
   detectHotCrimeNews,
@@ -33,8 +33,12 @@ function writeDismissedIds(ids: Set<string>) {
 }
 
 export function HotNewsTicker({ worldNewsItems, onOpenNews, onSelectCase }: Props) {
-  const [mounted, setMounted] = useState(false);
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => new Set());
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => readDismissedIds());
   const [pulse, setPulse] = useState(false);
   const prevTopId = useRef<string | null>(null);
 
@@ -47,11 +51,6 @@ export function HotNewsTicker({ worldNewsItems, onOpenNews, onSelectCase }: Prop
     () => hotItems.filter((item) => !dismissedIds.has(item.id)),
     [hotItems, dismissedIds],
   );
-
-  useEffect(() => {
-    setMounted(true);
-    setDismissedIds(readDismissedIds());
-  }, []);
 
   useEffect(() => {
     const top = visibleItems[0];

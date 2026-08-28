@@ -29,12 +29,6 @@ export function LiveFeedClient({
   const archiveUpdates = filterArchiveActivityUpdates(updates);
 
   useEffect(() => {
-    setUpdates(initial);
-    setLimit(Math.max(initial.length, INITIAL_LIMIT));
-    if (initialTotal != null) setTotal(initialTotal);
-  }, [initial, initialTotal]);
-
-  useEffect(() => {
     if (disablePolling) return;
     let cancelled = false;
 

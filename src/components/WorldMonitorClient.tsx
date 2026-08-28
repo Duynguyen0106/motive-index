@@ -9,9 +9,9 @@ const WorldMonitor = dynamic(
   { loading: () => <MonitorSkeleton />, ssr: false },
 );
 
-type Props = { initial: MonitorPayload };
+type Props = { initial: MonitorPayload; syncKey: string };
 
 /** Code-splits Leaflet and monitor UI for faster first paint on home. */
-export function WorldMonitorClient({ initial }: Props) {
-  return <WorldMonitor initial={initial} />;
+export function WorldMonitorClient({ initial, syncKey }: Props) {
+  return <WorldMonitor key={syncKey} initial={initial} />;
 }

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
+import { ContributionQueue } from "@/components/ContributionQueue";
 import { ModerationQueue } from "@/components/ModerationQueue";
 import { RunLiveUpdateButton } from "@/components/RunLiveUpdateButton";
 import { getAdminSession } from "@/lib/auth";
-import { getModerationQueue } from "@/lib/data";
+import { getModerationQueue, getPendingContributions } from "@/lib/data";
 import { getRecentJobs } from "@/lib/pipeline/ingestWorker";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export const metadata = {
 export default async function AdminModerationPage() {
   const session = await getAdminSession();
   const queue = getModerationQueue();
+  const contributions = getPendingContributions();
   const jobs = getRecentJobs(5);
 
   return (
@@ -60,9 +62,20 @@ export default async function AdminModerationPage() {
 
       <section className="mb-8">
         <h2 className="display mb-4 text-3xl">
-          Queue ({queue.length})
+          Case queue ({queue.length})
         </h2>
         <ModerationQueue initial={queue} />
+      </section>
+
+      <section className="mb-8">
+        <h2 className="display mb-4 text-3xl">
+          Contributions ({contributions.length})
+        </h2>
+        <p className="mb-4 text-sm text-[var(--ink-soft)]">
+          Public submissions from the contribute page. Accepted items are logged; create a draft
+          case manually if a submission warrants catalog inclusion.
+        </p>
+        <ContributionQueue initial={contributions} />
       </section>
 
       <section className="card p-5">

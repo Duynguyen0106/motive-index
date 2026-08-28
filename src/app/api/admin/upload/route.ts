@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   const docId = `doc-${randomUUID()}`;
 
   let url: string | undefined;
-  let hosted = true;
+  const hosted = true;
   let storage = "local";
 
   if (isSupabaseConfigured()) {

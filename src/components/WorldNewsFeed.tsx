@@ -179,6 +179,11 @@ export function WorldNewsFeed({
   onFilterChange,
 }: Props) {
   const [payload, setPayload] = useState(initial);
+  const [prevInitialKey, setPrevInitialKey] = useState(initial.generatedAt);
+  if (initial.generatedAt !== prevInitialKey) {
+    setPrevInitialKey(initial.generatedAt);
+    setPayload(initial);
+  }
   const [status, setStatus] = useState<"live" | "syncing">("live");
   const [internalFilter, setInternalFilter] = useState<NewsFeedFilter>("all");
   const filter = controlledFilter ?? internalFilter;
@@ -190,11 +195,6 @@ export function WorldNewsFeed({
     },
     [onFilterChange],
   );
-
-  useEffect(() => {
-    setPayload(initial);
-    if (disablePolling) setStatus("live");
-  }, [initial, disablePolling]);
 
   const fetchNews = useCallback(async () => {
     setStatus("syncing");

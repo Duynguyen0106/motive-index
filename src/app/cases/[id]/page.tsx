@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
+import { AdminReferenceEditor } from "@/components/AdminReferenceEditor";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { CaseImageGallery } from "@/components/CaseImageGallery";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -24,6 +25,7 @@ import {
   getDocumentsForCase,
   getTheories,
 } from "@/lib/data";
+import { getAdminSession } from "@/lib/auth";
 import type { CrimeCase } from "@/lib/types";
 import {
   CRIME_CATEGORY_LABELS,
@@ -131,6 +133,7 @@ export default async function CasePage({ params, searchParams }: Props) {
     siteOrigin: getSiteUrl(),
   });
   const primaryImage = crimeCase.images?.[0];
+  const adminSession = await getAdminSession();
   const storyChapterIds = narrative
     ? NARRATIVE_CHAPTER_ORDER.filter((id) => narrative.chapters.some((c) => c.id === id))
     : [];
@@ -633,6 +636,9 @@ export default async function CasePage({ params, searchParams }: Props) {
 
         {tab === "references" ? (
           <div className="space-y-6">
+            {adminSession ? (
+              <AdminReferenceEditor slug={crimeCase.slug} references={crimeCase.references} />
+            ) : null}
             {(() => {
               const primaryLink = getPrimaryDirectReferences(crimeCase.references)[0];
               return primaryLink?.url ? (

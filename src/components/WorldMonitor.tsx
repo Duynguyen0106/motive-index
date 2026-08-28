@@ -161,10 +161,14 @@ export function WorldMonitor({ initial }: Props) {
         : data.cases,
     [casesMapVisibleOnly, data.cases, visibleCaseIds],
   );
-  const paginatedCases = useMemo(
-    () => paginateCases(displayCases, casesPage, MONITOR_CASES_PAGE_SIZE),
-    [displayCases, casesPage],
-  );
+  const paginatedCases = useMemo(() => {
+    const totalPages = Math.max(
+      1,
+      Math.ceil(displayCases.length / MONITOR_CASES_PAGE_SIZE),
+    );
+    const safePage = Math.min(Math.max(1, casesPage), totalPages);
+    return paginateCases(displayCases, safePage, MONITOR_CASES_PAGE_SIZE);
+  }, [displayCases, casesPage]);
   const archiveActivityUpdates = useMemo(
     () => filterArchiveActivityUpdates(data.updates),
     [data.updates],
@@ -327,40 +331,6 @@ export function WorldMonitor({ initial }: Props) {
     },
     [applyFilters],
   );
-
-  useEffect(() => {
-    setData(initial);
-    setKeyword(initial.filters.q ?? "");
-    setMapView(parseMapViewFromSearchParams(searchParams, initial.filters.period ?? ""));
-    const slug = searchParams.get("case") ?? "";
-    if (slug) {
-      const id = caseIdFromSlug(initial.cases, slug);
-      if (id) setSelectedCaseId(id);
-    }
-    setSidebarTab(parseSidebarTab(searchParams.get("tab")));
-    setNewsFilter(parseNewsFilter(searchParams.get("newsFilter")));
-    const pageRaw = searchParams.get("casesPage");
-    const pageNum = pageRaw ? parseInt(pageRaw, 10) : 1;
-    const totalPages = Math.max(
-      1,
-      Math.ceil(initial.cases.length / MONITOR_CASES_PAGE_SIZE),
-    );
-    const safePage = Math.min(
-      Math.max(1, Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1),
-      totalPages,
-    );
-    setCasesPage(safePage);
-  }, [initial, searchParams]);
-
-  useEffect(() => {
-    const totalPages = Math.max(
-      1,
-      Math.ceil(displayCases.length / MONITOR_CASES_PAGE_SIZE),
-    );
-    if (casesPage > totalPages) {
-      goToCasesPage(totalPages);
-    }
-  }, [displayCases.length, casesPage, goToCasesPage]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");

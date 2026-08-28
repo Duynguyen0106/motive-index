@@ -66,6 +66,7 @@ export default async function LivePage({ searchParams }: Props) {
         }
       >
         <LivePageSync
+          key={`${country}|${newsFilter}|${initialNews.generatedAt}|${archiveUpdates[0]?.id ?? ""}`}
           initialNews={initialNews}
           initialUpdates={archiveUpdates}
           initialUpdatesTotal={updatesTotal}

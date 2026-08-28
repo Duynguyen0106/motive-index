@@ -92,6 +92,7 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"ok" | "error">("ok");
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   async function act(slug: string, action: "approve" | "reject") {
     setBusy(slug);
@@ -100,7 +101,7 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
       const res = await fetch("/api/admin/moderate", {
         ...adminFetchInit,
         method: "POST",
-        body: JSON.stringify({ slug, action }),
+        body: JSON.stringify({ slug, action, note: notes[slug]?.trim() || undefined }),
       });
       const data = await readJsonResponse<{ error?: string; case?: CrimeCase }>(res);
       if (!res.ok) throw new Error(data.error || "Action failed");
@@ -226,6 +227,13 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
                       Open dossier
                     </Link>
                   </div>
+                  <textarea
+                    className="field mt-3 w-full text-sm"
+                    rows={2}
+                    placeholder="Moderation note (optional — logged on approve/reject)"
+                    value={notes[c.slug] ?? ""}
+                    onChange={(e) => setNotes((prev) => ({ ...prev, [c.slug]: e.target.value }))}
+                  />
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   <button
