@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
+import { MonitorCountryPicker } from "@/components/MonitorCountryPicker";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
@@ -70,6 +71,7 @@ export function WorldMonitor({ initial }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [showAllCountries, setShowAllCountries] = useState(false);
   const [keyword, setKeyword] = useState(initial.filters.q ?? "");
   const [mountedAt] = useState(() => Date.now());
   const caseCardRef = useRef<HTMLDivElement>(null);
@@ -84,6 +86,10 @@ export function WorldMonitor({ initial }: Props) {
     [data.cases],
   );
   const unplottedCount = data.unplottedCases.length;
+  const topCountries = data.countryStats.slice(0, 5);
+  const visibleCountryStats = showAllCountries
+    ? data.countryStats
+    : data.countryStats.slice(0, 8);
 
   const applyFilters = useCallback(
     (next: Partial<SearchFilters>, caseId?: string) => {
@@ -271,6 +277,7 @@ export function WorldMonitor({ initial }: Props) {
 
   return (
     <div className={`monitor-dashboard ${isPending ? "is-loading" : ""}`}>
+      <div className="monitor-top">
       <header className="monitor-hero">
         <div className="monitor-hero-main">
           <p className="label">Live intelligence · forensic archive</p>
@@ -341,6 +348,7 @@ export function WorldMonitor({ initial }: Props) {
       </div>
 
       <QuickLinks
+        className="monitor-quick-links"
         links={[
           { href: "/archive", label: "Full archive" },
           { href: "/search", label: "Advanced search" },
@@ -402,7 +410,9 @@ export function WorldMonitor({ initial }: Props) {
           </Link>
         </div>
       ) : null}
+      </div>
 
+      <div className="monitor-workspace">
       <div className="monitor-layout">
         <section className="monitor-map-panel">
           {isPending ? <div className="monitor-map-loading" aria-hidden /> : null}
@@ -477,8 +487,13 @@ export function WorldMonitor({ initial }: Props) {
           </div>
 
           {sidebarTab === "overview" ? (
-            <div id="monitor-panel-overview" role="tabpanel" aria-labelledby="monitor-tab-overview">
-              <section className="monitor-panel">
+            <div
+              id="monitor-panel-overview"
+              role="tabpanel"
+              aria-labelledby="monitor-tab-overview"
+              className="monitor-panel monitor-panel-scroll monitor-overview-panel"
+            >
+              <section className="monitor-panel-section">
                 <button
                   type="button"
                   className="monitor-panel-toggle"
@@ -501,20 +516,11 @@ export function WorldMonitor({ initial }: Props) {
                     </label>
                     <label className="monitor-field">
                       <span>Country</span>
-                      <select
-                        value={filters.country ?? ""}
-                        onChange={(e) =>
-                          applyFilters({ country: e.target.value as CountryCode | "" })
-                        }
-                        className="field"
-                      >
-                        <option value="">All countries</option>
-                        {countryOptions.map((code) => (
-                          <option key={code} value={code}>
-                            {COUNTRY_LABELS[code]}
-                          </option>
-                        ))}
-                      </select>
+                      <MonitorCountryPicker
+                        value={(filters.country as CountryCode) ?? ""}
+                        options={countryOptions}
+                        onChange={(code) => applyFilters({ country: code })}
+                      />
                     </label>
                     <label className="monitor-field">
                       <span>Crime category</span>
@@ -580,13 +586,22 @@ export function WorldMonitor({ initial }: Props) {
                     >
                       Unsolved
                     </button>
-                    <button
-                      type="button"
-                      className="monitor-chip"
-                      onClick={() => applyFilters({ country: "US", status: "", crimeCategory: "" })}
-                    >
-                      United States
-                    </button>
+                    {topCountries.map((s) => (
+                      <button
+                        key={s.code}
+                        type="button"
+                        className={`monitor-chip ${filters.country === s.code ? "is-active" : ""}`}
+                        onClick={() =>
+                          applyFilters({
+                            country: filters.country === s.code ? "" : s.code,
+                            status: "",
+                            crimeCategory: "",
+                          })
+                        }
+                      >
+                        {s.label}
+                      </button>
+                    ))}
                     <button
                       type="button"
                       className="monitor-chip"
@@ -603,13 +618,13 @@ export function WorldMonitor({ initial }: Props) {
                 </div>
               </section>
 
-              <section className="monitor-panel">
+              <section className="monitor-panel-section">
                 <div className="flex items-baseline justify-between gap-2">
-                  <h2 className="display text-base">Country index</h2>
+                  <h2 className="display text-base">Top regions</h2>
                   <span className="text-xs text-[var(--muted)]">by case count</span>
                 </div>
                 <ul className="monitor-country-index mt-3">
-                  {data.countryStats.map((s) => {
+                  {visibleCountryStats.map((s) => {
                     const max = data.countryStats[0]?.caseCount ?? 1;
                     const pct = Math.round((s.caseCount / max) * 100);
                     const active = filters.country === s.code;
@@ -644,6 +659,17 @@ export function WorldMonitor({ initial }: Props) {
                     <li className="text-sm text-[var(--muted)]">No regions match.</li>
                   ) : null}
                 </ul>
+                {data.countryStats.length > 8 ? (
+                  <button
+                    type="button"
+                    className="monitor-show-more mt-3 text-xs font-medium text-[var(--accent)] hover:underline"
+                    onClick={() => setShowAllCountries((v) => !v)}
+                  >
+                    {showAllCountries
+                      ? "Show fewer regions"
+                      : `Show all ${data.countryStats.length} regions`}
+                  </button>
+                ) : null}
               </section>
             </div>
           ) : null}
@@ -790,6 +816,7 @@ export function WorldMonitor({ initial }: Props) {
             </section>
           ) : null}
         </aside>
+      </div>
       </div>
     </div>
   );

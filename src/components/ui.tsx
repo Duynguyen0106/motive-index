@@ -57,9 +57,15 @@ export function StatBar({
   );
 }
 
-export function QuickLinks({ links }: { links: { href: string; label: string }[] }) {
+export function QuickLinks({
+  links,
+  className = "",
+}: {
+  links: { href: string; label: string }[];
+  className?: string;
+}) {
   return (
-    <nav className="quick-links" aria-label="Quick navigation">
+    <nav className={`quick-links ${className}`.trim()} aria-label="Quick navigation">
       {links.map((l) => (
         <Link key={l.href} href={l.href} className="quick-link">
           {l.label}
