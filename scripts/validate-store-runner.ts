@@ -1,5 +1,5 @@
 /**
- * Store validation runner — invoked via tsx from validate-store.mjs
+ * Store validation — run via: npx tsx scripts/validate-store-runner.ts
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -7,11 +7,16 @@ import { fileURLToPath } from "node:url";
 import {
   isModerationDraftCase,
   shouldIndexCase,
-} from "../src/lib/casePublishState.ts";
-import { validateProvenance } from "../src/lib/validation/caseProvenance.ts";
+} from "../src/lib/casePublishState";
+import { validateProvenance } from "../src/lib/validation/caseProvenance";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const storePath = path.join(root, ".data", "store.json");
+
+if (!fs.existsSync(storePath)) {
+  console.log("No .data/store.json — skipping store validation (seed on first run).");
+  process.exit(0);
+}
 
 const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
 const cases = store.cases ?? [];
