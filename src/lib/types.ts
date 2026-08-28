@@ -257,6 +257,10 @@ export interface CaseReference {
   languageLabel?: string;
   kind: "book" | "journal" | "report" | "media" | "court";
   url?: string;
+  /** Publication or decision year when known. */
+  year?: string;
+  /** Why this source matters for forensic reading of the dossier. */
+  note?: string;
 }
 
 export type DossierChapterId =

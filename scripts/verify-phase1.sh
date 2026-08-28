@@ -114,6 +114,9 @@ expect_contains "Deep narrative escalation" "$BASE/cases/golden-state-killer?tab
 expect_contains "Expanded overview depth" "$BASE/cases/richard-ramirez?tab=overview" "dossier synthesizes"
 expect_contains "Tab documents" "$BASE/cases/ted-bundy?tab=documents" "Document library"
 expect_contains "Tab references" "$BASE/cases/ted-bundy?tab=references" "References"
+expect_contains "Reference relevance notes" "$BASE/cases/john-wayne-gacy?tab=references" "forensic relevance"
+expect_contains "Curated Gacy court ref" "$BASE/cases/john-wayne-gacy?tab=references" "Cook County"
+expect_contains "Curated Bundy book ref" "$BASE/cases/ted-bundy?tab=references" "Whoever Fights Monsters"
 expect_contains "Related dossiers section" "$BASE/cases/ted-bundy?tab=analysis" "Related dossiers"
 expect_contains "Share dossier button" "$BASE/cases/ted-bundy" "Share dossier"
 expect_contains "Case JSON-LD article" "$BASE/cases/ted-bundy" '"@type":"Article"'

@@ -2,7 +2,7 @@
  * Generates substantive dossier context from case metadata — used by deepContentBuilder
  * to replace shallow template paragraphs across the world/multilingual catalog.
  */
-import type { CrimeCategory, TimelineEvent, CaseReference } from "@/lib/types";
+import type { CrimeCategory, TimelineEvent } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
 export type CaseContextInput = {
@@ -346,32 +346,4 @@ export function buildMotivationalFactors(
     });
   }
   return factors;
-}
-
-export function buildReferenceStubs(ctx: ParsedCaseContext): CaseReference[] {
-  const refs: CaseReference[] = [
-    {
-      id: `ref-${ctx.slug}-court`,
-      citation: `${ctx.jurisdiction} court records and sentencing documents (public summaries).`,
-      kind: "court" as const,
-    },
-    {
-      id: `ref-${ctx.slug}-press`,
-      citation: `Contemporaneous press archive — ${ctx.location}, ${ctx.era}.`,
-      kind: "media" as const,
-    },
-  ];
-  if (ctx.isSerial || ctx.isMass) {
-    refs.push({
-      id: `ref-${ctx.slug}-inquiry`,
-      citation: `Official inquiry or commission report where commissioned (${ctx.jurisdiction}).`,
-      kind: "report" as const,
-    });
-  }
-  refs.push({
-    id: `ref-${ctx.slug}-academic`,
-    citation: `Peer-reviewed criminology / forensic psychology literature on ${ctx.categoryLabel.toLowerCase()}.`,
-    kind: "journal" as const,
-  });
-  return refs;
 }

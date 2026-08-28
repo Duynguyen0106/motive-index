@@ -108,6 +108,7 @@ function multilingualDeepInput(d: MultilingualCaseDef) {
     primarySourceLanguageLabel: d.primarySourceLanguageLabel,
     translationNote: d.translationNote,
     sourceTitles: d.sources.map((s) => s.originalTitle ?? s.title),
+    references: d.references,
   };
 }
 
@@ -171,7 +172,7 @@ function toEnrichment(d: MultilingualCaseDef): CaseEnrichment {
           : "See original-language court records.",
       },
     ],
-    victims: [{ id: `vic-${d.slug}`, name: "Victims (public record)", role: "victim", known: true }],
+    victims: patch.victims ?? [{ id: `vic-${d.slug}`, name: "Victims (public record)", role: "victim", known: true }],
     legalOutcome: patch.legalOutcome ?? {
       summary: "See original-language court documents in References.",
     },

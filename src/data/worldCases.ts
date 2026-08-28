@@ -99,10 +99,16 @@ function toSeed(d: WorldCaseDef): SeedCase {
     featured: d.featured ?? false,
     timeline: deep.timeline,
     signals: deep.signals,
-    sources: [
-      { title: "Trial / inquiry / established press archives", kind: "court" },
-      { title: "Academic or journalistic case studies", kind: "academic" },
-    ],
+    sources: (deep.enrichmentPatch.references ?? []).slice(0, 4).map((r) => ({
+      title: r.citation.slice(0, 120),
+      kind:
+        r.kind === "court"
+          ? ("court" as const)
+          : r.kind === "journal" || r.kind === "book"
+            ? ("academic" as const)
+            : ("news" as const),
+      url: r.url,
+    })),
     analysis: buildAnalysis(d, deep),
   };
 }

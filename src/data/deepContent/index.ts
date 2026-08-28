@@ -34,6 +34,7 @@ function defToMultilingualInput(d: (typeof MULTILINGUAL_CASE_DEFS)[number]) {
     primarySourceLanguageLabel: d.primarySourceLanguageLabel,
     translationNote: d.translationNote,
     sourceTitles: d.sources.map((s) => s.originalTitle ?? s.title),
+    references: d.references,
   };
 }
 

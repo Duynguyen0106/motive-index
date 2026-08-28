@@ -545,29 +545,40 @@ export default async function CasePage({ params, searchParams }: Props) {
           <div className="space-y-6">
             <section className="card p-6">
               <h2 className="display text-2xl">References & citations</h2>
-              <ul className="mt-4 space-y-3">
+              <p className="body-copy mt-2 max-w-3xl text-sm text-[var(--ink-soft)]">
+                Primary sources for verifying behavioral claims in this dossier. Notes explain
+                forensic relevance — not endorsement of every interpretive claim.
+              </p>
+              <ul className="mt-5 space-y-4">
                 {crimeCase.references.map((r) => (
-                  <li key={r.id} className="body-copy text-[var(--ink-soft)]">
-                    <span className="mr-2 text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
-                      {r.kind}
-                    </span>
-                    {r.languageLabel ? (
-                      <span className="mr-2 rounded bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--accent)]">
-                        {r.languageLabel}
+                  <li key={r.id} className="reference-item border-b border-[var(--line)] pb-4 last:border-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
+                        {r.kind}
                       </span>
+                      {r.year ? (
+                        <span className="text-xs text-[var(--muted)]">{r.year}</span>
+                      ) : null}
+                      {r.languageLabel ? (
+                        <span className="rounded bg-[var(--surface)] px-1.5 py-0.5 text-xs text-[var(--accent)]">
+                          {r.languageLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="body-copy mt-2 text-[var(--ink-soft)]">
+                      {r.url ? (
+                        <a href={r.url} className="hover:text-[var(--accent)] hover:underline">
+                          {r.citation}
+                        </a>
+                      ) : (
+                        r.citation
+                      )}
+                    </p>
+                    {r.note ? (
+                      <p className="mt-2 text-sm text-[var(--muted)]">{r.note}</p>
                     ) : null}
-                    {r.url ? (
-                      <a href={r.url} className="hover:text-[var(--accent)] hover:underline">
-                        {r.citation}
-                      </a>
-                    ) : (
-                      r.citation
-                    )}
                     {r.originalCitation ? (
-                      <p
-                        className="mt-1 text-sm text-[var(--muted)]"
-                        lang={r.language}
-                      >
+                      <p className="mt-2 text-sm text-[var(--muted)]" lang={r.language}>
                         Original: {r.originalCitation}
                       </p>
                     ) : null}

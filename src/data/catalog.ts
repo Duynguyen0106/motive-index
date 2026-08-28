@@ -17,6 +17,7 @@ import type {
   BehavioralProfile,
   LegalOutcome,
 } from "@/lib/types";
+import { CASE_REFERENCE_OVERRIDES } from "@/data/caseReferenceCatalog";
 import { getCaseNarrative } from "@/data/narratives";
 import { worldEnrichments } from "@/data/worldCases";
 import { multilingualEnrichments } from "@/data/multilingualCases";
@@ -121,18 +122,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
       "golden-state-killer",
     ],
     documentIds: ["doc-bundy-trial-summary", "doc-fbi-organized-notes"],
-    references: [
-      {
-        id: "ref-bundy-1",
-        citation: "Public trial reporting and court summaries (Florida proceedings).",
-        kind: "court",
-      },
-      {
-        id: "ref-bundy-2",
-        citation: "Behavioral analysis literature on organized serial offending (FBI training materials summaries).",
-        kind: "report",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["ted-bundy"] ?? [],
     expertCommentary: [
       {
         id: "ec-bundy-1",
@@ -204,13 +194,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["ted-bundy", "zodiac-killer"],
     documentIds: ["doc-btk-letters-summary", "doc-rader-plea"],
-    references: [
-      {
-        id: "ref-rader-1",
-        citation: "Kansas court plea and sentencing records (public).",
-        kind: "court",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["dennis-rader-btk"] ?? [],
     expertCommentary: [
       {
         id: "ec-rader-1",
@@ -279,13 +263,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["charles-manson"],
     documentIds: ["doc-unabomber-manifesto", "doc-kaczynski-plea"],
-    references: [
-      {
-        id: "ref-k-1",
-        citation: "Industrial Society and Its Future (public manifesto text).",
-        kind: "media",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["ted-kaczynski"] ?? [],
   },
   "aileen-wuornos": {
     location: "Florida, United States",
@@ -339,11 +317,13 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: [],
     documentIds: ["doc-wuornos-trial-coverage"],
-    references: [
+    references: CASE_REFERENCE_OVERRIDES["aileen-wuornos"] ?? [
       {
         id: "ref-aw-1",
-        citation: "Florida trial and appellate summaries.",
+        citation: "Florida v. Aileen Wuornos (1992) — murder trials and execution.",
         kind: "court",
+        year: "2002",
+        note: "Female serial offender; trauma narrative vs legal culpability debates.",
       },
     ],
     contentLevel: "standard",
@@ -396,13 +376,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["dennis-rader-btk", "ted-bundy"],
     documentIds: ["doc-zodiac-letters"],
-    references: [
-      {
-        id: "ref-z-1",
-        citation: "Archived Zodiac letters in newspaper collections.",
-        kind: "media",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["zodiac-killer"] ?? [],
   },
   "charles-manson": {
     aliases: ["Manson Family leader"],
@@ -461,13 +435,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: ["ted-kaczynski"],
     documentIds: ["doc-manson-trial-summary"],
-    references: [
-      {
-        id: "ref-cm-1",
-        citation: "Trial records and sociological literature on high-control groups.",
-        kind: "journal",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["charles-manson"] ?? [],
   },
   "harold-shipman": {
     aliases: ["Dr. Death (press epithet — avoid sensational use)"],
@@ -522,13 +490,7 @@ export const enrichments: Record<string, CaseEnrichment> = {
     ],
     relatedCaseSlugs: [],
     documentIds: ["doc-shipman-inquiry"],
-    references: [
-      {
-        id: "ref-hs-1",
-        citation: "The Shipman Inquiry public reports.",
-        kind: "report",
-      },
-    ],
+    references: CASE_REFERENCE_OVERRIDES["harold-shipman"] ?? [],
   },
   "contemporary-draft-example": {
     location: "Example jurisdiction",

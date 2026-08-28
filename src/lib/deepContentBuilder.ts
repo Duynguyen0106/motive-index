@@ -5,6 +5,7 @@
 import { CASE_DEPTH_OVERRIDES, mergeParagraphs } from "@/data/caseDepthOverrides";
 import type { CaseEnrichment } from "@/data/catalog";
 import { enrichSignalsFromDossier } from "@/lib/deepAnalysis";
+import { buildCaseReferences } from "@/lib/caseReferences";
 import {
   buildAftermathParagraphs,
   buildDeepTimeline,
@@ -16,7 +17,6 @@ import {
   buildMotivationParagraphs,
   buildMotivationalFactors,
   buildOriginsParagraphs,
-  buildReferenceStubs,
   parseCaseContext,
   victimDemographicsNote,
   type CaseContextInput,
@@ -46,6 +46,7 @@ export type MultilingualDeepInput = BaseDeepInput & {
   primarySourceLanguageLabel: string;
   translationNote: string;
   sourceTitles?: string[];
+  references?: import("@/lib/types").CaseReference[];
 };
 
 export type WorldDeepInput = BaseDeepInput;
@@ -147,8 +148,7 @@ function buildEnrichmentPatch(
         demographicsNote: override?.victimNote ?? victimDemographicsNote(ctx),
       },
     ],
-    references: buildReferenceStubs(ctx),
-    ...extra,
+    ...(extra ?? {}),
   };
 }
 
@@ -265,7 +265,7 @@ function buildTimeline(
 function assembleBundle(
   d: BaseDeepInput,
   narrative: CaseNarrative,
-  extra?: Partial<CaseEnrichment>,
+  opts?: { extra?: Partial<CaseEnrichment>; existingReferences?: import("@/lib/types").CaseReference[] },
 ): DeepCaseBundle {
   const ctx = parseCaseContext(d);
   const override = CASE_DEPTH_OVERRIDES[d.slug];
@@ -275,7 +275,10 @@ function assembleBundle(
     narrative,
     timeline,
     signals: buildSignals(d.slug, { ...d, overview: buildExpandedOverview(ctx) }, narrative),
-    enrichmentPatch: buildEnrichmentPatch(d, narrative, ctx, override, extra),
+    enrichmentPatch: {
+      ...buildEnrichmentPatch(d, narrative, ctx, override, opts?.extra),
+      references: buildCaseReferences(ctx, { existing: opts?.existingReferences }),
+    },
     expandedOverview: buildExpandedOverview(ctx),
   };
 }
@@ -299,10 +302,13 @@ export function buildMultilingualDeep(d: MultilingualDeepInput): DeepCaseBundle 
   });
 
   return assembleBundle(d, narrative, {
-    nameOriginal: d.nameOriginal,
-    primarySourceLanguage: d.primarySourceLanguage,
-    primarySourceLanguageLabel: d.primarySourceLanguageLabel,
-    translationNote: d.translationNote,
+    extra: {
+      nameOriginal: d.nameOriginal,
+      primarySourceLanguage: d.primarySourceLanguage,
+      primarySourceLanguageLabel: d.primarySourceLanguageLabel,
+      translationNote: d.translationNote,
+    },
+    existingReferences: d.references,
   });
 }
 
