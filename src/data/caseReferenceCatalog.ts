@@ -37,10 +37,10 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-bundy-nyt",
-      citation: "The New York Times archive — Bundy trials and execution (1979–1989).",
+      citation: "Ted Bundy — Florida and Utah murder trials (1979–1980).",
       kind: "media",
-      url: "https://www.fbi.gov/history/famous-cases/ted-bundy",
-      note: "Press coverage of courtroom performance and national media narrative.",
+      url: "https://en.wikipedia.org/wiki/Ted_Bundy#Trials",
+      note: "Trial chronology; pair with FBI and contemporaneous press archives.",
     },
   ],
   "dennis-rader-btk": [
@@ -109,9 +109,9 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-dahmer-js",
-      citation: "Journal Sentinel Milwaukee — Dahmer case archive and Konerak Sinthasomphone incident (1991).",
+      citation: "Los Angeles Times (7 Sep 1991) — officers fired for returning Konerak Sinthasomphone to Dahmer.",
       kind: "media",
-      url: "https://www.jsonline.com/story/news/local/milwaukee/2019/07/22/jeffrey-dahmer-victims-families-reflect-27-years-after-arrest/1802597001/",
+      url: "https://www.latimes.com/archives/la-xpm-1991-09-07-mn-1603-story.html",
       note: "Documents police return of victim to apartment — key institutional failure.",
     },
   ],
@@ -126,10 +126,10 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-ramirez-la-times",
-      citation: "Los Angeles Times — Night Stalker case archive (1984–1989).",
+      citation: "Los Angeles Times archives — Night Stalker case coverage (1984–1989).",
       kind: "media",
-      url: "https://www.latimes.com/local/lanow/la-me-ln-night-stalker-richard-ramirez-20130607-story.html",
-      note: "Public panic, survivor accounts, citizen capture.",
+      url: "https://en.wikipedia.org/wiki/Richard_Ramirez#Capture_and_conviction",
+      note: "Public panic, survivor accounts, citizen capture; see also LA Times archive articles.",
     },
   ],
   "edmund-kemper": [
@@ -167,9 +167,9 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-gsk-fbi",
-      citation: "FBI — Golden State Killer case summary and victim assistance resources.",
+      citation: "U.S. Department of Justice — Golden State Killer sentencing announcement (2020).",
       kind: "report",
-      url: "https://www.fbi.gov/history/famous-cases/golden-state-killer",
+      url: "https://www.justice.gov/usao-edca/pr/golden-state-killer-joseph-james-deangelo-sentenced-life-prison",
       note: "Official chronology across Northern and Southern California jurisdictions.",
     },
   ],
@@ -193,10 +193,10 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
   "jack-the-ripper": [
     {
       id: "ref-ripper-met",
-      citation: "Metropolitan Police Service — Whitechapel murders file summaries (1888).",
+      citation: "Metropolitan Police Service / historical summaries — Whitechapel murders (1888).",
       kind: "report",
       year: "1888",
-      url: "https://www.met.police.uk/met/about/history/jack-the-ripper/",
+      url: "https://en.wikipedia.org/wiki/Jack_the_Ripper#Investigation",
       note: "Canonical five victims; primary investigative record incomplete.",
     },
     {
@@ -220,8 +220,8 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       citation: "Dame Janet Smith, The Shipman Inquiry (2001–2005). UK Department of Health.",
       kind: "report",
       year: "2005",
-      url: "https://webarchive.nationalarchives.gov.uk/ukgwa/20090107205305/http://www.the-shipman-inquiry.org.uk/",
-      note: "Definitive public record on healthcare serial murder and regulatory failure.",
+      url: "https://en.wikipedia.org/wiki/The_Shipman_Inquiry",
+      note: "Definitive public record on healthcare serial murder and regulatory failure; links to archived inquiry volumes.",
     },
     {
       id: "ref-shipman-trial",
@@ -246,7 +246,7 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       citation: "Kaczynski, T. Industrial Society and Its Future (Unabomber manifesto). Washington Post / NYT publication (1995).",
       kind: "media",
       year: "1995",
-      url: "https://www.washingtonpost.com/wp-srv/national/longterm/unabomber/manifesto.text.htm",
+      url: "https://www.fas.org/irp/agencies/doj/fbi/unabom-manifesto.pdf",
       note: "Primary ideological text for reality-testing and belief encapsulation analysis.",
     },
     {
@@ -291,9 +291,9 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-zodiac-fbi",
-      citation: "FBI Vault — Zodiac Killer case file (partial release).",
+      citation: "FBI / public record summaries — Zodiac Killer investigation.",
       kind: "report",
-      url: "https://vault.fbi.gov/Zodiac%20Killer",
+      url: "https://en.wikipedia.org/wiki/Zodiac_Killer#Investigation",
       note: "Federal investigative summaries; unsolved status persists.",
     },
   ],
@@ -317,7 +317,7 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       id: "ref-mcveigh-ok-report",
       citation: "Oklahoma City National Memorial & Museum — bombing history and victim resources.",
       kind: "report",
-      url: "https://www.oklahomacitynationalmemorial.org/learn/about-the-bombing",
+      url: "https://memorialmuseum.com/museum/about-us/",
       note: "Institutional aftermath and mass-casualty context.",
     },
   ],
@@ -367,9 +367,9 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-moors-report",
-      citation: "BBC Archive — Moors Murders and Saddleworth Moor searches.",
+      citation: "Moors Murders — media coverage and public record.",
       kind: "media",
-      url: "https://www.bbc.co.uk/history/recent/moors_murders/",
+      url: "https://en.wikipedia.org/wiki/Moors_murders#Media",
       note: "National trauma and co-offender dynamics in press record.",
     },
   ],
@@ -398,10 +398,10 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
   "samuel-little": [
     {
       id: "ref-little-fbi",
-      citation: "FBI — Samuel Little serial killer confessions and victim identification project.",
+      citation: "Samuel Little — nationwide confessions and victim identification project (2018–2020).",
       kind: "report",
       year: "2019",
-      url: "https://www.fbi.gov/news/stories/samuel-little-serial-killer-10062019",
+      url: "https://en.wikipedia.org/wiki/Samuel_Little#Confession",
       note: "Most prolific US confessor; sketches and geographic memory.",
     },
     {
@@ -427,8 +427,8 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       citation: "Gjørv Commission Report — 22 July attacks in Norway (official government review).",
       kind: "report",
       year: "2012",
-      url: "https://www.regjeringen.no/en/dokumenter/report-from-the-22-july-commission/id708079/",
-      note: "Planning, response failures, and lone-actor radicalization context.",
+      url: "https://en.wikipedia.org/wiki/2011_Norway_attacks#Aftermath",
+      note: "Planning, response failures, and lone-actor radicalization context; see also regjeringen.no for full PDF.",
     },
   ],
   "gary-ridgway": [
@@ -528,9 +528,9 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
   "julio-perez-silva": [
     {
       id: "ref-perez-silva-lt",
-      citation: "La Tercera — Psicópata de Alto Hospicio case coverage (2001–2004).",
+      citation: "Julio Pérez Silva — Psicópata de Alto Hospicio case record (2001–2004).",
       kind: "media",
-      url: "https://es.wikipedia.org/wiki/Caso_Psic%C3%B3pata_de_Alto_Hospicio",
+      url: "https://es.wikipedia.org/wiki/Julio_P%C3%A9rez_Silva",
       note: "14 victims; life sentence 2004.",
     },
   ],
