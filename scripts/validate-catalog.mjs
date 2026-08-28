@@ -11,6 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const STEPS = [
   { name: "Case definitions", script: "validate-case-defs.mjs" },
+  { name: "Per-case provenance audit", script: "audit-all-cases.mjs" },
   { name: "Database audit", script: "audit-database.mjs" },
   { name: "Source validation", script: "validate-sources.mjs" },
 ];

@@ -10,6 +10,7 @@
     "verify": "bash scripts/verify-phase1.sh http://localhost:3000",
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "validate:defs": "npx tsx scripts/validate-case-defs.mjs",
+    "validate:all-cases": "npx tsx scripts/audit-all-cases.mjs",
     "db:sync": "node --env-file=.env.local scripts/db-sync.mjs",
     "db:reseed": "node scripts/reseed-store.mjs",
     "db:generate-bulk": "node scripts/generate-bulk-cases.mjs",
