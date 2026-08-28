@@ -554,4 +554,56 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       note: "1994 family murders; contested attribution — convicted 1995, acquitted on retrial.",
     },
   ],
+  "karol-kot": [
+    {
+      id: "ref-kot-wiki",
+      citation: "Polish Wikipedia / Newsweek Polska — Karol Kot (Wampir z Krakowa), 1964–1968.",
+      kind: "media",
+      note: "2 murders, 10 attempted; executed 1968. Replaces unverified Red Spider legend.",
+    },
+  ],
+  "antonis-daglis": [
+    {
+      id: "ref-daglis-wiki",
+      citation: "Athens Mixed Jury Court (23 Jan 1997) — Antonis Daglis, 3 murders, 6 attempted.",
+      kind: "court",
+      year: "1997",
+      note: "Athens Ripper; died in Korydallos prison Aug 1997.",
+    },
+  ],
+  "andras-pandy": [
+    {
+      id: "ref-pandy-lalibre",
+      citation: "La Libre (6 Mar 2002) — Andras Pandy life sentence, Brussels Court of Assizes.",
+      kind: "court",
+      year: "2002",
+      note: "6 family murders 1986–1990; Belgian pastor case, not Hungarian.",
+    },
+  ],
+  "le-van-luyen": [
+    {
+      id: "ref-luyen-wiki",
+      citation: "Bắc Giang People's Court (11 Jan 2012) — Lê Văn Luyện, Ngọc Bích gold shop murders.",
+      kind: "court",
+      year: "2012",
+      note: "3 killed Aug 2011; 18-year sentence as juvenile offender.",
+    },
+  ],
+  "somkid-pumpuang": [
+    {
+      id: "ref-somkid-bkkpost",
+      citation: "Bangkok Post / Nation Thailand — Somkid Pumpuang death sentence (2021) for 2019 murder.",
+      kind: "media",
+      url: "https://www.bangkokpost.com/",
+      note: "5 murders 2005; 6th victim 2019. Masseuse/singer victims — not nurse poisoner.",
+    },
+  ],
+  "romulus-veres": [
+    {
+      id: "ref-veres-wiki",
+      citation: "Romanian Wikipedia / Adevărul — Romulus Vereș, 'Man with the Hammer', Cluj 1972–1974.",
+      kind: "media",
+      note: "5 murders; insanity commitment to Ștei, not execution.",
+    },
+  ],
 };

@@ -23,6 +23,10 @@ const RETIRED_INACCURATE_SLUGS = new Set([
   "saeed-hanaei",
   "yishai-schlissel",
   "dimitris-papageorgiou",
+  "dimitris-papageorgiou-el",
+  "lucjan-staniak",
+  "nguyen-tien-dung",
+  "laszlo-pandy",
 ]);
 
 const SYNTHETIC_CITATION_MARKERS = [

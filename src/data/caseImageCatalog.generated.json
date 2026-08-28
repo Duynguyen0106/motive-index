@@ -539,8 +539,8 @@
     "artist": "The Wandering Angel from Makati City, Philippines",
     "license": "CC BY 2.0"
   },
-  "dimitris-papageorgiou-el": {
-    "slug": "dimitris-papageorgiou-el",
+  "antonis-daglis": {
+    "slug": "antonis-daglis",
     "query": "Athens Greece courthouse",
     "kind": "location",
     "sensitive": false,
@@ -589,8 +589,8 @@
     "artist": "Yoga Balaji",
     "license": "CC BY 3.0"
   },
-  "lucjan-staniak": {
-    "slug": "lucjan-staniak",
+  "karol-kot": {
+    "slug": "karol-kot",
     "query": "Warsaw Poland courthouse",
     "kind": "location",
     "sensitive": false,
@@ -759,8 +759,8 @@
     "artist": "Jensens",
     "license": "Public domain"
   },
-  "laszlo-pandy": {
-    "slug": "laszlo-pandy",
+  "andras-pandy": {
+    "slug": "andras-pandy",
     "query": "Budapest Hungary courthouse",
     "kind": "location",
     "sensitive": false,
@@ -829,8 +829,8 @@
     "artist": "Sorensen, Clarence Woodrow, 1907-1982",
     "license": "Public domain"
   },
-  "nguyen-tien-dung": {
-    "slug": "nguyen-tien-dung",
+  "le-van-luyen": {
+    "slug": "le-van-luyen",
     "query": "Hanoi Vietnam city",
     "kind": "context",
     "sensitive": false,

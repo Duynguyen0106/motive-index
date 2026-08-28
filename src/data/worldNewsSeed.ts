@@ -126,18 +126,18 @@ export const WORLD_NEWS_SEED: WorldNewsItem[] = [
   {
     id: "wn-seed-8",
     createdAt: "2026-08-26T14:00:00.000Z",
-    headline: "Thailand nursing-board review follows Sukhothai poisonings precedent",
+    headline: "Thailand reviews parole policy after Somkid Pumpuang reoffending",
     summary:
-      "Healthcare murder safeguards debated after Somkid Pumpuang case studies; English from Thai Rath.",
+      "Serial killer dubbed 'Jack the Ripper' received death sentence for 2019 murder after 2005 convictions; English from Bangkok Post.",
     kind: "world_news",
     status: "published",
     country: "TH",
     region: "Southeast Asia",
-    sourceName: "Thai Rath",
-    sourceUrl: "https://www.thairath.co.th/",
+    sourceName: "Bangkok Post",
+    sourceUrl: "https://www.bangkokpost.com/",
     language: "th",
     languageLabel: "Thai",
-    originalHeadline: "คดีพยาบาลพิษสุโขทัย",
+    originalHeadline: "คิดเดอะริปเปอร์ สมคิด พุ่มพวง",
     caseSlug: "somkid-pumpuang",
   },
   {

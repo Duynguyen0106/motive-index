@@ -79,6 +79,7 @@ export const COUNTRY_CENTROIDS: Record<CountryCode, GeoPoint> = {
   RS: { lat: 44.0165, lng: 21.0059 },
   BG: { lat: 42.7339, lng: 25.4858 },
   SK: { lat: 48.669, lng: 19.699 },
+  MK: { lat: 41.5124, lng: 21.7453 },
   UZ: { lat: 41.3775, lng: 64.5853 },
   OTHER: { lat: 20, lng: 0 },
 };

@@ -60,6 +60,7 @@ export type CountryCode =
   | "LV"
   | "ET"
   | "SA"
+  | "MK"
   | "RS"
   | "BG"
   | "SK"

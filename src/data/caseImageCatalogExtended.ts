@@ -301,12 +301,12 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "dimitris-papageorgiou-el": [
+  "antonis-daglis": [
     {
-      id: "img-dimitris-papageorgiou-el",
+      id: "img-antonis-daglis",
       url: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Palace_of_Justice_-_Pretoria.jpg",
-      alt: "Location photograph for the Dimitris Papageorgiou El dossier jurisdiction",
-      caption: "Jurisdictional context for the Dimitris Papageorgiou El dossier (Palace of Justice - Pretoria jpg).",
+      alt: "Location photograph for the Antonis Daglis dossier jurisdiction",
+      caption: "Jurisdictional context for the Antonis Daglis dossier (Palace of Justice - Pretoria jpg).",
       kind: "location",
       source: "Wikimedia Commons",
       attribution: "The Wandering Angel from Makati City, Philippines",
@@ -600,12 +600,12 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "laszlo-pandy": [
+  "andras-pandy": [
     {
-      id: "img-laszlo-pandy",
+      id: "img-andras-pandy",
       url: "https://upload.wikimedia.org/wikipedia/commons/d/d8/%C3%93buda%2C_II._%C3%A9s_III._Ker%C3%BCleti_B%C3%ADr%C3%B3s%C3%A1g_2021_01.jpg",
-      alt: "Location photograph for the Laszlo Pandy dossier jurisdiction",
-      caption: "Jurisdictional context for the Laszlo Pandy dossier (\u00d3buda, II \u00e9s III Ker\u00fcleti B\u00edr\u00f3s\u00e1g 2021 01 jpg).",
+      alt: "Location photograph for the Andras Pandy dossier jurisdiction",
+      caption: "Jurisdictional context for the Andras Pandy dossier (\u00d3buda, II \u00e9s III Ker\u00fcleti B\u00edr\u00f3s\u00e1g 2021 01 jpg).",
       kind: "location",
       source: "Wikimedia Commons",
       attribution: "Pasztilla aka Attila Terb\u00f3cs",
@@ -613,12 +613,12 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "lucjan-staniak": [
+  "karol-kot": [
     {
-      id: "img-lucjan-staniak",
+      id: "img-karol-kot",
       url: "https://upload.wikimedia.org/wikipedia/commons/b/bc/S%C4%85dy_na_Lesznie_2015_01.jpg",
-      alt: "Location photograph for the Lucjan Staniak dossier jurisdiction",
-      caption: "Jurisdictional context for the Lucjan Staniak dossier (S\u0105dy na Lesznie 2015 01 jpg).",
+      alt: "Location photograph for the Karol Kot dossier jurisdiction",
+      caption: "Jurisdictional context for the Karol Kot dossier (S\u0105dy na Lesznie 2015 01 jpg).",
       kind: "location",
       source: "Wikimedia Commons",
       attribution: "Adrian Grycuk",
@@ -782,12 +782,12 @@ export const CASE_IMAGE_CATALOG_EXTENDED: Record<string, CaseImage[]> = {
       sensitive: false,
     },
   ],
-  "nguyen-tien-dung": [
+  "le-van-luyen": [
     {
-      id: "img-nguyen-tien-dung",
+      id: "img-le-van-luyen",
       url: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Lotte_Center_Hanoi_2.jpg",
-      alt: "Context photograph for the Nguyen Tien Dung dossier",
-      caption: "Historical or archival context for the Nguyen Tien Dung dossier (Lotte Center Hanoi 2 jpg).",
+      alt: "Context photograph for the Le Van Luyen dossier",
+      caption: "Historical or archival context for the Le Van Luyen dossier (Lotte Center Hanoi 2 jpg).",
       kind: "context",
       source: "Wikimedia Commons",
       attribution: "Jspeed1310 at Vietnamese Wikipedia",
