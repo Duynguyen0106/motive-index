@@ -1,8 +1,11 @@
 import { searchCasesFrom } from "@/lib/data";
 import { getAllCasesAsync, getUpdatesAsync } from "@/lib/dataServer";
-import { toMonitorCaseSummary } from "@/lib/caseSummaries";
+import { toMonitorCaseSummary, getProvenanceTier } from "@/lib/caseSummaries";
+import { getPrimaryCaseImage } from "@/lib/caseImages";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { spreadPins, toMonitorPin } from "@/lib/geo";
+import { ghostPinFromCase, newsItemToPin } from "@/lib/monitorMapUtils";
+import type { MonitorGhostPin, MonitorNewsPin } from "@/lib/monitorMapTypes";
 import { parseSearchParams } from "@/lib/search";
 import type { CountryCode, LiveUpdate, MonitorCaseSummary, SearchFilters } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
@@ -39,6 +42,9 @@ export type MonitorPayload = {
   updates: LiveUpdate[];
   worldNews: WorldNewsPayload;
   featuredCase?: MonitorCaseSummary;
+  newsPins: MonitorNewsPin[];
+  ghostPins: MonitorGhostPin[];
+  pinIndex: Record<string, { lat: number; lng: number; slug: string }>;
 };
 
 function buildCountryStats(cases: CrimeCase[], allCases: CrimeCase[]): CountryMonitorStat[] {
@@ -77,7 +83,13 @@ export async function buildMonitorPayload(
   const all = await getAllCasesAsync();
   const cases = searchCasesFrom(all, filters);
   const rawPins = cases
-    .map((c) => toMonitorPin(c))
+    .map((c) => {
+      const img = getPrimaryCaseImage(c.slug);
+      return toMonitorPin(c, {
+        provenanceTier: getProvenanceTier(c),
+        imageUrl: img?.url,
+      });
+    })
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
   const plottedIds = new Set(rawPins.map((p) => p.id));
   const unplottedCases = cases
@@ -93,10 +105,24 @@ export async function buildMonitorPayload(
           : ("no_coordinates" as const),
     }));
 
+  const ghostPins = unplottedCases
+    .map((u) => ghostPinFromCase(u))
+    .filter((g): g is MonitorGhostPin => Boolean(g));
+
   const worldNews = await buildWorldNewsPayload({
     limit: 24,
     country: filters.country ?? "",
   });
+
+  const newsPins = worldNews.items
+    .map(newsItemToPin)
+    .filter((p): p is MonitorNewsPin => Boolean(p));
+
+  const pinIndex: Record<string, { lat: number; lng: number; slug: string }> = {};
+  for (const p of rawPins) {
+    pinIndex[p.id] = { lat: p.lat, lng: p.lng, slug: p.slug };
+    pinIndex[p.slug] = { lat: p.lat, lng: p.lng, slug: p.slug };
+  }
 
   return {
     generatedAt: new Date().toISOString(),
@@ -111,6 +137,9 @@ export async function buildMonitorPayload(
     cases: cases.map(toMonitorCaseSummary),
     updates: await getUpdatesAsync(updateLimit),
     worldNews,
+    newsPins,
+    ghostPins,
+    pinIndex,
     featuredCase: (() => {
       const featured =
         all.find((c) => c.caseOfWeek) ??

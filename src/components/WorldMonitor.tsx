@@ -14,11 +14,15 @@ import {
 } from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { MonitorCountryPicker } from "@/components/MonitorCountryPicker";
+import { MonitorMapControls } from "@/components/MonitorMapControls";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
+import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
+import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
+import { defaultTimelineRange, exportCasesCsv } from "@/lib/monitorMapUtils";
 import type { MonitorCaseSummary } from "@/lib/types";
 import {
   CRIME_CATEGORY_LABELS,
@@ -33,6 +37,19 @@ type Props = { initial: MonitorPayload };
 type SidebarTab = "overview" | "cases" | "news" | "signals";
 
 const TAB_IDS: SidebarTab[] = ["overview", "cases", "news", "signals"];
+
+const DEFAULT_MAP_VIEW: MonitorMapViewState = {
+  choroplethEnabled: true,
+  choroplethMetric: "cases",
+  layerMode: "pins",
+  contentLayer: "cases",
+  provenanceFilter: "hide-composite",
+  showGhostPins: false,
+  showRelatedArcs: true,
+  timelineMinYear: TIMELINE_YEAR_MIN,
+  timelineMaxYear: TIMELINE_YEAR_MAX,
+  bboxFilter: null,
+};
 
 function parseSidebarTab(value: string | null): SidebarTab {
   if (value && TAB_IDS.includes(value as SidebarTab)) return value as SidebarTab;
@@ -79,6 +96,17 @@ export function WorldMonitor({ initial }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showAllCountries, setShowAllCountries] = useState(false);
   const [keyword, setKeyword] = useState(initial.filters.q ?? "");
+  const [mapView, setMapView] = useState<MonitorMapViewState>(() => {
+    const era = defaultTimelineRange(initial.filters.period ?? "");
+    return { ...DEFAULT_MAP_VIEW, timelineMinYear: era.min, timelineMaxYear: era.max };
+  });
+  const [hoveredCaseId, setHoveredCaseId] = useState("");
+  const [compareCaseId, setCompareCaseId] = useState("");
+  const [compareMode, setCompareMode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDrawingBbox, setIsDrawingBbox] = useState(false);
+  const [regionFlyRequest, setRegionFlyRequest] = useState<RegionPreset | null>(null);
+  const [isPlayingTimeline, setIsPlayingTimeline] = useState(false);
   const [mountedAt] = useState(() => Date.now());
   const caseCardRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -88,6 +116,7 @@ export function WorldMonitor({ initial }: Props) {
   const countryOptions = data.countryOptions;
   const selectedPin = data.pins.find((p) => p.id === selectedCaseId);
   const selectedCase = data.cases.find((c) => c.id === selectedCaseId);
+  const comparePin = compareCaseId ? data.pins.find((p) => p.id === compareCaseId) : undefined;
   const unsolvedCount = useMemo(
     () => data.cases.filter((c) => c.status === "unsolved").length,
     [data.cases],
@@ -147,7 +176,12 @@ export function WorldMonitor({ initial }: Props) {
   );
 
   const selectCase = useCallback(
-    (id: string, opts?: { switchTab?: boolean; syncUrl?: boolean }) => {
+    (id: string, opts?: { switchTab?: boolean; syncUrl?: boolean; forCompare?: boolean }) => {
+      if (compareMode && id && id !== selectedCaseId) {
+        setCompareCaseId(id);
+        setCompareMode(false);
+        return;
+      }
       setSelectedCaseId(id);
       const nextTab = opts?.switchTab !== false ? ("cases" as SidebarTab) : sidebarTab;
       if (opts?.switchTab !== false) {
@@ -184,6 +218,8 @@ export function WorldMonitor({ initial }: Props) {
   useEffect(() => {
     setData(initial);
     setKeyword(initial.filters.q ?? "");
+    const era = defaultTimelineRange(initial.filters.period ?? "");
+    setMapView((v) => ({ ...v, timelineMinYear: era.min, timelineMaxYear: era.max }));
     const slug = searchParams.get("case") ?? "";
     if (slug) {
       const id = caseIdFromSlug(initial.cases, slug);
@@ -253,13 +289,87 @@ export function WorldMonitor({ initial }: Props) {
     };
   }, [searchParams, mountedAt]);
 
+  const exploreRandom = useCallback(() => {
+    if (!data.pins.length) return;
+    const pick = data.pins[Math.floor(Math.random() * data.pins.length)];
+    selectCase(pick.id, { switchTab: true, syncUrl: true });
+  }, [data.pins, selectCase]);
+
+  const cycleCase = useCallback(
+    (dir: 1 | -1) => {
+      const list = data.cases.filter((c) => data.pins.some((p) => p.id === c.id));
+      if (!list.length) return;
+      const idx = list.findIndex((c) => c.id === selectedCaseId);
+      const next = list[(idx + dir + list.length) % list.length];
+      selectCase(next.id, { switchTab: true, syncUrl: true });
+    },
+    [data.cases, data.pins, selectedCaseId, selectCase],
+  );
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") selectCase("");
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "Escape") {
+        selectCase("");
+        setCompareCaseId("");
+        setCompareMode(false);
+        setIsDrawingBbox(false);
+        if (isFullscreen) setIsFullscreen(false);
+        return;
+      }
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        setIsFullscreen((v) => !v);
+        return;
+      }
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        exploreRandom();
+        return;
+      }
+      if (e.key === "n" || e.key === "N" || e.key === "p" || e.key === "P") {
+        e.preventDefault();
+        cycleCase(e.key.toLowerCase() === "n" ? 1 : -1);
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectCase]);
+  }, [selectCase, isFullscreen, exploreRandom, cycleCase]);
+
+  useEffect(() => {
+    if (!isPlayingTimeline) return;
+    const decades = [1970, 1980, 1990, 2000, 2010, 2020];
+    let i = 0;
+    const id = window.setInterval(() => {
+      const start = decades[i % decades.length];
+      setMapView((v) => ({ ...v, timelineMinYear: start, timelineMaxYear: start + 9 }));
+      i += 1;
+      if (i >= decades.length * 2) {
+        setIsPlayingTimeline(false);
+      }
+    }, 1200);
+    return () => window.clearInterval(id);
+  }, [isPlayingTimeline]);
+
+  function handleExportCsv() {
+    const rows = data.pins.map((p) => ({
+      name: p.name,
+      slug: p.slug,
+      country: p.country,
+      yearStart: p.yearStart,
+      status: p.status,
+      lat: p.lat,
+      lng: p.lng,
+    }));
+    const csv = exportCasesCsv(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "motive-index-map-export.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   // Scroll case card into view on mobile when selected
   useEffect(() => {
@@ -295,7 +405,9 @@ export function WorldMonitor({ initial }: Props) {
   };
 
   return (
-    <div className={`monitor-dashboard ${isMobileLayout ? "is-mobile" : ""} ${isPending ? "is-loading" : ""}`}>
+    <div
+      className={`monitor-dashboard ${isMobileLayout ? "is-mobile" : ""} ${isPending ? "is-loading" : ""} ${isFullscreen ? "is-map-fullscreen" : ""}`}
+    >
       <div className="monitor-top">
       <header className="monitor-hero">
         <div className="monitor-hero-main">
@@ -388,6 +500,14 @@ export function WorldMonitor({ initial }: Props) {
               ? `: ${data.unplottedCases.map((c) => c.name).join(", ")}`
               : ""}
             .{" "}
+            <button
+              type="button"
+              className="text-[var(--accent)] hover:underline"
+              onClick={() => setMapView((v) => ({ ...v, showGhostPins: true }))}
+            >
+              Show country estimates on map
+            </button>
+            {" · "}
             <Link href="/search" className="text-[var(--accent)] hover:underline">
               Search full archive
             </Link>
@@ -446,19 +566,65 @@ export function WorldMonitor({ initial }: Props) {
                 : "No markers for current filters"}
             </span>
           </div>
+          <MonitorMapControls
+            view={mapView}
+            onChange={(patch) => setMapView((v) => ({ ...v, ...patch }))}
+            caseCount={data.pins.length}
+            newsCount={data.newsPins.length}
+            isFullscreen={isFullscreen}
+            isDrawingBbox={isDrawingBbox}
+            compareSlug={comparePin?.slug}
+            onExplore={exploreRandom}
+            onFullscreen={() => setIsFullscreen((v) => !v)}
+            onDrawBbox={() => setIsDrawingBbox((v) => !v)}
+            onClearBbox={() => setMapView((v) => ({ ...v, bboxFilter: null }))}
+            onExport={handleExportCsv}
+            onRegionPreset={(p) => {
+              setRegionFlyRequest(p);
+              window.setTimeout(() => setRegionFlyRequest(null), 1200);
+            }}
+            onPlayTimeline={() => setIsPlayingTimeline((v) => !v)}
+            isPlayingTimeline={isPlayingTimeline}
+          />
           <CaseWorldMap
             pins={data.pins}
+            ghostPins={data.ghostPins}
+            newsPins={data.newsPins}
+            countryStats={data.countryStats}
+            pinIndex={data.pinIndex}
             selectedCountry={filters.country ?? ""}
             selectedCaseId={selectedCaseId}
+            hoveredCaseId={hoveredCaseId}
+            view={mapView}
+            isDrawingBbox={isDrawingBbox}
+            regionFlyRequest={regionFlyRequest}
             onSelectCountry={(code) => applyFilters({ country: code })}
             onSelectCase={(id) => selectCase(id)}
+            onHoverCase={setHoveredCaseId}
+            onBboxChange={(bbox) => {
+              setMapView((v) => ({ ...v, bboxFilter: bbox }));
+              setIsDrawingBbox(false);
+            }}
           />
           {selectedPin ? (
             <MonitorCaseCard
               pin={selectedPin}
-              onClose={() => selectCase("")}
+              comparePin={comparePin}
+              onClose={() => {
+                selectCase("");
+                setCompareCaseId("");
+              }}
               cardRef={caseCardRef as RefObject<HTMLDivElement | null>}
             />
+          ) : null}
+          {selectedPin ? (
+            <button
+              type="button"
+              className="monitor-compare-btn btn btn-ghost text-xs"
+              onClick={() => setCompareMode(true)}
+            >
+              {compareMode ? "Select second case…" : "Compare with another case"}
+            </button>
           ) : null}
           {!data.pins.length ? (
             <div className="monitor-map-empty">
@@ -717,8 +883,10 @@ export function WorldMonitor({ initial }: Props) {
                     <li key={c.id}>
                       <button
                         type="button"
-                        className={`monitor-case-row ${active ? "is-active" : ""}`}
+                        className={`monitor-case-row ${active ? "is-active" : ""} ${hoveredCaseId === c.id ? "is-hovered" : ""}`}
                         onClick={() => selectCase(c.id, { syncUrl: true })}
+                        onMouseEnter={() => setHoveredCaseId(c.id)}
+                        onMouseLeave={() => setHoveredCaseId("")}
                       >
                         <span className="monitor-case-year">{c.yearStart}</span>
                         <span className="monitor-case-body">

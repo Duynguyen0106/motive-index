@@ -1,4 +1,5 @@
-import type { CrimeCase, CountryCode } from "@/lib/types";
+import type { CrimeCase, CountryCode, CrimeCategory } from "@/lib/types";
+import type { CaseProvenanceTier } from "@/lib/validation/caseProvenance";
 import { MULTILINGUAL_CASE_COORDS } from "@/data/multilingualCases";
 import { WORLD_CASE_COORDS } from "@/data/worldCases";
 import { resolveCaseCountry } from "@/lib/country";
@@ -114,6 +115,8 @@ export function resolveCaseCoordinates(
   return COUNTRY_CENTROIDS[country];
 }
 
+export type CoordAccuracy = "city" | "centroid" | "country";
+
 export type MonitorCasePin = {
   id: string;
   slug: string;
@@ -122,15 +125,42 @@ export type MonitorCasePin = {
   country: CountryCode;
   status: CrimeCase["status"];
   crimeCategories: CrimeCase["crimeCategories"];
+  primaryCategory: CrimeCategory;
   yearStart: number;
   yearEnd?: number;
   lat: number;
   lng: number;
+  provenanceTier: CaseProvenanceTier;
+  coordAccuracy: CoordAccuracy;
+  relatedCaseSlugs: string[];
+  imageUrl?: string;
+  tags: string[];
 };
 
-export function toMonitorPin(c: CrimeCase): MonitorCasePin | null {
+export function resolveCoordAccuracy(
+  c: Pick<CrimeCase, "slug" | "location" | "jurisdiction" | "country" | "lat" | "lng">,
+): CoordAccuracy {
+  if (typeof c.lat === "number" && typeof c.lng === "number") return "city";
+  if (SLUG_COORDS[c.slug]) return "city";
+  const text = `${c.location} ${c.jurisdiction}`.toLowerCase();
+  if (/\bkansas\b|\bflorida\b|\bcalifornia\b|san francisco|northern california|\bengland|manchester|united kingdom/.test(text)) {
+    return "city";
+  }
+  const country = resolveCaseCountry(c);
+  if (country === "OTHER") return "country";
+  return "centroid";
+}
+
+export function toMonitorPin(
+  c: CrimeCase,
+  extras?: {
+    provenanceTier: CaseProvenanceTier;
+    imageUrl?: string;
+  },
+): MonitorCasePin | null {
   const coords = resolveCaseCoordinates(c);
   if (!coords) return null;
+  const primaryCategory = c.crimeCategories[0] ?? "homicide";
   return {
     id: c.id,
     slug: c.slug,
@@ -139,10 +169,16 @@ export function toMonitorPin(c: CrimeCase): MonitorCasePin | null {
     country: resolveCaseCountry(c),
     status: c.status,
     crimeCategories: c.crimeCategories,
+    primaryCategory,
     yearStart: c.yearStart,
     yearEnd: c.yearEnd,
     lat: coords.lat,
     lng: coords.lng,
+    provenanceTier: extras?.provenanceTier ?? "curated",
+    coordAccuracy: resolveCoordAccuracy(c),
+    relatedCaseSlugs: c.relatedCaseSlugs ?? [],
+    imageUrl: extras?.imageUrl,
+    tags: c.tags,
   };
 }
 

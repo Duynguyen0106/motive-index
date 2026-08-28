@@ -255,6 +255,29 @@
     right: max(0.75rem, env(safe-area-inset-right));
   }
 
+  .monitor-map-controls {
+    padding: 0.5rem 0.65rem;
+    gap: 0.4rem;
+  }
+
+  .monitor-map-controls-row {
+    gap: 0.35rem;
+  }
+
+  .monitor-map-toggle {
+    padding: 0.35rem 0.5rem;
+    min-height: 2.25rem;
+  }
+
+  .monitor-timeline-sliders {
+    grid-template-columns: 1fr;
+  }
+
+  .monitor-compare-btn {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    left: max(0.65rem, env(safe-area-inset-left));
+  }
+
   .monitor-bottom-tabs {
     position: fixed;
     left: 0;
