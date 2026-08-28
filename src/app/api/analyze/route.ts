@@ -66,6 +66,22 @@ export async function POST(req: Request) {
     caseName: existing.name,
     overview: existing.overview,
     signals,
+    slug: existing.slug,
+    subtitle: existing.subtitle,
+    jurisdiction: existing.jurisdiction,
+    location: existing.location,
+    era: existing.era,
+    yearStart: existing.yearStart,
+    yearEnd: existing.yearEnd,
+    status: existing.status,
+    crimeCategories: existing.crimeCategories,
+    offenderName: existing.offenders[0]?.name,
+    narrative: existing.narrative,
+    timeline: existing.timeline,
+    behavioralProfile: existing.behavioralProfile,
+    motivationalFactors: existing.motivationalFactors,
+    psychologicalFactors: existing.psychologicalFactors,
+    theoreticalFrameworks: existing.theoreticalFrameworks,
   });
 
   const updated = upsertCase({

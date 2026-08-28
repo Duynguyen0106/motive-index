@@ -160,10 +160,21 @@ export interface PsychConstruct {
   clinicalCaveat?: string;
 }
 
+export interface FrameworkNote {
+  framework: TheoreticalFramework;
+  prediction: string;
+  assessment: string;
+  confidence: number;
+}
+
 export interface ForensicAnalysis {
   status: AnalysisStatus;
   summary: string;
+  /** Cross-dimensional integration of top constructs. */
+  synthesis?: string;
   constructs: PsychConstruct[];
+  /** Testable predictions from theoretical frameworks on the dossier. */
+  frameworkNotes?: FrameworkNote[];
   alternativeExplanations: string[];
   whatWeCannotKnow: string[];
   modelVersion: string;

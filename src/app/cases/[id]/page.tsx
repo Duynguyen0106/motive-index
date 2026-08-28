@@ -9,7 +9,7 @@ import { CaseNarrativeView } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { DossierActionBar } from "@/components/DossierActionBar";
-import { PsychMap } from "@/components/PsychMap";
+import { ForensicAnalysisView } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
 import { RelatedCases } from "@/components/RelatedCases";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
@@ -445,15 +445,7 @@ export default async function CasePage({ params, searchParams }: Props) {
               </div>
             </section>
 
-            <section>
-              <h2 className="display text-3xl">Psychological map</h2>
-              <p className="body-copy mt-2 text-[var(--ink-soft)]">
-                Constructs are hypotheses grounded in public behavior—not diagnoses.
-              </p>
-              <div className="mt-5">
-                <PsychMap constructs={analysis.constructs} />
-              </div>
-            </section>
+            <ForensicAnalysisView analysis={analysis} />
 
             <section className="grid gap-4 md:grid-cols-2">
               <div className="card p-6">

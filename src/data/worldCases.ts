@@ -5,11 +5,11 @@
 import type { CaseEnrichment } from "@/data/catalog";
 import type { SeedCase } from "@/data/seed";
 import { buildWorldDeep } from "@/lib/deepContentBuilder";
+import { buildDeepForensicAnalysis } from "@/lib/deepAnalysis";
 import type {
   CaseStatus,
   CountryCode,
   CrimeCategory,
-  ForensicAnalysis,
   PsychologicalFactor,
   TheoreticalFramework,
 } from "@/lib/types";
@@ -37,28 +37,29 @@ export type WorldCaseDef = {
   featured?: boolean;
 };
 
-function buildAnalysis(summary: string): ForensicAnalysis {
-  return {
-    status: "published",
-    summary,
-    constructs: [
-      {
-        id: `c-${Math.random().toString(36).slice(2, 8)}`,
-        label: "Pattern-level hypothesis",
-        dimension: "planning",
-        hypothesis: "Public-record behavior suggests premeditation or sustained concealment.",
-        evidence: ["Documented offense series or trial findings"],
-        counterEvidence: ["Media distortion and incomplete primary files remain possible"],
-        confidence: 0.65,
-        clinicalCaveat: "Hypothesis for education — not a clinical diagnosis.",
-      },
-    ],
-    alternativeExplanations: ["Situational escalation", "Opportunistic rather than compulsive motives"],
-    whatWeCannotKnow: ["Private phenomenology", "Complete victim count where disputed"],
-    modelVersion: "rubric-v1-world-seed",
-    reviewedByHuman: true,
-    updatedAt: "2026-08-27T12:00:00.000Z",
-  };
+function buildAnalysis(d: WorldCaseDef, deep: ReturnType<typeof buildWorldDeep>) {
+  return buildDeepForensicAnalysis({
+    slug: d.slug,
+    name: d.name,
+    subtitle: d.subtitle,
+    overview: d.overview,
+    jurisdiction: d.jurisdiction,
+    location: d.location,
+    era: d.era,
+    yearStart: d.yearStart,
+    yearEnd: d.yearEnd,
+    status: d.status,
+    crimeCategories: d.crimeCategories,
+    offenderName: d.offenderName,
+    signals: deep.signals,
+    narrative: deep.narrative,
+    timeline: deep.timeline,
+    behavioralProfile: deep.enrichmentPatch.behavioralProfile,
+    motivationalFactors: deep.enrichmentPatch.motivationalFactors,
+    psychologicalFactors: d.psychologicalFactors ?? ["antisocial_traits", "power_control"],
+    theoreticalFrameworks: d.theoreticalFrameworks ?? ["personality", "situational"],
+    published: true,
+  });
 }
 
 function worldDeepInput(d: WorldCaseDef) {
@@ -81,7 +82,8 @@ function worldDeepInput(d: WorldCaseDef) {
 
 function toSeed(d: WorldCaseDef): SeedCase {
   const id = `case-${d.slug}`;
-  const deep = buildWorldDeep(worldDeepInput(d));
+  const input = worldDeepInput(d);
+  const deep = buildWorldDeep(input);
   return {
     id,
     slug: d.slug,
@@ -100,9 +102,7 @@ function toSeed(d: WorldCaseDef): SeedCase {
       { title: "Trial / inquiry / established press archives", kind: "court" },
       { title: "Academic or journalistic case studies", kind: "academic" },
     ],
-    analysis: buildAnalysis(
-      `${d.name}: ${d.subtitle}. Analysis focuses on documented behavioral patterns, institutional context, and inferential limits — not sensational speculation.`,
-    ),
+    analysis: buildAnalysis(d, deep),
   };
 }
 

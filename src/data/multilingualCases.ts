@@ -7,12 +7,12 @@ import type { SeedCase } from "@/data/seed";
 import {
   buildMultilingualDeep,
 } from "@/lib/deepContentBuilder";
+import { buildDeepForensicAnalysis } from "@/lib/deepAnalysis";
 import type {
   CaseReference,
   CaseStatus,
   CountryCode,
   CrimeCategory,
-  ForensicAnalysis,
   PsychologicalFactor,
   SourceRef,
   TheoreticalFramework,
@@ -58,28 +58,31 @@ export type MultilingualCaseDef = {
   theoreticalFrameworks?: TheoreticalFramework[];
 };
 
-function buildAnalysis(slug: string, summary: string): ForensicAnalysis {
-  return {
-    status: "published",
-    summary,
-    constructs: [
-      {
-        id: `${slug}-c1`,
-        label: "Cross-lingual evidence base",
-        dimension: "planning",
-        hypothesis: "Behavioral inferences rely on translated court and press material; nuance may differ in originals.",
-        evidence: ["Primary sources listed in original language"],
-        counterEvidence: ["Translation gaps and media framing across jurisdictions"],
-        confidence: 0.6,
-        clinicalCaveat: "Verify claims against cited originals when possible.",
-      },
-    ],
-    alternativeExplanations: ["Reporting bias in local press", "Cultural idioms lost in translation"],
-    whatWeCannotKnow: ["Untranslated private records", "Full trial nuance without native-language review"],
-    modelVersion: "rubric-v1-multilingual",
-    reviewedByHuman: true,
-    updatedAt: "2026-08-27T18:00:00.000Z",
-  };
+function buildAnalysis(d: MultilingualCaseDef, deep: ReturnType<typeof buildMultilingualDeep>) {
+  return buildDeepForensicAnalysis({
+    slug: d.slug,
+    name: d.name,
+    subtitle: d.subtitle,
+    overview: d.overview,
+    jurisdiction: d.jurisdiction,
+    location: d.location,
+    era: d.era,
+    yearStart: d.yearStart,
+    yearEnd: d.yearEnd,
+    status: d.status,
+    crimeCategories: d.crimeCategories,
+    offenderName: d.offenderName,
+    signals: deep.signals,
+    narrative: deep.narrative,
+    timeline: deep.timeline,
+    behavioralProfile: deep.enrichmentPatch.behavioralProfile,
+    motivationalFactors: deep.enrichmentPatch.motivationalFactors,
+    psychologicalFactors: d.psychologicalFactors ?? ["antisocial_traits", "power_control"],
+    theoreticalFrameworks: d.theoreticalFrameworks ?? ["personality", "situational"],
+    primarySourceLanguageLabel: d.primarySourceLanguageLabel,
+    translationNote: d.translationNote,
+    published: true,
+  });
 }
 
 function multilingualDeepInput(d: MultilingualCaseDef) {
@@ -109,7 +112,8 @@ function multilingualDeepInput(d: MultilingualCaseDef) {
 }
 
 function toSeed(d: MultilingualCaseDef): SeedCase {
-  const deep = buildMultilingualDeep(multilingualDeepInput(d));
+  const input = multilingualDeepInput(d);
+  const deep = buildMultilingualDeep(input);
   return {
     id: `case-${d.slug}`,
     slug: d.slug,
@@ -134,10 +138,7 @@ function toSeed(d: MultilingualCaseDef): SeedCase {
       language,
       languageLabel,
     })),
-    analysis: buildAnalysis(
-      d.slug,
-      `${d.name}: ${d.subtitle} [Primary sources: ${d.primarySourceLanguageLabel}]`,
-    ),
+    analysis: buildAnalysis(d, deep),
   };
 }
 

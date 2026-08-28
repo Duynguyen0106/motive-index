@@ -1,5 +1,5 @@
-import type { PsychConstruct } from "@/lib/types";
-import { DIMENSION_LABELS } from "@/lib/types";
+import type { ForensicAnalysis, FrameworkNote, PsychConstruct } from "@/lib/types";
+import { DIMENSION_LABELS, FRAMEWORK_LABELS } from "@/lib/types";
 import { formatConfidence } from "@/lib/utils";
 
 export function ConfidenceLabel({ value }: { value: number }) {
@@ -7,6 +7,55 @@ export function ConfidenceLabel({ value }: { value: number }) {
     <span className="confidence" title={`Confidence ${formatConfidence(value)}`}>
       Confidence {formatConfidence(value)}
     </span>
+  );
+}
+
+export function DimensionCoverage({ constructs }: { constructs: PsychConstruct[] }) {
+  const covered = new Set(constructs.map((c) => c.dimension));
+  const total = 8;
+  return (
+    <p className="text-sm text-[var(--muted)]">
+      {`Rubric coverage: ${covered.size}/${total} dimensions scored`}
+    </p>
+  );
+}
+
+export function AnalysisSynthesis({ text }: { text?: string }) {
+  if (!text) return null;
+  return (
+    <section className="card p-6 md:p-8">
+      <h2 className="display text-2xl">Integrated synthesis</h2>
+      <p className="body-copy mt-4 text-[var(--ink-soft)] md:text-lg">{text}</p>
+    </section>
+  );
+}
+
+export function FrameworkNotes({ notes }: { notes?: FrameworkNote[] }) {
+  if (!notes?.length) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="display text-2xl">Theoretical framework tests</h2>
+      <p className="body-copy mt-2 max-w-3xl text-[var(--ink-soft)]">
+        Each framework yields a testable prediction against public evidence — not a verdict.
+      </p>
+      <ul className="mt-5 grid gap-3">
+        {notes.map((n) => (
+          <li key={n.framework} className="framework-note card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-semibold text-[var(--ink)]">
+                {FRAMEWORK_LABELS[n.framework]}
+              </h3>
+              <ConfidenceLabel value={n.confidence} />
+            </div>
+            <p className="mt-3 text-sm text-[var(--ink-soft)]">
+              <span className="font-medium text-[var(--ink)]">Prediction: </span>
+              {n.prediction}
+            </p>
+            <p className="mt-2 text-sm text-[var(--muted)]">{n.assessment}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -64,6 +113,28 @@ export function PsychMap({ constructs }: { constructs: PsychConstruct[] }) {
           </div>
         </article>
       ))}
+    </div>
+  );
+}
+
+export function ForensicAnalysisView({ analysis }: { analysis: ForensicAnalysis }) {
+  return (
+    <div className="space-y-8">
+      <AnalysisSynthesis text={analysis.synthesis} />
+      <section>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="display text-3xl">Psychological map</h2>
+          <DimensionCoverage constructs={analysis.constructs} />
+        </div>
+        <p className="body-copy mt-2 text-[var(--ink-soft)]">
+          Constructs are hypotheses grounded in public behavior — not diagnoses. Each dimension
+          includes supporting and counter-evidence.
+        </p>
+        <div className="mt-5">
+          <PsychMap constructs={analysis.constructs} />
+        </div>
+      </section>
+      <FrameworkNotes notes={analysis.frameworkNotes} />
     </div>
   );
 }

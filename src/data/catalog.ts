@@ -7,6 +7,7 @@ import type {
   CountryCode,
   DiagnosisNote,
   ExpertCommentary,
+  ForensicAnalysis,
   GlossaryTerm,
   MotivationalFactor,
   PersonRecord,
@@ -19,6 +20,7 @@ import type {
 import { getCaseNarrative } from "@/data/narratives";
 import { worldEnrichments } from "@/data/worldCases";
 import { multilingualEnrichments } from "@/data/multilingualCases";
+import { augmentForensicAnalysis } from "@/lib/deepAnalysis";
 import { inferCountry } from "@/lib/country";
 
 export interface CaseEnrichment {
@@ -875,6 +877,62 @@ export const seedContributions: ContributionSubmission[] = [
   },
 ];
 
+function analysisContextFromCase(
+  base: Pick<
+    CrimeCase,
+    | "slug"
+    | "name"
+    | "subtitle"
+    | "overview"
+    | "jurisdiction"
+    | "location"
+    | "era"
+    | "yearStart"
+    | "yearEnd"
+    | "status"
+    | "crimeCategories"
+    | "offenders"
+    | "psychologicalFactors"
+    | "theoreticalFrameworks"
+    | "primarySourceLanguageLabel"
+    | "translationNote"
+    | "signals"
+    | "timeline"
+    | "behavioralProfile"
+    | "motivationalFactors"
+  >,
+) {
+  return {
+    slug: base.slug,
+    name: base.name,
+    subtitle: base.subtitle,
+    overview: base.overview,
+    jurisdiction: base.jurisdiction,
+    location: base.location ?? base.jurisdiction,
+    era: base.era,
+    yearStart: base.yearStart,
+    yearEnd: base.yearEnd,
+    status: base.status,
+    crimeCategories: base.crimeCategories,
+    offenderName: base.offenders?.[0]?.name ?? "Unknown",
+    signals: base.signals,
+    timeline: base.timeline,
+    behavioralProfile: base.behavioralProfile,
+    motivationalFactors: base.motivationalFactors,
+    psychologicalFactors: base.psychologicalFactors,
+    theoreticalFrameworks: base.theoreticalFrameworks,
+    primarySourceLanguageLabel: base.primarySourceLanguageLabel,
+    translationNote: base.translationNote,
+  };
+}
+
+function finalizeAnalysis(
+  base: Parameters<typeof analysisContextFromCase>[0],
+  analysis: ForensicAnalysis,
+): ForensicAnalysis {
+  return augmentForensicAnalysis(analysisContextFromCase(base), analysis);
+}
+
 export function applyEnrichment(
   base: Omit<
     CrimeCase,
@@ -925,10 +983,27 @@ export function applyEnrichment(
       documentIds: base.documentIds ?? [],
       references: base.references ?? [],
       narrative: getCaseNarrative(base.slug),
-      analysis: {
-        ...base.analysis,
-        expertCommentary: base.analysis.expertCommentary ?? [],
-      },
+      analysis: finalizeAnalysis(
+        {
+          ...base,
+          location,
+          yearStart: base.yearStart ?? (Number(base.era) || 1900),
+          crimeCategories: base.crimeCategories ?? ["other"],
+          psychologicalFactors: base.psychologicalFactors ?? [],
+          theoreticalFrameworks: base.theoreticalFrameworks ?? [],
+          offenders: base.offenders ?? [],
+          timeline: base.timeline,
+          behavioralProfile: base.behavioralProfile ?? {
+            modusOperandi: "See analysis.",
+            organizationLevel: "unknown",
+          },
+          motivationalFactors: base.motivationalFactors ?? [],
+        },
+        {
+          ...base.analysis,
+          expertCommentary: base.analysis.expertCommentary ?? [],
+        },
+      ),
     } as CrimeCase;
   }
 
@@ -960,9 +1035,24 @@ export function applyEnrichment(
       e.primarySourceLanguageLabel ?? base.primarySourceLanguageLabel,
     translationNote: e.translationNote ?? base.translationNote,
     narrative: getCaseNarrative(base.slug),
-    analysis: {
-      ...base.analysis,
-      expertCommentary: e.expertCommentary ?? [],
-    },
+    analysis: finalizeAnalysis(
+      {
+        ...base,
+        location: e.location,
+        yearStart: e.yearStart,
+        yearEnd: e.yearEnd,
+        crimeCategories: e.crimeCategories,
+        psychologicalFactors: e.psychologicalFactors,
+        theoreticalFrameworks: e.theoreticalFrameworks,
+        offenders: e.offenders,
+        timeline: base.timeline,
+        behavioralProfile: e.behavioralProfile,
+        motivationalFactors: e.motivationalFactors,
+      },
+      {
+        ...base.analysis,
+        expertCommentary: e.expertCommentary ?? [],
+      },
+    ),
   } as CrimeCase;
 }
