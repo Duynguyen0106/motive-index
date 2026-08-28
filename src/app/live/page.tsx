@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { LivePageSync } from "@/components/LivePageSync";
-import { LiveRegionFilter } from "@/components/LiveRegionFilter";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
@@ -40,13 +38,6 @@ export default async function LivePage({ searchParams }: Props) {
     Promise.resolve(getUpdatesTotal()),
   ]);
 
-  const monitorNewsQs = new URLSearchParams();
-  if (country) monitorNewsQs.set("country", country);
-  monitorNewsQs.set("tab", "news");
-  if (newsFilter !== "all") monitorNewsQs.set("newsFilter", newsFilter);
-  const monitorHref = `/?${monitorNewsQs.toString()}`;
-  const monitorCasesHref = country ? `/?country=${country}` : "/";
-
   return (
     <div className="site-shell page-intro page-scroll-safe py-10 md:py-12">
       <Breadcrumbs
@@ -63,30 +54,9 @@ export default async function LivePage({ searchParams }: Props) {
           { href: "/", label: "World monitor" },
           { href: "/archive", label: "Archive" },
           { href: "/search", label: "Advanced search" },
+          { href: "/live?newsFilter=hot", label: "Hot news" },
         ]}
       />
-
-      <div className="live-toolbar mt-6 flex flex-wrap items-center gap-4 border-b border-[var(--line)] pb-6">
-        <Link href="/" className="text-link text-sm">
-          ← Back to monitor
-        </Link>
-        <Suspense fallback={<span className="text-sm text-[var(--muted)]">Loading filters…</span>}>
-          <LiveRegionFilter country={country} countryOptions={countryOptions} />
-        </Suspense>
-      </div>
-
-      {country ? (
-        <p className="mt-4 text-sm text-[var(--muted)]">
-          Showing news linked to {COUNTRY_LABELS[country]}.{" "}
-          <Link href={monitorHref} className="text-[var(--accent)] hover:underline">
-            View on monitor (news tab)
-          </Link>
-          {" · "}
-          <Link href={monitorCasesHref} className="text-[var(--accent)] hover:underline">
-            Cases on map
-          </Link>
-        </p>
-      ) : null}
 
       <Suspense
         fallback={
@@ -100,6 +70,7 @@ export default async function LivePage({ searchParams }: Props) {
           initialUpdates={archiveUpdates}
           initialUpdatesTotal={updatesTotal}
           country={country}
+          countryOptions={countryOptions}
           initialNewsFilter={newsFilter}
         />
       </Suspense>

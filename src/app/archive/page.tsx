@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PaginationScrollReset } from "@/components/PaginationScrollReset";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { CasesGrid } from "@/components/CasesGrid";
 import { Disclaimer } from "@/components/Disclaimer";
@@ -112,6 +113,9 @@ export default async function ArchivePage({ searchParams }: Props) {
       ) : null}
 
       <section className="site-shell py-10 md:py-12">
+        <Suspense fallback={null}>
+          <PaginationScrollReset />
+        </Suspense>
         <div className="mb-6 flex flex-col gap-1 border-b border-[var(--line)] pb-4 md:flex-row md:items-baseline md:justify-between">
           <h2 className="display text-2xl text-[var(--ink)]">Case index</h2>
           <p className="text-sm text-[var(--muted)]">

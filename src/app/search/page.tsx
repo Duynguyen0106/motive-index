@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
-import { EmptyState, QuickLinks } from "@/components/ui";
-import { getPrimaryCaseImage } from "@/lib/caseImages";
+import { PaginationScrollReset } from "@/components/PaginationScrollReset";
 import { SearchFilterChips } from "@/components/SearchFilterChips";
 import { SearchHighlight } from "@/components/SearchHighlight";
+import { EmptyState, QuickLinks } from "@/components/ui";
+import { getPrimaryCaseImage } from "@/lib/caseImages";
 import {
   CRIME_CATEGORY_LABELS,
   DOCUMENT_TYPE_LABELS,
@@ -69,6 +71,9 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className="site-shell page-scroll-safe py-12 md:py-14">
+      <Suspense fallback={null}>
+        <PaginationScrollReset keys={["page", "docPage"]} />
+      </Suspense>
       <Breadcrumbs
         items={[{ label: "Monitor", href: "/" }, { label: "Advanced search" }]}
       />

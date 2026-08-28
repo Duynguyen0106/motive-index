@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui";
+import { NewsFeedFilterBar } from "@/components/NewsFeedFilterBar";
 import { readJsonResponse } from "@/lib/clientFetch";
 import type { HotCrimeNewsItem } from "@/lib/hotNewsTicker";
 import {
@@ -292,23 +293,11 @@ export function WorldNewsFeed({
       </div>
 
       {showFilters ? (
-        <div className="monitor-news-filters" role="toolbar" aria-label="Filter news">
-          {(Object.keys(NEWS_FILTER_LABELS) as NewsFeedFilter[]).map((key) => {
-            const count = filterCounts[key];
-            if (!count && filter !== key) return null;
-            return (
-              <button
-                key={key}
-                type="button"
-                className={`monitor-news-filter ${filter === key ? "is-active" : ""} ${key === "hot" && count ? "has-hot" : ""}`}
-                onClick={() => setFilter(key)}
-              >
-                {NEWS_FILTER_LABELS[key]}
-                <span className="monitor-news-filter-count">{count}</span>
-              </button>
-            );
-          })}
-        </div>
+        <NewsFeedFilterBar
+          filter={filter}
+          onFilterChange={setFilter}
+          counts={filterCounts}
+        />
       ) : null}
 
       <ul className="monitor-news-list">

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PaginationScrollReset } from "@/components/PaginationScrollReset";
+import { SearchHighlight } from "@/components/SearchHighlight";
 import { ContentWarning } from "@/components/ContentWarning";
 import { EmptyState } from "@/components/ui";
 import { PageHeader } from "@/components/PageHeader";
@@ -57,6 +60,9 @@ export default async function DocumentsPage({ searchParams }: Props) {
 
   return (
     <div className="site-shell page-intro py-10 md:py-12">
+      <Suspense fallback={null}>
+        <PaginationScrollReset />
+      </Suspense>
       <Breadcrumbs
         items={[{ label: "Monitor", href: "/" }, { label: "Document library" }]}
       />
@@ -148,8 +154,12 @@ export default async function DocumentsPage({ searchParams }: Props) {
                 {d.date ?? "Date n/a"} · {d.publicDomain ? "public domain" : "citation / link-out"}
               </p>
             </div>
-            <h2 className="display mt-2 text-2xl">{d.title}</h2>
-            <p className="mt-2 text-[var(--ink-soft)]">{d.summary}</p>
+            <h2 className="display mt-2 text-2xl">
+              <SearchHighlight text={d.title} query={q} />
+            </h2>
+            <p className="mt-2 text-[var(--ink-soft)]">
+              <SearchHighlight text={d.summary} query={q} />
+            </p>
             <p className="mt-2 text-sm text-[var(--muted)]">
               Relevance: {d.psychRelevance}
             </p>

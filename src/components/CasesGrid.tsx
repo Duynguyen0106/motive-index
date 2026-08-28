@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArchiveFilterChips } from "@/components/ArchiveFilterChips";
+import { SearchHighlight } from "@/components/SearchHighlight";
 import { CaseStatusBadge, EmptyState } from "@/components/ui";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
@@ -206,11 +207,13 @@ export function CasesGrid({
               </span>
               <span>
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="index-title group-hover:text-[var(--accent)]">{c.name}</span>
+                  <span className="index-title group-hover:text-[var(--accent)]">
+                    <SearchHighlight text={c.name} query={filters.q} />
+                  </span>
                   {c.status === "unsolved" ? <CaseStatusBadge status={c.status} /> : null}
                 </span>
                 <span className="mt-1 block text-sm text-[var(--ink-soft)] line-clamp-2">
-                  {c.subtitle}
+                  <SearchHighlight text={c.subtitle} query={filters.q} />
                 </span>
                 <span className="mt-1 block text-xs text-[var(--muted)]">
                   {c.yearStart}

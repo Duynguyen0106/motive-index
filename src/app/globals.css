@@ -3290,9 +3290,14 @@ a.monitor-news-headline:hover {
   color: var(--cs-signal);
 }
 
-.command-palette-trigger-desktop,
-.command-palette-trigger-mobile {
-  white-space: nowrap;
+.live-news-filters {
+  margin-top: 0.75rem;
+}
+
+.live-news-filters.monitor-news-filters {
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .monitor-skeleton .monitor-hero {

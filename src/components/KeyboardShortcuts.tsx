@@ -11,6 +11,7 @@ const SHORTCUTS = [
   { keys: "g m", action: "Go to world monitor (home)" },
   { keys: "g a", action: "Go to case archive" },
   { keys: "g n", action: "Go to world crime news" },
+  { keys: "g d", action: "Go to document library" },
   { keys: "g s", action: "Go to advanced search" },
   { keys: "[ ]", action: "Monitor sidebar tabs (home) or story chapters (Full story tab)" },
   { keys: "← →", action: "Cycle case tabs (on dossier pages)" },
@@ -83,9 +84,11 @@ export function KeyboardShortcuts() {
               ? "/archive"
               : e.key === "n"
                 ? "/live"
-                : e.key === "s"
-                  ? "/search"
-                  : null;
+                : e.key === "d"
+                  ? "/documents"
+                  : e.key === "s"
+                    ? "/search"
+                    : null;
         if (dest) {
           e.preventDefault();
           router.push(dest);
