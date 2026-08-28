@@ -58,10 +58,25 @@ function readStoreFromDisk(): Store | null {
 function writeStore(store: Store): void {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
-  } catch {
-    /* best-effort persistence for local MVP */
+    const tmp = `${STORE_PATH}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(store, null, 2));
+    fs.renameSync(tmp, STORE_PATH);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to write store";
+    if (process.env.NODE_ENV === "production") {
+      console.error(`[data] persist failed: ${message}`);
+    }
+    throw new Error(`Failed to persist store: ${message}`);
   }
+}
+
+export function invalidateStoreCache(): void {
+  const g = globalThis as unknown as { __motiveIndexStore?: Store };
+  g.__motiveIndexStore = undefined;
+}
+
+export function getStoreSnapshot(): Store {
+  return structuredClone(getStore());
 }
 
 function getStore(): Store {
@@ -165,9 +180,13 @@ export function getAnalyses() {
 }
 
 export function searchCases(filters: SearchFilters): CrimeCase[] {
+  return searchCasesFrom(getAllCases(), filters);
+}
+
+export function searchCasesFrom(cases: CrimeCase[], filters: SearchFilters): CrimeCase[] {
   const q = filters.q?.trim().toLowerCase() ?? "";
 
-  return getAllCases().filter((c) => {
+  return cases.filter((c) => {
     if (filters.crimeCategory && !c.crimeCategories.includes(filters.crimeCategory)) {
       return false;
     }
@@ -269,6 +288,29 @@ export function upsertCase(next: CrimeCase): CrimeCase {
   return next;
 }
 
+export function upsertDocument(doc: CaseDocument, caseId?: string): CaseDocument {
+  const store = getStore();
+  const idx = store.documents.findIndex((d) => d.id === doc.id);
+  if (idx >= 0) store.documents[idx] = doc;
+  else store.documents = [doc, ...store.documents];
+
+  if (caseId) {
+    const caseIdx = store.cases.findIndex((c) => c.id === caseId);
+    if (caseIdx >= 0) {
+      const ids = store.cases[caseIdx].documentIds ?? [];
+      if (!ids.includes(doc.id)) {
+        store.cases[caseIdx] = {
+          ...store.cases[caseIdx],
+          documentIds: [doc.id, ...ids],
+        };
+      }
+    }
+  }
+
+  persist();
+  return doc;
+}
+
 export function getModerationQueue(): CrimeCase[] {
   return getAllCases().filter((c) => {
     const awaiting =
@@ -356,6 +398,7 @@ export function addUpdate(update: LiveUpdate): LiveUpdate {
 }
 
 export function resetStore(): void {
+  invalidateStoreCache();
   const g = globalThis as unknown as { __motiveIndexStore?: Store };
   g.__motiveIndexStore = seedStore();
   persist();

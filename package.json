@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "verify": "bash scripts/verify-phase1.sh http://localhost:3000",
+    "db:sync": "node --env-file=.env.local scripts/db-sync.mjs",
     "live-update": "curl -s -X POST http://localhost:3000/api/cron/live-update -H 'content-type: application/json' -d '{\"limit\":5}'"
   },
   "dependencies": {

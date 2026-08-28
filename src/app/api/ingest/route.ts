@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyzeFromSignals } from "@/lib/analyze";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import { applyNarrativeToCase, generateCaseNarrative } from "@/lib/narrativeGenerate";
 import type { CrimeCase } from "@/lib/types";
 
@@ -94,6 +95,7 @@ export async function POST(req: Request) {
   crimeCase = applyNarrativeToCase(crimeCase, narrativeResult, parsed.data.headline);
 
   upsertCase(crimeCase);
+  await syncAfterCaseWrite(crimeCase);
   const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
@@ -103,6 +105,7 @@ export async function POST(req: Request) {
     kind: "new_case",
     status: "draft",
   });
+  await syncAfterUpdateWrite(update);
 
   return NextResponse.json({ case: crimeCase, update }, { status: 201 });
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { getAllCases } from "@/lib/data";
-import { syncCaseToSupabase } from "@/lib/repository";
+import { getStoreSnapshot } from "@/lib/data";
+import { syncFullStoreToSupabase } from "@/lib/repository";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
 
@@ -19,15 +19,26 @@ export async function GET() {
 
   try {
     const supabase = getSupabaseServerClient();
-    const cases = await supabase.from("cases").select("id").limit(1);
-    const bucket = await supabase.storage.getBucket("case-documents");
+    const [cases, updates, contributions, bucket] = await Promise.all([
+      supabase.from("cases").select("id", { count: "exact", head: true }),
+      supabase.from("live_updates").select("id", { count: "exact", head: true }),
+      supabase.from("contributions").select("id", { count: "exact", head: true }),
+      supabase.storage.getBucket("case-documents"),
+    ]);
+
     return NextResponse.json({
       configured: true,
       tablesReady: !cases.error,
       tablesError: cases.error?.message ?? null,
+      liveUpdatesReady: !updates.error,
+      contributionsReady: !contributions.error,
+      caseCount: cases.count ?? 0,
+      updateCount: updates.count ?? 0,
+      contributionCount: contributions.count ?? 0,
       bucketReady: !bucket.error && Boolean(bucket.data),
       bucketError: bucket.error?.message ?? null,
       urlHost: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseReadEnabled: process.env.MOTIVE_INDEX_SUPABASE_READ === "1",
     });
   } catch (err) {
     return NextResponse.json({
@@ -38,7 +49,7 @@ export async function GET() {
   }
 }
 
-/** Seed/sync local cases into Supabase once tables exist. */
+/** Seed/sync local store into Supabase once tables exist. */
 export async function POST() {
   const session = await getAdminSession();
   if (!session) {
@@ -49,23 +60,21 @@ export async function POST() {
   }
 
   const supabase = getSupabaseServerClient();
-  // Ensure bucket exists
   const existing = await supabase.storage.getBucket("case-documents");
   if (existing.error) {
     await supabase.storage.createBucket("case-documents", { public: false });
   }
 
-  const local = getAllCases();
-  const results = [];
-  for (const c of local) {
-    results.push({ id: c.id, ...(await syncCaseToSupabase(c)) });
-  }
+  const store = getStoreSnapshot();
+  const result = await syncFullStoreToSupabase(store);
 
-  const ok = results.filter((r) => r.ok).length;
-  const failed = results.filter((r) => !r.ok);
   return NextResponse.json({
-    synced: ok,
-    failed,
-    total: local.length,
+    synced: result,
+    total: {
+      cases: store.cases.length,
+      documents: store.documents.length,
+      updates: store.updates.length,
+      contributions: store.contributions.length,
+    },
   });
 }

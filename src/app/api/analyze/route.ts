@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyzeWithOptionalLLM } from "@/lib/analyze";
 import { getCaseBySlug, upsertCase, addUpdate } from "@/lib/data";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import type { BehaviorSignal } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -77,7 +78,9 @@ export async function POST(req: Request) {
     },
   });
 
-  addUpdate({
+  await syncAfterCaseWrite(updated);
+
+  const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
     headline: `Analysis draft regenerated for ${existing.name}`,
@@ -86,6 +89,7 @@ export async function POST(req: Request) {
     kind: "analysis_ready",
     status: "draft",
   });
+  await syncAfterUpdateWrite(update);
 
   return NextResponse.json({ case: updated });
 }

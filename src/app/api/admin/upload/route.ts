@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
-import fs from "node:fs";
 import path from "node:path";
 import { getAdminSession } from "@/lib/auth";
-import { getAllCases } from "@/lib/data";
+import { getAllCases, upsertDocument } from "@/lib/data";
+import { syncAfterDocumentWrite } from "@/lib/dbSync";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
 import type { CaseDocument, DocumentType } from "@/lib/types";
@@ -105,19 +105,8 @@ export async function POST(req: Request) {
     hosted,
   };
 
-  const storePath = path.join(process.cwd(), ".data", "store.json");
-  if (!fs.existsSync(storePath)) getAllCases();
-  const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
-  store.documents = [document, ...(store.documents ?? [])];
-  const idx = (store.cases as Array<{ id: string; documentIds: string[] }>).findIndex(
-    (c) => c.id === crimeCase.id,
-  );
-  if (idx >= 0) {
-    store.cases[idx].documentIds = [docId, ...(store.cases[idx].documentIds ?? [])];
-  }
-  fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
-  const g = globalThis as unknown as { __motiveIndexStore?: unknown };
-  g.__motiveIndexStore = undefined;
+  upsertDocument(document, crimeCase.id);
+  await syncAfterDocumentWrite(document, crimeCase.id);
 
   return NextResponse.json({ document, storage, storagePath });
 }

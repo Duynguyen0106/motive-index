@@ -1,4 +1,5 @@
-import { getAllCases, getCaseOfWeek, getUpdates, searchCases } from "@/lib/data";
+import { searchCasesFrom } from "@/lib/data";
+import { getAllCasesAsync, getUpdatesAsync } from "@/lib/dataServer";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { spreadPins, toMonitorPin } from "@/lib/geo";
 import { parseSearchParams } from "@/lib/search";
@@ -38,7 +39,7 @@ export type MonitorPayload = {
   featuredCase?: CrimeCase;
 };
 
-function buildCountryStats(cases: CrimeCase[]): CountryMonitorStat[] {
+function buildCountryStats(cases: CrimeCase[], allCases: CrimeCase[]): CountryMonitorStat[] {
   const byCountry = new Map<CountryCode, CountryMonitorStat>();
 
   for (const c of cases) {
@@ -59,7 +60,7 @@ function buildCountryStats(cases: CrimeCase[]): CountryMonitorStat[] {
     byCountry.set(code, existing);
   }
 
-  const order = listCountryOptions(getAllCases());
+  const order = listCountryOptions(allCases);
   return order
     .map((code) => byCountry.get(code))
     .filter((s): s is CountryMonitorStat => Boolean(s))
@@ -71,8 +72,8 @@ export async function buildMonitorPayload(
   updateLimit = 12,
 ): Promise<MonitorPayload> {
   const filters = parseSearchParams(params);
-  const all = getAllCases();
-  const cases = searchCases(filters);
+  const all = await getAllCasesAsync();
+  const cases = searchCasesFrom(all, filters);
   const rawPins = cases
     .map((c) => toMonitorPin(c))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
@@ -103,11 +104,13 @@ export async function buildMonitorPayload(
     plottedCount: rawPins.length,
     unplottedCases,
     countryOptions: listCountryOptions(all),
-    countryStats: buildCountryStats(cases),
+    countryStats: buildCountryStats(cases, all),
     pins: spreadPins(rawPins),
     cases,
-    updates: getUpdates(updateLimit),
+    updates: await getUpdatesAsync(updateLimit),
     worldNews,
-    featuredCase: getCaseOfWeek(),
+    featuredCase:
+      all.find((c) => c.caseOfWeek) ??
+      all.find((c) => c.featured && c.analysis.status === "published"),
   };
 }

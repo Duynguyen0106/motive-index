@@ -8,7 +8,7 @@ import {
   publishCase,
   rejectCase,
 } from "@/lib/data";
-import { syncCaseToSupabase } from "@/lib/repository";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +48,8 @@ export async function POST(req: Request) {
     if (!published) {
       return NextResponse.json({ error: "Publish failed" }, { status: 500 });
     }
-    await syncCaseToSupabase(published);
-    addUpdate({
+    await syncAfterCaseWrite(published);
+    const update = addUpdate({
       id: `upd-${Date.now()}`,
       createdAt: new Date().toISOString(),
       headline: `Published after moderation: ${published.name}`,
@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       kind: "analysis_ready",
       status: "published",
     });
+    await syncAfterUpdateWrite(update);
     return NextResponse.json({ case: published, action: "approve" });
   }
 
@@ -65,8 +66,8 @@ export async function POST(req: Request) {
   if (!rejected) {
     return NextResponse.json({ error: "Reject failed" }, { status: 500 });
   }
-  await syncCaseToSupabase(rejected);
-  addUpdate({
+  await syncAfterCaseWrite(rejected);
+  const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
     headline: `Draft rejected: ${rejected.name}`,
@@ -75,5 +76,6 @@ export async function POST(req: Request) {
     kind: "revision",
     status: "draft",
   });
+  await syncAfterUpdateWrite(update);
   return NextResponse.json({ case: rejected, action: "reject" });
 }

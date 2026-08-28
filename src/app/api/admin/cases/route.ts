@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { addUpdate, getCaseBySlug, upsertCase } from "@/lib/data";
-import { syncCaseToSupabase } from "@/lib/repository";
+import { syncAfterCaseWrite, syncAfterUpdateWrite } from "@/lib/dbSync";
 import { inferCountry } from "@/lib/country";
 import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
@@ -111,14 +111,14 @@ export async function POST(req: Request) {
   };
 
   upsertCase(crimeCase);
-  const sync = await syncCaseToSupabase(crimeCase);
+  const sync = await syncAfterCaseWrite(crimeCase);
   if (!sync.ok) {
     return NextResponse.json(
       { error: `Local save ok, Supabase sync failed: ${sync.error}` },
       { status: 207 },
     );
   }
-  addUpdate({
+  const update = addUpdate({
     id: `upd-${Date.now()}`,
     createdAt: new Date().toISOString(),
     headline: `Admin created case: ${crimeCase.name}`,
@@ -127,6 +127,7 @@ export async function POST(req: Request) {
     kind: "new_case",
     status: "draft",
   });
+  await syncAfterUpdateWrite(update);
 
   return NextResponse.json({ case: crimeCase, supabaseSynced: !sync.skipped }, { status: 201 });
 }
