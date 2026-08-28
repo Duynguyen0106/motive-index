@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src",
     "verify": "bash scripts/verify-phase1.sh http://localhost:3000",
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "validate:store": "node scripts/validate-store.mjs",

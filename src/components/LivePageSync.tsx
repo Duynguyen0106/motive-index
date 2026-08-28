@@ -42,19 +42,16 @@ export function LivePageSync({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [news, setNews] = useState(initialNews);
-  const [updates, setUpdates] = useState(initialUpdates);
+  const [updates] = useState(initialUpdates);
   const [newsFilter, setNewsFilter] = useState<NewsFeedFilter>(initialNewsFilter);
   const [syncStatus, setSyncStatus] = useState<"live" | "syncing" | "stale">("live");
 
-  useEffect(() => {
-    setNews(initialNews);
-    setUpdates(initialUpdates);
-    setSyncStatus("live");
-  }, [initialNews, initialUpdates]);
-
-  useEffect(() => {
-    setNewsFilter(parseNewsFilter(searchParams.get("newsFilter")));
-  }, [searchParams]);
+  const urlNewsFilter = parseNewsFilter(searchParams.get("newsFilter"));
+  const [prevUrlNewsFilter, setPrevUrlNewsFilter] = useState(urlNewsFilter);
+  if (urlNewsFilter !== prevUrlNewsFilter) {
+    setPrevUrlNewsFilter(urlNewsFilter);
+    setNewsFilter(urlNewsFilter);
+  }
 
   const handleNewsFilterChange = useCallback(
     (next: NewsFeedFilter) => {

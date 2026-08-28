@@ -47,8 +47,6 @@ export function SiteSearch() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const trimmed = q.trim();
     if (trimmed.length < 2) {
-      setHits([]);
-      setLoading(false);
       return;
     }
     debounceRef.current = setTimeout(async () => {
@@ -113,8 +111,16 @@ export function SiteSearch() {
           type="search"
           value={q}
           onChange={(e) => {
-            setQ(e.target.value);
-            if (e.target.value.trim().length >= 2) setOpen(true);
+            const next = e.target.value;
+            setQ(next);
+            if (next.trim().length < 2) {
+              setHits([]);
+              setLoading(false);
+              setOpen(false);
+              setActiveIdx(-1);
+            } else {
+              setOpen(true);
+            }
           }}
           onFocus={() => {
             if (hits.length) setOpen(true);

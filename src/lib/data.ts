@@ -184,6 +184,24 @@ export function addContribution(
   return row;
 }
 
+export function updateContribution(
+  id: string,
+  patch: Partial<Pick<ContributionSubmission, "status">>,
+): ContributionSubmission | null {
+  const store = getStore();
+  const idx = store.contributions.findIndex((c) => c.id === id);
+  if (idx < 0) return null;
+  const next = { ...store.contributions[idx], ...patch };
+  store.contributions = store.contributions.slice();
+  store.contributions[idx] = next;
+  persist();
+  return next;
+}
+
+export function getPendingContributions(): ContributionSubmission[] {
+  return getContributions().filter((c) => c.status === "pending" || c.status === "in_review");
+}
+
 export function getAnalyses() {
   return getAllCases()
     .filter((c) => c.analysis.status === "published")

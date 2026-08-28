@@ -18,7 +18,6 @@ export function GlossaryList({ items }: { items: GlossaryListItem[] }) {
     if (!hash) return;
     const match = items.find((item) => item.id === hash);
     if (match) {
-      setQuery("");
       requestAnimationFrame(() => {
         document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
       });

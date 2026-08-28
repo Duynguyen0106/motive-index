@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { OpenDossierLink } from "@/components/OpenDossierLink";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
@@ -150,11 +150,9 @@ export function CaseWorldMap({
   const selectedCountryRef = useRef(selectedCountry);
   const [ready, setReady] = useState(false);
   const [hint, setHint] = useState("Loading map…");
-  const [legendOpen, setLegendOpen] = useState(false);
-
-  useEffect(() => {
-    setLegendOpen(!window.matchMedia("(max-width: 1023px)").matches);
-  }, []);
+  const [legendOpen, setLegendOpen] = useState(
+    () => typeof window !== "undefined" && !window.matchMedia("(max-width: 1023px)").matches,
+  );
 
   const filteredPins = filterVisiblePins(pins, view);
   const contextualPins = pins.filter(
@@ -847,14 +845,9 @@ export function CaseWorldMap({
 }
 
 function useMemoMap(stats: CountryMonitorStat[]): Map<CountryCode, CountryMonitorStat> {
-  const ref = useRef<Map<CountryCode, CountryMonitorStat>>(new Map());
   const key = stats.map((s) => `${s.code}:${s.caseCount}:${s.unsolvedCount}`).join("|");
-  const prevKey = useRef("");
-  if (prevKey.current !== key) {
-    ref.current = new Map(stats.map((s) => [s.code, s]));
-    prevKey.current = key;
-  }
-  return ref.current;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- key captures stat identity
+  return useMemo(() => new Map(stats.map((s) => [s.code, s])), [key]);
 }
 
 /** Pin tooltip card shown beside map when a case is selected. */

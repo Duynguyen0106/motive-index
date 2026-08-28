@@ -26,17 +26,19 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export function SiteNav() {
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    if (open) setOpen(false);
+  }
 
   function closeNav() {
     setOpen(false);
     toggleRef.current?.focus();
   }
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!open) return;
