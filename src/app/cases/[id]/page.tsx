@@ -258,11 +258,11 @@ export default async function CasePage({ params, searchParams }: Props) {
         ) : null}
 
         {tab === "overview" ? (
-          <div className="grid gap-6 md:grid-cols-[1.25fr_0.75fr]">
-            <div className="space-y-6">
+          <div className="dossier-overview-grid grid gap-6 md:grid-cols-[1.25fr_0.75fr]">
+            <div className="dossier-overview-main space-y-6">
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Overview</h2>
-                <p className="body-copy mt-3 text-[var(--ink-soft)] md:text-lg">
+                <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)] md:text-lg">
                   {crimeCase.overview}
                 </p>
               </section>
@@ -271,7 +271,7 @@ export default async function CasePage({ params, searchParams }: Props) {
               ) : null}
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Legal outcome</h2>
-                <p className="body-copy mt-3 text-[var(--ink-soft)]">
+                <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)]">
                   {crimeCase.legalOutcome.summary}
                 </p>
                 <dl className="mt-4 grid gap-3 text-sm">
@@ -303,7 +303,7 @@ export default async function CasePage({ params, searchParams }: Props) {
               </section>
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Behavioral profile</h2>
-                <dl className="mt-4 space-y-3 text-sm md:text-base">
+                <dl className="prose-safe mt-4 space-y-3 text-sm md:text-base">
                   <div>
                     <dt className="font-semibold">Modus operandi</dt>
                     <dd className="text-[var(--ink-soft)]">
@@ -335,7 +335,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 </dl>
               </section>
             </div>
-            <aside className="space-y-4">
+            <aside className="dossier-overview-aside space-y-4">
               <div className="card p-5">
                 <h3 className="text-xs font-semibold tracking-[0.14em] text-[var(--muted)] uppercase">
                   Offender(s)
@@ -414,7 +414,7 @@ export default async function CasePage({ params, searchParams }: Props) {
           <div className="space-y-6">
             <section className="card p-6 md:p-8">
               <h2 className="display text-2xl">Analysis summary</h2>
-              <p className="body-copy mt-3 text-[var(--ink-soft)] md:text-lg">
+              <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)] md:text-lg">
                 {analysis.summary}
               </p>
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -484,7 +484,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 <h2 className="display text-2xl">Alternative explanations</h2>
                 <ul className="mt-4 space-y-2">
                   {analysis.alternativeExplanations.map((a) => (
-                    <li key={a} className="body-copy text-[var(--ink-soft)]">
+                    <li key={a} className="body-copy prose-safe text-[var(--ink-soft)]">
                       {a}
                     </li>
                   ))}
@@ -494,7 +494,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 <h2 className="display text-2xl">What we cannot know</h2>
                 <ul className="mt-4 space-y-2">
                   {analysis.whatWeCannotKnow.map((a) => (
-                    <li key={a} className="body-copy text-[var(--muted)]">
+                    <li key={a} className="body-copy prose-safe text-[var(--muted)]">
                       {a}
                     </li>
                   ))}
@@ -514,7 +514,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                     <p className="mt-1 text-sm text-[var(--muted)]">
                       {c.author} · {formatDate(c.publishedAt)}
                     </p>
-                    <p className="body-copy mt-3 text-[var(--ink-soft)]">{c.body}</p>
+                    <p className="body-copy prose-safe mt-3 text-[var(--ink-soft)]">{c.body}</p>
                   </article>
                 ))
               ) : (
@@ -533,7 +533,7 @@ export default async function CasePage({ params, searchParams }: Props) {
         {tab === "documents" ? (
           <div>
             <h2 className="display text-3xl">Document library</h2>
-            <p className="body-copy mt-2 max-w-2xl text-[var(--ink-soft)]">
+            <p className="body-copy prose-safe mt-2 max-w-2xl text-[var(--ink-soft)]">
               Public-domain or link-out sources only. Motive Index does not host
               copyrighted full text without permission.
             </p>
@@ -600,7 +600,7 @@ export default async function CasePage({ params, searchParams }: Props) {
             })()}
             <section className="card p-6">
               <h2 className="display text-2xl">References & citations</h2>
-              <p className="body-copy mt-2 max-w-3xl text-sm text-[var(--ink-soft)]">
+              <p className="body-copy prose-safe mt-2 max-w-3xl text-sm text-[var(--ink-soft)]">
                 Primary sources for verifying behavioral claims in this dossier. Notes explain
                 forensic relevance — not endorsement of every interpretive claim.
               </p>
@@ -620,7 +620,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                         </span>
                       ) : null}
                     </div>
-                    <p className="body-copy mt-2 text-[var(--ink-soft)]">
+                    <p className="body-copy prose-safe mt-2 text-[var(--ink-soft)]">
                       {r.url ? (
                         <a href={r.url} className="hover:text-[var(--accent)] hover:underline">
                           {r.citation}

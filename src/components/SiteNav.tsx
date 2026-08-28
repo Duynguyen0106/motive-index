@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteSearch } from "@/components/SiteSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -15,9 +15,24 @@ const links = [
   { href: "/method", label: "Method", match: (p: string) => p.startsWith("/method") },
 ];
 
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  );
+}
+
 export function SiteNav() {
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+
+  function closeNav() {
+    setOpen(false);
+    toggleRef.current?.focus();
+  }
 
   useEffect(() => {
     setOpen(false);
@@ -34,9 +49,47 @@ export function SiteNav() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const main = document.getElementById("main-content");
+    main?.setAttribute("aria-hidden", "true");
+
+    const nav = navRef.current;
+    const focusables = nav ? getFocusableElements(nav) : [];
+    focusables[0]?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        toggleRef.current?.focus();
+        return;
+      }
+      if (e.key !== "Tab" || focusables.length === 0) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      main?.removeAttribute("aria-hidden");
+    };
+  }, [open]);
+
   return (
     <>
       <button
+        ref={toggleRef}
         type="button"
         className="nav-toggle md:hidden"
         aria-expanded={open}
@@ -54,11 +107,12 @@ export function SiteNav() {
           type="button"
           className="nav-overlay md:hidden"
           aria-label="Close menu"
-          onClick={() => setOpen(false)}
+          onClick={closeNav}
         />
       ) : null}
 
       <nav
+        ref={navRef}
         id="primary-nav"
         className={`site-nav ${open ? "is-open" : ""}`}
         aria-label="Primary"
@@ -69,7 +123,7 @@ export function SiteNav() {
             type="button"
             className="site-nav-close"
             aria-label="Close menu"
-            onClick={() => setOpen(false)}
+            onClick={closeNav}
           >
             Close
           </button>
@@ -81,7 +135,7 @@ export function SiteNav() {
             <Link
               href="/search"
               className="nav-advanced-search"
-              onClick={() => setOpen(false)}
+              onClick={closeNav}
             >
               Advanced search filters →
             </Link>
@@ -94,7 +148,7 @@ export function SiteNav() {
                 href={l.href}
                 aria-current={active ? "page" : undefined}
                 className={`nav-link ${active ? "is-active" : ""}`}
-                onClick={() => setOpen(false)}
+                onClick={closeNav}
               >
                 {l.label}
               </Link>
@@ -110,7 +164,7 @@ export function SiteNav() {
           <Link
             href="/admin/moderation"
             className="nav-link nav-link-muted"
-            onClick={() => setOpen(false)}
+            onClick={closeNav}
           >
             Admin
           </Link>

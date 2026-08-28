@@ -37,7 +37,7 @@ export default async function LivePage({ searchParams }: Props) {
   const monitorHref = country ? `/?country=${country}` : "/";
 
   return (
-    <div className="site-shell page-intro py-10 md:py-12">
+    <div className="site-shell page-intro page-scroll-safe py-10 md:py-12">
       <Breadcrumbs
         items={[{ label: "Monitor", href: "/" }, { label: "World crime news" }]}
       />

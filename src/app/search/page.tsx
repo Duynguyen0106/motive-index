@@ -38,7 +38,7 @@ export default async function SearchPage({ searchParams }: Props) {
   });
 
   return (
-    <div className="site-shell py-12 md:py-14">
+    <div className="site-shell page-scroll-safe py-12 md:py-14">
       <Breadcrumbs
         items={[{ label: "Monitor", href: "/" }, { label: "Advanced search" }]}
       />

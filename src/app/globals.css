@@ -2720,4 +2720,18 @@ html[data-theme="light"] .keyboard-help-fab {
   word-wrap: break-word;
 }
 
+.dossier-page {
+  --dossier-scroll-offset: 7rem;
+}
+
+.dossier-chapter-anchor {
+  scroll-margin-top: var(--dossier-scroll-offset);
+}
+
+.dossier-page .reference-item p,
+.dossier-page .reference-item a {
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
 @import "./mobile.css";

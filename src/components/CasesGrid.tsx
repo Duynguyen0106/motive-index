@@ -163,7 +163,8 @@ export function CasesGrid({
                   {c.subtitle}
                 </span>
                 <span className="mt-1 block text-xs text-[var(--muted)]">
-                  {COUNTRY_LABELS[country]}
+                  {c.yearStart}
+                  {c.yearEnd ? `–${c.yearEnd}` : ""} · {COUNTRY_LABELS[country]}
                 </span>
               </span>
               <span className="index-meta">

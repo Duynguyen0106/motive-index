@@ -27,7 +27,7 @@ function ChapterBlock({ chapter }: { chapter: DossierChapter }) {
   return (
     <section
       id={`chapter-${chapter.id}`}
-      className="scroll-mt-28 w-full min-w-0 max-w-full border-b border-[var(--line)] py-10 last:border-b-0"
+      className="dossier-chapter-anchor w-full min-w-0 max-w-full border-b border-[var(--line)] py-10 last:border-b-0"
     >
       <div className="grid w-full min-w-0 max-w-full gap-8 lg:grid-cols-[10rem_minmax(0,1fr)]">
         <div className="min-w-0">

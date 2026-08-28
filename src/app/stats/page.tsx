@@ -18,7 +18,7 @@ function StatBarChart({ buckets, max, title }: { buckets: ArchiveStatBucket[]; m
       {buckets.map((b) => (
         <li key={b.label} className="stats-bar-row">
           <Link href={b.href} className="stats-bar-link group">
-            <span className="stats-bar-label">{b.label}</span>
+            <span className="stats-bar-label" title={b.label}>{b.label}</span>
             <div
               className="stats-bar-track"
               role="img"
