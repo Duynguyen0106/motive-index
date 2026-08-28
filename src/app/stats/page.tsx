@@ -4,7 +4,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Disclaimer } from "@/components/Disclaimer";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks, StatBar } from "@/components/ui";
-import { buildArchiveStats } from "@/lib/archiveStats";
+import { buildArchiveStats, type ArchiveStatBucket } from "@/lib/archiveStats";
 import { getAllCases } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -12,21 +12,25 @@ export const metadata: Metadata = {
   description: "Catalog analytics across 1,000 forensic psychology dossiers.",
 };
 
-export const dynamic = "force-dynamic";
-
-function StatBarChart({ buckets, max }: { buckets: { label: string; count: number }[]; max: number }) {
+function StatBarChart({ buckets, max, title }: { buckets: ArchiveStatBucket[]; max: number; title: string }) {
   return (
-    <ul className="stats-bars mt-4 space-y-2">
+    <ul className="stats-bars mt-4 space-y-2" role="list" aria-label={title}>
       {buckets.map((b) => (
         <li key={b.label} className="stats-bar-row">
-          <span className="stats-bar-label">{b.label}</span>
-          <div className="stats-bar-track">
+          <Link href={b.href} className="stats-bar-link group">
+            <span className="stats-bar-label">{b.label}</span>
             <div
-              className="stats-bar-fill"
-              style={{ width: max ? `${(b.count / max) * 100}%` : "0%" }}
-            />
-          </div>
-          <span className="stats-bar-count">{b.count}</span>
+              className="stats-bar-track"
+              role="img"
+              aria-label={`${b.label}: ${b.count} dossiers`}
+            >
+              <div
+                className="stats-bar-fill"
+                style={{ width: max ? `${(b.count / max) * 100}%` : "0%" }}
+              />
+            </div>
+            <span className="stats-bar-count">{b.count}</span>
+          </Link>
         </li>
       ))}
     </ul>
@@ -45,7 +49,7 @@ export default function StatsPage() {
       <PageHeader
         className="mt-5"
         title="Archive statistics"
-        description="Aggregate view of the Motive Index catalog — curated flagship dossiers, composite teaching archive, and multilingual records."
+        description="Aggregate view of the Motive Index catalog — tap any bar to browse matching dossiers."
       />
       <QuickLinks
         links={[
@@ -72,14 +76,14 @@ export default function StatsPage() {
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
         <section className="card p-6 md:p-8">
           <h2 className="display text-xl">By country</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">Top 15 jurisdictions in the catalog</p>
-          <StatBarChart buckets={stats.byCountry} max={maxCountry} />
+          <p className="mt-1 text-sm text-[var(--muted)]">Top 15 jurisdictions — tap to filter archive</p>
+          <StatBarChart buckets={stats.byCountry} max={maxCountry} title="Cases by country" />
         </section>
 
         <section className="card p-6 md:p-8">
           <h2 className="display text-xl">By crime category</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">Primary classification tags</p>
-          <StatBarChart buckets={stats.byCategory} max={maxCategory} />
+          <StatBarChart buckets={stats.byCategory} max={maxCategory} title="Cases by crime category" />
         </section>
 
         <section className="card p-6 md:p-8">
@@ -87,13 +91,14 @@ export default function StatsPage() {
           <StatBarChart
             buckets={stats.byStatus}
             max={Math.max(...stats.byStatus.map((s) => s.count), 1)}
+            title="Cases by status"
           />
         </section>
 
         <section className="card p-6 md:p-8">
           <h2 className="display text-xl">By decade</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">Case start year distribution</p>
-          <StatBarChart buckets={stats.byDecade} max={maxDecade} />
+          <StatBarChart buckets={stats.byDecade} max={maxDecade} title="Cases by decade" />
         </section>
       </div>
 

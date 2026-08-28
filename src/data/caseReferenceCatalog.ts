@@ -645,4 +645,124 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       note: "5 murders; insanity commitment to Ștei, not execution.",
     },
   ],
+  "andrei-chikatilo": [
+    {
+      id: "ref-chikatilo-trial",
+      citation: "Rostov-on-Don serial murder trial (1992) — Andrei Chikatilo, 52 murder counts.",
+      kind: "court",
+      year: "1992",
+      url: "https://en.wikipedia.org/wiki/Andrei_Chikatilo",
+      note: "Soviet Rostov Ripper; confession and execution 1994.",
+    },
+  ],
+  "peter-sutcliffe": [
+    {
+      id: "ref-sutcliffe-trial",
+      citation: "R v Peter Sutcliffe (1981) — Yorkshire Ripper murder series.",
+      kind: "court",
+      year: "1981",
+      url: "https://en.wikipedia.org/wiki/Peter_Sutcliffe",
+      note: "13 murder convictions; media-saturated manhunt and misdirection.",
+    },
+  ],
+  "marc-dutroux": [
+    {
+      id: "ref-dutroux-trial",
+      citation: "Belgian trial of Marc Dutroux et al. (2004) — Charleroi kidnappings.",
+      kind: "court",
+      year: "2004",
+      url: "https://en.wikipedia.org/wiki/Marc_Dutroux",
+      note: "Institutional failure and public inquiry followed convictions.",
+    },
+  ],
+  "ivan-milat": [
+    {
+      id: "ref-milat-trial",
+      citation: "R v Ivan Milat (1996) — Backpacker murders, New South Wales.",
+      kind: "court",
+      year: "1996",
+      url: "https://en.wikipedia.org/wiki/Ivan_Milat",
+      note: "Belanglo State Forest series; life imprisonment.",
+    },
+  ],
+  "martin-bryant": [
+    {
+      id: "ref-bryant-trial",
+      citation: "Port Arthur massacre inquest and R v Martin Bryant (1996).",
+      kind: "court",
+      year: "1996",
+      url: "https://en.wikipedia.org/wiki/Port_Arthur_massacre",
+      note: "Mass-casualty shooting; gun-law reform context.",
+    },
+  ],
+  "fred-west": [
+    {
+      id: "ref-west-trial",
+      citation: "Operation Onward — Fred and Rosemary West investigations (1994).",
+      kind: "court",
+      year: "1994",
+      url: "https://en.wikipedia.org/wiki/Fred_West",
+      note: "Gloucester partnered predation; suicide before trial.",
+    },
+  ],
+  "paul-bernardo": [
+    {
+      id: "ref-bernardo-trial",
+      citation: "R v Paul Bernardo and Karla Homolka (1995) — Ontario murder series.",
+      kind: "court",
+      year: "1995",
+      url: "https://en.wikipedia.org/wiki/Paul_Bernardo",
+      note: "Scarborough Rapist / Schoolgirl Killer series.",
+    },
+  ],
+  "dean-corll": [
+    {
+      id: "ref-corll-case",
+      citation: "Houston mass murders (1970–1973) — Dean Corll and accomplices.",
+      kind: "court",
+      year: "1973",
+      url: "https://en.wikipedia.org/wiki/Dean_Corll",
+      note: "Candy Man case; 28+ victims from Houston area.",
+    },
+  ],
+  "richard-chase": [
+    {
+      id: "ref-chase-trial",
+      citation: "California v. Richard Chase (1979) — Sacramento vampire murders.",
+      kind: "court",
+      year: "1979",
+      url: "https://en.wikipedia.org/wiki/Richard_Chase",
+      note: "Severe mental illness and necrophagic themes in record.",
+    },
+  ],
+  "albert-fish": [
+    {
+      id: "ref-fish-trial",
+      citation: "People v. Albert Fish (1935) — Grace Budd murder trial.",
+      kind: "court",
+      year: "1935",
+      url: "https://en.wikipedia.org/wiki/Albert_Fish",
+      note: "Historical case; self-report vs verified conduct caution.",
+    },
+  ],
+  "hh-holmes": [
+    {
+      id: "ref-holmes-trial",
+      citation: "People v. H. H. Holmes (1895) — Chicago 'Murder Castle' trial.",
+      kind: "court",
+      year: "1895",
+      url: "https://en.wikipedia.org/wiki/H._H._Holmes",
+      note: "Victim counts disputed; primary record is insurance-fraud conviction.",
+    },
+  ],
+  "wayne-williams": [
+    {
+      id: "ref-williams-trial",
+      citation: "Georgia v. Wayne Williams (1982) — Atlanta child murders.",
+      kind: "court",
+      year: "1982",
+      url: "https://en.wikipedia.org/wiki/Wayne_Williams",
+      note: "Two murder convictions; broader series attribution contested.",
+    },
+  ],
 };

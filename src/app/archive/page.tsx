@@ -114,7 +114,14 @@ export default async function ArchivePage({ searchParams }: Props) {
             {filtered.length.toLocaleString()} matching · paginated index
           </p>
         </div>
-        <Suspense fallback={<div className="skeleton-block h-48" aria-hidden />}>
+        <Suspense
+          fallback={
+            <div className="card p-6" role="status" aria-live="polite">
+              <p className="text-sm text-[var(--muted)]">Loading case index…</p>
+              <div className="skeleton-block mt-4 h-48" aria-hidden />
+            </div>
+          }
+        >
           <CasesGrid
             cases={summaries}
             filters={filters}

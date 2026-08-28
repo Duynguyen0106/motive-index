@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { ArchiveFilterChips } from "@/components/ArchiveFilterChips";
 import { CaseStatusBadge, EmptyState } from "@/components/ui";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
 import { COUNTRY_LABELS, type CountryCode } from "@/lib/country";
-import { archiveUrlFromFilters, monitorUrlFromFilters } from "@/lib/search";
+import { archiveUrlFromFilters } from "@/lib/search";
 import type { CaseArchiveSummary, CrimeCategory, SearchFilters } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
@@ -48,9 +49,9 @@ export function CasesGrid({
       <form
         action="/archive"
         method="get"
-        className="filter-toolbar mb-4 grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-[1fr_140px_140px_140px_140px_auto]"
+        className="filter-toolbar archive-form card mb-4 grid gap-4 p-4 md:grid-cols-2 md:p-5 lg:grid-cols-[1fr_140px_140px_140px_auto]"
       >
-        <label className="block text-sm lg:col-span-1">
+        <label className="block text-sm md:col-span-2 lg:col-span-1">
           <span className="label mb-1 block normal-case tracking-normal">Keyword</span>
           <input
             name="q"
@@ -90,17 +91,31 @@ export function CasesGrid({
             <option value="historical">Historical</option>
           </select>
         </label>
-        <label className="block text-sm">
-          <span className="label mb-1 block normal-case tracking-normal">Catalog</span>
+
+        <label className="mobile-hide block text-sm lg:col-span-1">
+          <span className="label mb-1 block normal-case tracking-normal">Catalog tier</span>
           <select name="catalogTier" defaultValue={filters.catalogTier ?? "all"} className="field mt-1">
             <option value="all">All dossiers</option>
             <option value="curated">Curated only</option>
             <option value="composite">Composite archive</option>
           </select>
         </label>
-        <div className="flex gap-2 self-end">
+
+        <details className="archive-more-filters md:hidden md:col-span-2 lg:col-span-4">
+          <summary className="archive-more-filters-summary">More filters</summary>
+          <label className="mt-4 block text-sm">
+            <span className="label mb-1 block normal-case tracking-normal">Catalog tier</span>
+            <select name="catalogTier" defaultValue={filters.catalogTier ?? "all"} className="field mt-1">
+              <option value="all">All dossiers</option>
+              <option value="curated">Curated only</option>
+              <option value="composite">Composite archive</option>
+            </select>
+          </label>
+        </details>
+
+        <div className="search-form-actions archive-form-actions flex gap-2 self-end md:col-span-2 lg:col-span-4">
           <button type="submit" className="btn btn-primary">
-            Apply
+            Apply filters
           </button>
           <Link href="/archive" className="btn btn-ghost">
             Clear
@@ -108,24 +123,7 @@ export function CasesGrid({
         </div>
       </form>
 
-      {hasFilters ? (
-        <div className="active-filters mb-4 flex flex-wrap items-center gap-2">
-          {filters.q?.trim() ? <span className="filter-chip">Keyword: {filters.q.trim()}</span> : null}
-          {filters.country ? (
-            <span className="filter-chip">{COUNTRY_LABELS[filters.country]}</span>
-          ) : null}
-          {filters.crimeCategory ? (
-            <span className="filter-chip">{CRIME_CATEGORY_LABELS[filters.crimeCategory]}</span>
-          ) : null}
-          {filters.status ? <span className="filter-chip">{filters.status}</span> : null}
-          {filters.catalogTier && filters.catalogTier !== "all" ? (
-            <span className="filter-chip">{filters.catalogTier}</span>
-          ) : null}
-          <Link href={monitorUrlFromFilters(filters)} className="filter-chip filter-chip-link">
-            View on map →
-          </Link>
-        </div>
-      ) : null}
+      {hasFilters ? <ArchiveFilterChips filters={filters} /> : null}
 
       <p className="mb-3 text-sm text-[var(--muted)]">
         {total === 0

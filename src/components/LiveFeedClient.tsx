@@ -31,7 +31,11 @@ export function LiveFeedClient({ initial }: { initial: LiveUpdate[] }) {
   }, []);
 
   return (
-    <ul className="divide-y divide-[var(--line)]">
+    <div>
+      <p className="sr-only" role="status" aria-live="polite">
+        Showing {updates.length} archive revision entries
+      </p>
+      <ul className="divide-y divide-[var(--line)]">
       {updates.map((u) => (
         <li key={u.id} className="py-5 md:py-6">
           <div className="grid gap-2 md:grid-cols-[7rem_6rem_1fr] md:gap-6 md:items-baseline">
@@ -67,6 +71,7 @@ export function LiveFeedClient({ initial }: { initial: LiveUpdate[] }) {
           </div>
         </li>
       ))}
-    </ul>
+      </ul>
+    </div>
   );
 }

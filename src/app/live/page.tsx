@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { LiveFeedClient } from "@/components/LiveFeedClient";
+import { LiveRegionFilter } from "@/components/LiveRegionFilter";
+import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
@@ -54,35 +55,11 @@ export default async function LivePage({ searchParams }: Props) {
         ]}
       />
 
-      <div className="mt-6 flex flex-wrap items-center gap-4 border-b border-[var(--line)] pb-6">
+      <div className="live-toolbar mt-6 flex flex-wrap items-center gap-4 border-b border-[var(--line)] pb-6">
         <Link href="/" className="text-link text-sm">
           ← Back to monitor
         </Link>
-        <form action="/live" method="get" className="flex flex-wrap items-center gap-2 text-sm">
-          <label className="flex items-center gap-2">
-            <span className="text-[var(--muted)]">Region</span>
-            <select
-              name="country"
-              defaultValue={country}
-              className="field py-1.5 text-sm"
-            >
-              <option value="">All regions</option>
-              {countryOptions.map((code) => (
-                <option key={code} value={code}>
-                  {COUNTRY_LABELS[code]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" className="btn btn-ghost text-xs">
-            Apply
-          </button>
-          {country ? (
-            <Link href="/live" className="text-link text-xs">
-              Clear filter
-            </Link>
-          ) : null}
-        </form>
+        <LiveRegionFilter country={country} countryOptions={countryOptions} />
       </div>
 
       {country ? (

@@ -118,7 +118,12 @@ export function WorldNewsFeed({ initial, countryFilter = "", onSelectCase, compa
           {payload.liveCount ? ` · ${payload.liveCount} live RSS` : ""}
           {payload.seedCount ? ` · ${payload.seedCount} archive-linked` : ""}
         </p>
-        <span className={`monitor-live-dot ${status === "syncing" ? "is-syncing" : ""}`} title={status} />
+        <span
+          className={`monitor-live-dot ${status === "syncing" ? "is-syncing" : ""}`}
+          role="status"
+          aria-live="polite"
+          aria-label={status === "syncing" ? "Syncing news feed" : "News feed live"}
+        />
       </div>
       <ul className="monitor-news-list mt-3">
         {payload.items.map((item) => (

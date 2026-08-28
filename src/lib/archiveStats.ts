@@ -1,10 +1,10 @@
 import { isCompositeCase } from "@/lib/caseSummaries";
 import { catalogImageCoverage } from "@/lib/caseImages";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
-import type { CrimeCase } from "@/lib/types";
+import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 
-export type ArchiveStatBucket = { label: string; count: number };
+export type ArchiveStatBucket = { label: string; count: number; href: string };
 
 export type ArchiveStats = {
   total: number;
@@ -25,10 +25,14 @@ function decadeLabel(year: number): string {
   return `${d}s`;
 }
 
+function sortByCount<T extends { count: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => b.count - a.count);
+}
+
 export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
   const imageCoverage = catalogImageCoverage();
-  const countryMap = new Map<string, number>();
-  const categoryMap = new Map<string, number>();
+  const countryMap = new Map<CountryCode, number>();
+  const categoryMap = new Map<CrimeCategory, number>();
   const statusMap = new Map<string, number>();
   const decadeMap = new Map<string, number>();
 
@@ -47,8 +51,7 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
     countryMap.set(country, (countryMap.get(country) ?? 0) + 1);
 
     for (const cat of c.crimeCategories) {
-      const label = CRIME_CATEGORY_LABELS[cat];
-      categoryMap.set(label, (categoryMap.get(label) ?? 0) + 1);
+      categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + 1);
     }
 
     statusMap.set(c.status, (statusMap.get(c.status) ?? 0) + 1);
@@ -56,11 +59,6 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
     const decade = decadeLabel(c.yearStart);
     decadeMap.set(decade, (decadeMap.get(decade) ?? 0) + 1);
   }
-
-  const sortBuckets = (m: Map<string, number>) =>
-    [...m.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([label, count]) => ({ label, count }));
 
   return {
     total: cases.length,
@@ -70,13 +68,33 @@ export function buildArchiveStats(cases: CrimeCase[]): ArchiveStats {
     unsolved,
     countries: countryMap.size,
     withPhotos: imageCoverage.withImages,
-    byCountry: sortBuckets(
-      new Map(
-        [...countryMap.entries()].map(([code, count]) => [COUNTRY_LABELS[code as keyof typeof COUNTRY_LABELS] ?? code, count]),
-      ),
+    byCountry: sortByCount(
+      [...countryMap.entries()].map(([code, count]) => ({
+        label: COUNTRY_LABELS[code] ?? code,
+        count,
+        href: `/archive?country=${code}`,
+      })),
     ).slice(0, 15),
-    byCategory: sortBuckets(categoryMap).slice(0, 10),
-    byStatus: sortBuckets(statusMap),
-    byDecade: sortBuckets(decadeMap).sort((a, b) => a.label.localeCompare(b.label)),
+    byCategory: sortByCount(
+      [...categoryMap.entries()].map(([cat, count]) => ({
+        label: CRIME_CATEGORY_LABELS[cat],
+        count,
+        href: `/archive?crimeCategory=${cat}`,
+      })),
+    ).slice(0, 10),
+    byStatus: sortByCount(
+      [...statusMap.entries()].map(([status, count]) => ({
+        label: status.charAt(0).toUpperCase() + status.slice(1),
+        count,
+        href: `/archive?status=${status}`,
+      })),
+    ),
+    byDecade: sortByCount(
+      [...decadeMap.entries()].map(([decade, count]) => ({
+        label: decade,
+        count,
+        href: `/archive?period=${encodeURIComponent(decade.replace("s", ""))}`,
+      })),
+    ).sort((a, b) => a.label.localeCompare(b.label)),
   };
 }

@@ -76,5 +76,9 @@ export function QuickLinks({
 }
 
 export function CaseStatusBadge({ status }: { status: string }) {
-  return <span className={`status-badge status-${status}`}>{status}</span>;
+  return (
+    <span className={`status-badge status-${status}`} role="status">
+      {status}
+    </span>
+  );
 }
