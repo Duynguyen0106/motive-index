@@ -31,6 +31,7 @@
   --overlay: rgba(47, 26, 32, 0.88);
   --background: var(--bg);
   --foreground: var(--ink);
+  --site-header-height: 5.25rem;
 }
 
 /* Light mode — crime scene palette on fog base */
@@ -266,6 +267,15 @@ a {
   margin-inline: auto;
 }
 
+.page-intro > .page-header + .quick-links,
+.page-intro > .quick-links {
+  margin-top: 1.25rem;
+}
+
+.page-intro > .stat-bar {
+  margin-top: 1.5rem;
+}
+
 .brand-mark {
   font-family: var(--font-literata), "Iowan Old Style", serif;
   font-weight: 600;
@@ -328,6 +338,7 @@ a {
   position: sticky;
   top: 0;
   z-index: 200;
+  min-height: var(--site-header-height);
   background: color-mix(in srgb, var(--cs-void) 88%, transparent);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid color-mix(in srgb, var(--cs-deep) 70%, var(--line)) !important;
@@ -1188,6 +1199,12 @@ a.monitor-news-headline:hover {
   color: var(--ink);
 }
 
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .nav-toggle-icon {
   font-size: 0.875rem;
   line-height: 1;
@@ -1207,6 +1224,25 @@ a.monitor-news-headline:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .site-nav {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    overflow: visible;
+  }
+
+  .nav-toggle,
+  .nav-overlay {
+    display: none !important;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1252,24 +1288,24 @@ html[data-theme="light"] .site-nav {
   background: color-mix(in srgb, var(--cs-fog) 96%, transparent);
 }
 
-/* Dossier sticky actions */
+/* Dossier sticky stack — tabs + scroll actions below site header */
+.dossier-sticky-stack {
+  position: sticky;
+  top: var(--site-header-height);
+  z-index: 180;
+}
+
+.dossier-tabs {
+  background: color-mix(in srgb, var(--bg-subtle) 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+
 .dossier-action-bar {
-  position: fixed;
-  top: 5rem;
-  left: 0;
-  right: 0;
-  z-index: 190;
   border-bottom: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--cs-void) 94%, transparent);
   backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   animation: dossier-bar-in 0.2s ease;
-}
-
-@media (min-width: 768px) {
-  .dossier-action-bar {
-    top: 4.5rem;
-  }
 }
 
 @keyframes dossier-bar-in {
@@ -1742,15 +1778,14 @@ textarea:focus-visible {
 }
 
 .stat-bar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
 
 .stat-bar-item {
-  flex: 1 1 7rem;
-  min-width: 6.5rem;
+  min-width: 0;
   padding: 0.875rem 1rem;
   border: 1px solid var(--line);
   border-radius: 3px;

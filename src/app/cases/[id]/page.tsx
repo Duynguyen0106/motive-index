@@ -101,12 +101,6 @@ export default async function CasePage({ params, searchParams }: Props) {
 
   return (
     <article className="dossier-page pb-16">
-      <DossierActionBar
-        name={crimeCase.name}
-        slug={crimeCase.slug}
-        searchSimilar={searchSimilar}
-        country={country}
-      />
       <header className="dossier-header site-shell py-10 md:py-12">
         <Breadcrumbs
           items={[
@@ -153,12 +147,7 @@ export default async function CasePage({ params, searchParams }: Props) {
             Also known as: {crimeCase.aliases.join(" · ")}
           </p>
         ) : null}
-        <p className="lede mt-4 max-w-3xl">
-          {narrative?.hook ?? crimeCase.subtitle}
-        </p>
-        {!narrative ? (
-          <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">{crimeCase.subtitle}</p>
-        ) : null}
+        <p className="lede mt-4 max-w-3xl">{crimeCase.subtitle}</p>
         <div className="dossier-actions mt-5 flex flex-wrap gap-2">
           <Link href={monitorUrlFromFilters({}, crimeCase.slug)} className="btn btn-primary text-sm">
             View on map
@@ -192,10 +181,18 @@ export default async function CasePage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      <Suspense fallback={null}>
-        <CaseTabKeyboardNav />
-        <CaseTabs slug={crimeCase.slug} />
-      </Suspense>
+      <div className="dossier-sticky-stack">
+        <Suspense fallback={null}>
+          <CaseTabKeyboardNav />
+          <CaseTabs slug={crimeCase.slug} />
+        </Suspense>
+        <DossierActionBar
+          name={crimeCase.name}
+          slug={crimeCase.slug}
+          searchSimilar={searchSimilar}
+          country={country}
+        />
+      </div>
 
       <div className="dossier-body site-shell py-8">
         {tab === "story" && narrative ? (

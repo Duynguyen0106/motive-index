@@ -27,12 +27,12 @@ export default function ArchivePage() {
 
   return (
     <>
-      <div className="site-shell py-10 md:py-12">
+      <div className="site-shell page-intro py-10 md:py-12">
         <Breadcrumbs
           items={[{ label: "Monitor", href: "/" }, { label: "Case archive" }]}
         />
         <PageHeader
-          label="Case archive"
+          className="mt-5"
           title="Behavioral dossiers"
           description="Structured case files, document pointers, and forensic-psychological commentary—with citations, confidence notes, and explicit unknowns."
         />

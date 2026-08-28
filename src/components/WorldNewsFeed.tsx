@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/ui";
-import { COUNTRY_LABELS } from "@/lib/country";
 import { readJsonResponse } from "@/lib/clientFetch";
 import type { CountryCode } from "@/lib/types";
 import type { WorldNewsPayload } from "@/lib/worldNewsService";
@@ -71,9 +70,6 @@ function NewsRow({
               View dossier
             </Link>
           )
-        ) : null}
-        {item.country && item.country !== "OTHER" ? (
-          <span>{COUNTRY_LABELS[item.country]}</span>
         ) : null}
       </div>
     </li>

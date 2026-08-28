@@ -121,7 +121,7 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
             ))}
           </select>
         </label>
-        <button type="button" onClick={clearFilters} className="btn btn-ghost">
+        <button type="button" onClick={clearFilters} className="btn btn-ghost self-end">
           Clear
         </button>
       </form>
