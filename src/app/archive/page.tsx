@@ -8,23 +8,45 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { LiveTicker } from "@/components/LiveTicker";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks, StatBar } from "@/components/ui";
-import { resolveCaseCountry } from "@/lib/country";
-import { getAllCases, getCaseOfWeek, getUpdates } from "@/lib/data";
+import { toCaseArchiveSummary } from "@/lib/caseSummaries";
+import { listCountryOptions } from "@/lib/country";
+import { getAllCases, getCaseOfWeek, getUpdates, searchCasesFrom } from "@/lib/data";
+import {
+  DEFAULT_ARCHIVE_PAGE_SIZE,
+  paginateCases,
+  parseSearchParams,
+} from "@/lib/search";
+import { buildArchiveStats } from "@/lib/archiveStats";
 
 export const metadata: Metadata = {
   title: "Case archive",
   description:
-    "Browse structured forensic psychology dossiers—filter by country, crime type, and keyword.",
+    "Browse structured forensic psychology dossiers—filter by country, crime type, catalog tier, and keyword.",
 };
 
 export const dynamic = "force-dynamic";
 
-export default function ArchivePage() {
-  const cases = getAllCases();
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function ArchivePage({ searchParams }: Props) {
+  const raw = await searchParams;
+  const filters = parseSearchParams(raw);
+  const page = Math.max(1, Number(raw.page) || 1);
+  const pageSize = Math.min(
+    100,
+    Math.max(10, Number(raw.pageSize) || DEFAULT_ARCHIVE_PAGE_SIZE),
+  );
+
+  const allCases = getAllCases();
+  const filtered = searchCasesFrom(allCases, filters);
+  const paginated = paginateCases(filtered, page, pageSize);
+  const summaries = paginated.items.map(toCaseArchiveSummary);
+  const countryOptions = listCountryOptions(allCases);
   const updates = getUpdates(4);
   const cotw = getCaseOfWeek();
-  const unsolved = cases.filter((c) => c.status === "unsolved").length;
-  const countries = new Set(cases.map((c) => resolveCaseCountry(c))).size;
+  const stats = buildArchiveStats(allCases);
 
   return (
     <>
@@ -41,15 +63,16 @@ export default function ArchivePage() {
           links={[
             { href: "/", label: "World monitor" },
             { href: "/search", label: "Advanced search" },
+            { href: "/stats", label: "Archive stats" },
             { href: "/live", label: "World news" },
             { href: "/search?status=unsolved", label: "Unsolved" },
           ]}
         />
         <StatBar
           items={[
-            { label: "Total dossiers", value: cases.length },
-            { label: "Countries", value: countries },
-            { label: "Unsolved", value: unsolved, highlight: true },
+            { label: "Total dossiers", value: stats.total },
+            { label: "Countries", value: stats.countries },
+            { label: "Unsolved", value: stats.unsolved, highlight: true },
           ]}
         />
       </div>
@@ -87,10 +110,20 @@ export default function ArchivePage() {
       <section className="site-shell py-10 md:py-12">
         <div className="mb-6 flex flex-col gap-1 border-b border-[var(--line)] pb-4 md:flex-row md:items-baseline md:justify-between">
           <h2 className="display text-2xl text-[var(--ink)]">Case index</h2>
-          <p className="text-sm text-[var(--muted)]">Filter by keyword, country, or crime type</p>
+          <p className="text-sm text-[var(--muted)]">
+            {filtered.length.toLocaleString()} matching · paginated index
+          </p>
         </div>
         <Suspense fallback={<div className="skeleton-block h-48" aria-hidden />}>
-          <CasesGrid cases={cases} />
+          <CasesGrid
+            cases={summaries}
+            filters={filters}
+            countryOptions={countryOptions}
+            page={paginated.page}
+            pageSize={paginated.pageSize}
+            total={paginated.total}
+            totalPages={paginated.totalPages}
+          />
         </Suspense>
       </section>
 

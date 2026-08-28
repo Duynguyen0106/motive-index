@@ -426,6 +426,30 @@ export interface SearchFilters {
   offenderSex?: string;
   documentType?: DocumentType | "";
   status?: CaseStatus | "";
+  /** Archive/monitor filter: curated (no bulk-catalog tag), composite, or all. */
+  catalogTier?: CatalogTier | "";
+}
+
+export type CatalogTier = "curated" | "composite" | "all";
+
+/** Lightweight case row for monitor sidebar and map context. */
+export interface MonitorCaseSummary {
+  id: string;
+  slug: string;
+  name: string;
+  subtitle: string;
+  yearStart: number;
+  yearEnd?: number;
+  status: CaseStatus;
+  country?: CountryCode;
+  crimeCategories: CrimeCategory[];
+  tags: string[];
+}
+
+/** Lightweight case row for archive index (avoids shipping full dossiers). */
+export interface CaseArchiveSummary extends MonitorCaseSummary {
+  location: string;
+  featured?: boolean;
 }
 
 export const DIMENSION_LABELS: Record<PsychDimension, string> = {

@@ -24,6 +24,7 @@ import {
   FRAMEWORK_LABELS,
 } from "@/lib/types";
 import { resolveCaseCountry } from "@/lib/country";
+import { matchesCatalogTier } from "@/lib/caseSummaries";
 
 type Store = {
   cases: CrimeCase[];
@@ -203,6 +204,7 @@ export function searchCasesFrom(cases: CrimeCase[], filters: SearchFilters): Cri
       return false;
     }
     if (filters.status && c.status !== filters.status) return false;
+    if (!matchesCatalogTier(c, filters.catalogTier)) return false;
     if (filters.country && resolveCaseCountry(c) !== filters.country) return false;
     if (filters.location) {
       const loc = filters.location.toLowerCase();

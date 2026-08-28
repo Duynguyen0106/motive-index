@@ -22,6 +22,7 @@ export function parseSearchParams(
     offenderSex: g("offenderSex"),
     documentType: g("documentType") as SearchFilters["documentType"],
     status: g("status") as SearchFilters["status"],
+    catalogTier: (g("catalogTier") || "") as SearchFilters["catalogTier"],
   };
 }
 
@@ -53,4 +54,37 @@ export function monitorUrlFromFilters(filters: SearchFilters, caseSlug?: string)
 export function searchUrlFromFilters(filters: SearchFilters): string {
   const qs = filtersToQueryString(filters);
   return qs ? `/search?${qs}` : "/search";
+}
+
+export const DEFAULT_ARCHIVE_PAGE_SIZE = 50;
+
+export function paginateCases<T>(
+  items: T[],
+  page: number,
+  pageSize: number = DEFAULT_ARCHIVE_PAGE_SIZE,
+) {
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const start = (safePage - 1) * pageSize;
+  return {
+    items: items.slice(start, start + pageSize),
+    page: safePage,
+    pageSize,
+    total,
+    totalPages,
+  };
+}
+
+export function archiveUrlFromFilters(
+  filters: SearchFilters,
+  opts?: { page?: number; pageSize?: number },
+): string {
+  const p = new URLSearchParams(filtersToQueryString(filters));
+  if (opts?.page && opts.page > 1) p.set("page", String(opts.page));
+  if (opts?.pageSize && opts.pageSize !== DEFAULT_ARCHIVE_PAGE_SIZE) {
+    p.set("pageSize", String(opts.pageSize));
+  }
+  const qs = p.toString();
+  return qs ? `/archive?${qs}` : "/archive";
 }

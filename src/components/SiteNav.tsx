@@ -8,6 +8,7 @@ import { SiteSearch } from "@/components/SiteSearch";
 const links = [
   { href: "/", label: "Monitor", match: (p: string) => p === "/" || p.startsWith("/monitor") },
   { href: "/archive", label: "Archive", match: (p: string) => p === "/archive" || p.startsWith("/cases/") },
+  { href: "/stats", label: "Stats", match: (p: string) => p.startsWith("/stats") },
   { href: "/search", label: "Search", match: (p: string) => p.startsWith("/search") },
   { href: "/live", label: "News", match: (p: string) => p.startsWith("/live") },
   { href: "/documents", label: "Documents", match: (p: string) => p.startsWith("/documents") },

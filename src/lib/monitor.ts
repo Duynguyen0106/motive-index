@@ -1,10 +1,12 @@
 import { searchCasesFrom } from "@/lib/data";
 import { getAllCasesAsync, getUpdatesAsync } from "@/lib/dataServer";
+import { toMonitorCaseSummary } from "@/lib/caseSummaries";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { spreadPins, toMonitorPin } from "@/lib/geo";
 import { parseSearchParams } from "@/lib/search";
-import type { CountryCode, CrimeCase, LiveUpdate, SearchFilters } from "@/lib/types";
+import type { CountryCode, LiveUpdate, MonitorCaseSummary, SearchFilters } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
+import type { CrimeCase } from "@/lib/types";
 import { buildWorldNewsPayload, type WorldNewsPayload } from "@/lib/worldNewsService";
 
 export type CountryMonitorStat = {
@@ -33,10 +35,10 @@ export type MonitorPayload = {
   countryOptions: CountryCode[];
   countryStats: CountryMonitorStat[];
   pins: ReturnType<typeof spreadPins>;
-  cases: CrimeCase[];
+  cases: MonitorCaseSummary[];
   updates: LiveUpdate[];
   worldNews: WorldNewsPayload;
-  featuredCase?: CrimeCase;
+  featuredCase?: MonitorCaseSummary;
 };
 
 function buildCountryStats(cases: CrimeCase[], allCases: CrimeCase[]): CountryMonitorStat[] {
@@ -106,11 +108,14 @@ export async function buildMonitorPayload(
     countryOptions: listCountryOptions(all),
     countryStats: buildCountryStats(cases, all),
     pins: spreadPins(rawPins),
-    cases,
+    cases: cases.map(toMonitorCaseSummary),
     updates: await getUpdatesAsync(updateLimit),
     worldNews,
-    featuredCase:
-      all.find((c) => c.caseOfWeek) ??
-      all.find((c) => c.featured && c.analysis.status === "published"),
+    featuredCase: (() => {
+      const featured =
+        all.find((c) => c.caseOfWeek) ??
+        all.find((c) => c.featured && c.analysis.status === "published");
+      return featured ? toMonitorCaseSummary(featured) : undefined;
+    })(),
   };
 }

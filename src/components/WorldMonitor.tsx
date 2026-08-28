@@ -19,7 +19,7 @@ import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
-import type { CountryCode, CrimeCategory, CrimeCase, LiveUpdate, SearchFilters } from "@/lib/types";
+import type { MonitorCaseSummary } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -50,7 +50,7 @@ function activeFilterCount(filters: SearchFilters): number {
   return Object.values(filters).filter(Boolean).length;
 }
 
-function caseIdFromSlug(cases: CrimeCase[], slug: string): string {
+function caseIdFromSlug(cases: MonitorCaseSummary[], slug: string): string {
   return cases.find((c) => c.slug === slug || c.id === slug)?.id ?? "";
 }
 
@@ -683,10 +683,11 @@ export function WorldMonitor({ initial }: Props) {
             >
               <h2 className="display text-base">Filtered dossiers</h2>
               <ul className="monitor-case-list mt-3">
-                {data.cases.map((c: CrimeCase) => {
+                {data.cases.map((c) => {
                   const pin = data.pins.find((p) => p.id === c.id);
                   const active = selectedCaseId === c.id;
                   const isTranslated = c.tags.includes("translated-en");
+                  const country = c.country ?? "OTHER";
                   return (
                     <li key={c.id}>
                       <button
@@ -706,7 +707,7 @@ export function WorldMonitor({ initial }: Props) {
                             ) : null}
                           </span>
                           <span className="text-xs text-[var(--muted)]">
-                            {COUNTRY_LABELS[resolveCaseCountry(c)]} ·{" "}
+                            {COUNTRY_LABELS[country]} ·{" "}
                             {c.crimeCategories
                               .slice(0, 2)
                               .map((x) => CRIME_CATEGORY_LABELS[x])

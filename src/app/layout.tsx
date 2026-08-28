@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, Literata } from "next/font/google";
 import { Suspense } from "react";
+import { CommandPaletteHost } from "@/components/CommandPalette";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ScrollToTop />
         <Suspense fallback={null}>
           <KeyboardShortcuts />
+          <CommandPaletteHost />
         </Suspense>
       </body>
     </html>

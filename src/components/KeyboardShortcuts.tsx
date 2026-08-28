@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 const SHORTCUTS = [
+  { keys: "⌘ K", action: "Open command palette — jump to dossier or page" },
   { keys: "?", action: "Show this help overlay" },
   { keys: "/", action: "Jump to advanced search" },
   { keys: "g m", action: "Go to world monitor (home)" },

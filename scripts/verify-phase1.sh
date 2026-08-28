@@ -61,7 +61,20 @@ expect_contains "Header site search" "$BASE/" "site-search-input"
 expect_200 "GET /archive" "$BASE/archive"
 expect_contains "Archive featured dossier" "$BASE/archive" "Featured dossier"
 expect_contains "Archive 1000 dossiers" "$BASE/archive" "1000"
+expect_contains "Archive pagination" "$BASE/archive" "archive-pagination"
+expect_contains "Archive catalog filter" "$BASE/archive?catalogTier=curated" "Curated only"
 expect_contains "Bulk archive slug" "$BASE/cases/archive-us-0001" "Composite archival dossier"
+expect_contains "Stats page" "$BASE/stats" "Archive statistics"
+expect_contains "Stats curated count" "$BASE/stats" "Curated"
+expect_contains "Command palette shortcut" "$BASE/" "⌘K"
+expect_contains "Monitor slim payload" "$BASE/api/monitor" '"filteredCount"'
+code=$(http_code "$BASE/api/monitor")
+monitor_bytes=$(wc -c < /tmp/mi_body.txt)
+if [[ "$code" == "200" ]] && [[ "$monitor_bytes" -lt 8000000 ]]; then
+  check "Monitor API under 8MB" 1
+else
+  check "Monitor API under 8MB [bytes=$monitor_bytes code=$code]" 0
+fi
 code=$(http_code "$BASE/cases")
 if [[ "$code" == "307" || "$code" == "308" ]]; then check "GET /cases redirects" 1; else check "GET /cases redirects [got $code]" 0; fi
 expect_200 "GET /search" "$BASE/search"
