@@ -10,7 +10,6 @@ const links = [
   { href: "/", label: "Monitor", match: (p: string) => p === "/" || p.startsWith("/monitor") },
   { href: "/archive", label: "Archive", match: (p: string) => p === "/archive" || p.startsWith("/cases/") },
   { href: "/stats", label: "Stats", match: (p: string) => p.startsWith("/stats") },
-  { href: "/search", label: "Search", match: (p: string) => p.startsWith("/search") },
   { href: "/live", label: "News", match: (p: string) => p.startsWith("/live") },
   { href: "/documents", label: "Documents", match: (p: string) => p.startsWith("/documents") },
   { href: "/method", label: "Method", match: (p: string) => p.startsWith("/method") },
@@ -28,8 +27,10 @@ export function SiteNav() {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.body.dataset.navOpen = "true";
     return () => {
       document.body.style.overflow = prev;
+      delete document.body.dataset.navOpen;
     };
   }, [open]);
 
@@ -62,9 +63,28 @@ export function SiteNav() {
         className={`site-nav ${open ? "is-open" : ""}`}
         aria-label="Primary"
       >
+        <div className="site-nav-drawer-head md:hidden">
+          <p className="site-nav-drawer-title">Menu</p>
+          <button
+            type="button"
+            className="site-nav-close"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+          >
+            Close
+          </button>
+        </div>
         <div className="site-nav-links">
           <div className="site-nav-search md:hidden">
+            <p className="label mb-2 normal-case tracking-normal">Search cases</p>
             <SiteSearch />
+            <Link
+              href="/search"
+              className="nav-advanced-search"
+              onClick={() => setOpen(false)}
+            >
+              Advanced search filters →
+            </Link>
           </div>
           {links.map((l) => {
             const active = l.match(pathname);
@@ -80,6 +100,13 @@ export function SiteNav() {
               </Link>
             );
           })}
+          <Link
+            href="/search"
+            className="nav-link nav-link-search-desktop hidden md:inline-flex"
+            aria-current={pathname.startsWith("/search") ? "page" : undefined}
+          >
+            Search
+          </Link>
           <Link
             href="/admin/moderation"
             className="nav-link nav-link-muted"

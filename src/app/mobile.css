@@ -22,6 +22,15 @@
     bottom: calc(1rem + env(safe-area-inset-bottom));
     width: 2.75rem;
     height: 2.75rem;
+    z-index: 400;
+  }
+
+  body[data-nav-open="true"] .scroll-top {
+    display: none;
+  }
+
+  body[data-nav-open="true"] .monitor-bottom-tabs {
+    visibility: hidden;
   }
 
   .breadcrumbs-list {
@@ -281,20 +290,37 @@
 
   .story-chapter-pill {
     flex: 0 0 auto;
-    padding: 0.45rem 0.75rem;
-    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
-    background: color-mix(in srgb, var(--bg-subtle) 80%, transparent);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--ink-soft);
+    background: color-mix(in srgb, var(--bg-subtle) 92%, var(--paper));
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
     text-decoration: none;
     white-space: nowrap;
   }
 
-  .story-chapter-pill:hover {
+  .story-chapter-pill:active {
+    background: var(--accent-soft);
     border-color: var(--accent);
-    color: var(--ink);
+  }
+
+  .dossier-page .note {
+    background: color-mix(in srgb, var(--bg-subtle) 95%, var(--paper));
+    border-color: var(--line-strong);
+  }
+
+  .dossier-page .note,
+  .dossier-page .note p {
+    color: var(--ink-soft);
+  }
+
+  .dossier-body {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 }
 

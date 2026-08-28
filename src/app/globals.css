@@ -1656,10 +1656,10 @@ a.monitor-news-headline:hover {
 .nav-overlay {
   position: fixed;
   inset: 0;
-  z-index: 250;
+  z-index: 1050;
   border: none;
-  background: var(--overlay);
-  backdrop-filter: blur(4px);
+  background: rgba(12, 6, 8, 0.72);
+  backdrop-filter: blur(8px);
   cursor: pointer;
 }
 
@@ -1693,29 +1693,76 @@ a.monitor-news-headline:hover {
     position: fixed;
     top: 0;
     right: 0;
-    z-index: 300;
-    width: min(18rem, 88vw);
+    z-index: 1100;
+    width: min(20rem, 92vw);
     height: 100dvh;
-    padding: 5rem 1.25rem 1.5rem;
+    padding: 0 0 calc(1.5rem + env(safe-area-inset-bottom));
     border-left: 1px solid var(--line-strong);
-    background: color-mix(in srgb, var(--cs-void) 96%, transparent);
-    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+    background: var(--cs-void);
+    box-shadow: -16px 0 48px rgba(0, 0, 0, 0.55);
     transform: translateX(105%);
     transition: transform 0.22s ease;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .site-nav.is-open {
     transform: translateX(0);
   }
 
+  .site-nav-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: max(0.75rem, env(safe-area-inset-top)) 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--cs-void);
+  }
+
+  .site-nav-drawer-title {
+    font-family: var(--font-plex), sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .site-nav-close {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--paper) 80%, transparent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .site-nav-close:hover {
+    border-color: var(--cs-signal);
+    color: var(--ink);
+  }
+
   .site-nav-links {
     flex-direction: column;
     gap: 0;
+    padding: 0 1.25rem;
   }
 
   .site-nav .nav-link {
     width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
     padding: 0.85rem 0.5rem;
     border-bottom: 1px solid var(--line);
     font-size: 1rem;
@@ -1724,11 +1771,32 @@ a.monitor-news-headline:hover {
   .site-nav .nav-link.is-active {
     border-bottom-color: var(--cs-signal);
     background: var(--accent-soft);
+    color: var(--ink);
   }
-}
 
-html[data-theme="light"] .site-nav {
-  background: color-mix(in srgb, var(--cs-fog) 96%, transparent);
+  .nav-advanced-search {
+    display: inline-flex;
+    margin-top: 0.65rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .nav-advanced-search:hover {
+    text-decoration: underline;
+  }
+
+  .nav-toggle {
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  html[data-theme="light"] .site-nav,
+  html[data-theme="light"] .site-nav-drawer-head {
+    background: var(--cs-fog);
+  }
 }
 
 /* Dossier sticky stack — tabs + scroll actions below site header */
