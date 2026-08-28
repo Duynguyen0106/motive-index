@@ -260,6 +260,48 @@ html[data-theme="light"] .monitor-cluster {
   display: none;
 }
 
+.case-image-gallery {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .case-image-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.case-image-gallery-item .case-image-frame {
+  aspect-ratio: 3 / 2;
+}
+
+.case-image-gallery-item .case-image-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.case-image-index .case-image-frame {
+  aspect-ratio: 3 / 2;
+  width: 4rem;
+}
+
+.case-image-index .case-image-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.case-image-index .case-image-reveal {
+  min-height: 2.5rem;
+  padding: 0.25rem;
+}
+
+.case-image-reveal-mini {
+  font-size: 1rem;
+  opacity: 0.75;
+}
+
 .dossier-page .display {
   color: var(--cs-fog);
 }
@@ -602,6 +644,31 @@ a {
   border-top: 2px solid var(--cs-signal);
 }
 
+.index-table-with-photos .index-head,
+.index-table-with-photos .index-row {
+  grid-template-columns: 4rem 4.5rem 1fr 9rem;
+  align-items: center;
+}
+
+.index-head-photo {
+  display: block;
+}
+
+.index-photo {
+  display: block;
+  width: 4rem;
+  flex-shrink: 0;
+}
+
+.index-photo-placeholder {
+  display: block;
+  width: 4rem;
+  height: 2.5rem;
+  border: 1px dashed var(--line);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--cs-void) 25%, transparent);
+}
+
 .index-head {
   display: grid;
   grid-template-columns: 4.5rem 1fr 9rem;
@@ -659,6 +726,33 @@ a {
 @media (max-width: 640px) {
   .index-head {
     display: none;
+  }
+
+  .index-table-with-photos .index-row {
+    grid-template-columns: 4rem 1fr;
+    grid-template-areas:
+      "photo title"
+      "photo meta";
+    gap: 0.25rem 0.75rem;
+    padding: 1rem 0;
+    align-items: start;
+  }
+
+  .index-table-with-photos .index-photo {
+    grid-area: photo;
+  }
+
+  .index-table-with-photos .index-year {
+    display: none;
+  }
+
+  .index-table-with-photos .index-row > span:nth-child(3) {
+    grid-area: title;
+  }
+
+  .index-table-with-photos .index-meta {
+    grid-area: meta;
+    text-align: left;
   }
 
   .index-row {

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CaseStatusBadge, EmptyState } from "@/components/ui";
+import { CaseImagePanel } from "@/components/CaseImagePanel";
+import { getPrimaryCaseImage } from "@/lib/caseImages";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { monitorUrlFromFilters } from "@/lib/search";
 import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
@@ -146,14 +148,24 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
         {filtered.length} of {cases.length} shown
       </p>
 
-      <div className="index-table">
+      <div className="index-table index-table-with-photos">
         <div className="index-head">
+          <span className="index-head-photo" aria-hidden />
           <span>Year</span>
           <span>Case</span>
           <span className="text-right">Classification</span>
         </div>
-        {filtered.map((c) => (
+        {filtered.map((c) => {
+          const thumb = getPrimaryCaseImage(c.slug);
+          return (
           <Link key={c.id} href={`/cases/${c.slug}`} className="index-row group">
+            <span className="index-photo">
+              {thumb ? (
+                <CaseImagePanel image={thumb} variant="index" hideCaption />
+              ) : (
+                <span className="index-photo-placeholder" aria-hidden />
+              )}
+            </span>
             <span className="index-year">
               {c.yearStart}
               {c.yearEnd ? `–${c.yearEnd}` : ""}
@@ -174,7 +186,8 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
               {c.crimeCategories.slice(0, 2).map((x) => CRIME_CATEGORY_LABELS[x]).join(" · ")}
             </span>
           </Link>
-        ))}
+          );
+        })}
       </div>
 
       {!filtered.length ? (

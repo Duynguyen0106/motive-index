@@ -128,6 +128,9 @@ expect_contains "Gacy courthouse photo" "$BASE/cases/john-wayne-gacy" "Cook Coun
 expect_contains "McVeigh memorial photo" "$BASE/cases/timothy-mcveigh" "Oklahoma City National Memorial"
 expect_contains "Sensitive photo reveal" "$BASE/cases/richard-ramirez" "Sensitive photograph"
 expect_contains "About photo policy" "$BASE/about" "click-to-reveal"
+expect_contains "Overview photo gallery" "$BASE/cases/ted-bundy?tab=overview" "Photographs"
+expect_contains "Archive index thumbnails" "$BASE/archive" "index-table-with-photos"
+expect_contains "Archive row thumbnail" "$BASE/archive" "case-image-index"
 
 echo
 echo "-- Theories --"

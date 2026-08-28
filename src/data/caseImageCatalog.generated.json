@@ -1,0 +1,922 @@
+{
+  "dean-corll": {
+    "slug": "dean-corll",
+    "query": "Houston Texas courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Harris County 1910 Courthouse Restored Houston Texas.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Harris_County_1910_Courthouse_Restored_Houston_Texas.jpg",
+    "artist": "i_am_jim",
+    "license": "CC BY-SA 3.0"
+  },
+  "richard-chase": {
+    "slug": "richard-chase",
+    "query": "Richard Chase mugshot",
+    "kind": "portrait",
+    "sensitive": true,
+    "title": "Richard Chase Mugshot Sacramento Police Department Mugshot January 28 1978.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Richard_Chase_Mugshot_Sacramento_Police_Department_Mugshot_January_28_1978.jpg",
+    "artist": "Sacramento Police Department booking officer. January 28, 1978",
+    "license": "Public domain"
+  },
+  "albert-fish": {
+    "slug": "albert-fish",
+    "query": "Albert Fish mugshot",
+    "kind": "portrait",
+    "sensitive": true,
+    "title": "Albert Fish 1903 crop.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Albert_Fish_1903_crop.jpg",
+    "artist": "Wikimedia Commons",
+    "license": "Public domain"
+  },
+  "wayne-williams": {
+    "slug": "wayne-williams",
+    "query": "Atlanta Georgia courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Fulton County Courthouse, Atlanta, 1926.png",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Fulton_County_Courthouse%2C_Atlanta%2C_1926.png",
+    "artist": "Unknown",
+    "license": "Public domain"
+  },
+  "dorothea-puente": {
+    "slug": "dorothea-puente",
+    "query": "Sacramento California courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Robert T. Matsui United States Courthouse, Sacramento CAED (26060003625).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Robert_T._Matsui_United_States_Courthouse%2C_Sacramento_CAED_%2826060003625%29.jpg",
+    "artist": "Tony Webster from Minneapolis, Minnesota, United States",
+    "license": "CC BY-SA 2.0"
+  },
+  "paul-bernardo": {
+    "slug": "paul-bernardo",
+    "query": "Ontario courthouse Canada",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Perth County Courthouse, Stratford, Ontario, 2025-08-04 01.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Perth_County_Courthouse%2C_Stratford%2C_Ontario%2C_2025-08-04_01.jpg",
+    "artist": "Chris Woodrich",
+    "license": "CC BY-SA 4.0"
+  },
+  "clifford-olson": {
+    "slug": "clifford-olson",
+    "query": "British Columbia courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Steveston Courthouse - 1.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/98/Steveston_Courthouse_-_1.jpg",
+    "artist": "Yan Lau",
+    "license": "CC BY-SA 3.0"
+  },
+  "ivan-milat": {
+    "slug": "ivan-milat",
+    "query": "New South Wales courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Old Courthouse, Liverpool, New South Wales 08.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Old_Courthouse%2C_Liverpool%2C_New_South_Wales_08.jpg",
+    "artist": "Chris.sherlock2",
+    "license": "CC BY-SA 4.0"
+  },
+  "martin-bryant": {
+    "slug": "martin-bryant",
+    "query": "Port Arthur Tasmania memorial",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Port Arthur Massacre Memorial.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Port_Arthur_Massacre_Memorial.jpg",
+    "artist": "jeaneeem from Canberra, Australia",
+    "license": "CC BY 2.0"
+  },
+  "fred-west": {
+    "slug": "fred-west",
+    "query": "Gloucester England cathedral",
+    "kind": "location",
+    "sensitive": false,
+    "title": "The Cloisters at Gloucester Cathedral.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d6/The_Cloisters_at_Gloucester_Cathedral.jpg",
+    "artist": "Christopher JT Cherrington",
+    "license": "CC BY-SA 4.0"
+  },
+  "john-christie": {
+    "slug": "john-christie",
+    "query": "Old Bailey London",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Central Criminal Court of England and Wales (The Old Bailey) Ceiling.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Central_Criminal_Court_of_England_and_Wales_%28The_Old_Bailey%29_Ceiling.jpg",
+    "artist": "Michael D Beckwith",
+    "license": "CC0"
+  },
+  "marc-dutroux": {
+    "slug": "marc-dutroux",
+    "query": "Belgium palace justice Brussels",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Coupole du Palais de Justice de Bruxelles 04.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/40/Coupole_du_Palais_de_Justice_de_Bruxelles_04.jpg",
+    "artist": "M0tty",
+    "license": "CC BY-SA 3.0"
+  },
+  "michel-fourniret": {
+    "slug": "michel-fourniret",
+    "query": "Palais de Justice Paris",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Palais de Justice de Paris.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Palais_de_Justice_de_Paris.jpg",
+    "artist": "Carlos Delgado",
+    "license": "CC BY-SA 3.0"
+  },
+  "guy-georges": {
+    "slug": "guy-georges",
+    "query": "Palais de Justice Paris",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Palais de Justice de Paris.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Palais_de_Justice_de_Paris.jpg",
+    "artist": "Carlos Delgado",
+    "license": "CC BY-SA 3.0"
+  },
+  "fritz-haarmann": {
+    "slug": "fritz-haarmann",
+    "query": "Hanover Germany city hall",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Neues Rathaus Hannover abends.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/68/Neues_Rathaus_Hannover_abends.jpg",
+    "artist": "Thomas Wolf, www.foto-tw.de",
+    "license": "CC BY-SA 3.0 de"
+  },
+  "beate-zschaepe": {
+    "slug": "beate-zschaepe",
+    "query": "Munich courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Justizpalast at dusk 2.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Justizpalast_at_dusk_2.JPG",
+    "artist": "Martin Falbisoner",
+    "license": "CC BY-SA 3.0"
+  },
+  "jack-unterweger": {
+    "slug": "jack-unterweger",
+    "query": "Vienna Austria courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Landesgericht für Strafsachen Wien 2015 2.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Landesgericht_f%C3%BCr_Strafsachen_Wien_2015_2.jpg",
+    "artist": "Dnalor 01",
+    "license": "CC BY-SA 3.0 at"
+  },
+  "monster-of-florence": {
+    "slug": "monster-of-florence",
+    "query": "Florence Italy Palazzo Vecchio",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Lorenzo di Magnifico visits king Ferdinand of Aragon in Naples (Palazzo Vecchio, Florence).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/55/Lorenzo_di_Magnifico_visits_king_Ferdinand_of_Aragon_in_Naples_%28Palazzo_Vecchio%2C_Florence%29.jpg",
+    "artist": "Petar Milošević",
+    "license": "Public domain"
+  },
+  "willem-van-eijk": {
+    "slug": "willem-van-eijk",
+    "query": "Amsterdam courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "De Bunker - Q2533841 - 2.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/97/De_Bunker_-_Q2533841_-_2.jpg",
+    "artist": "Hay Kranen",
+    "license": "CC BY 4.0"
+  },
+  "malcolm-macarthur": {
+    "slug": "malcolm-macarthur",
+    "query": "Four Courts Dublin",
+    "kind": "context",
+    "sensitive": false,
+    "title": "DV405 no.195 The four courts, Dublin.png",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/13/DV405_no.195_The_four_courts%2C_Dublin.png",
+    "artist": "Alphonse Dousseau",
+    "license": "CC0"
+  },
+  "diogo-alves": {
+    "slug": "diogo-alves",
+    "query": "Lisbon Portugal courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Julgamento no Tribunal da Boa-Hora dos acusados do incêndio da rua da Madalena em 1907 -1909.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/27/Julgamento_no_Tribunal_da_Boa-Hora_dos_acusados_do_inc%C3%AAndio_da_rua_da_Madalena_em_1907_-1909.jpg",
+    "artist": "Joshua Benoliel",
+    "license": "Public domain"
+  },
+  "moses-sithole": {
+    "slug": "moses-sithole",
+    "query": "Johannesburg courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "00000-Supreme Court-Johannesburg-s.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/00000-Supreme_Court-Johannesburg-s.jpg",
+    "artist": "Janek Szymanowski",
+    "license": "CC BY-SA 3.0"
+  },
+  "andrei-chikatilo": {
+    "slug": "andrei-chikatilo",
+    "query": "Andrei Chikatilo mugshot",
+    "kind": "portrait",
+    "sensitive": true,
+    "title": "Andrei Chikatilo (1990).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Andrei_Chikatilo_%281990%29.jpg",
+    "artist": "USSR Government",
+    "license": "Public domain"
+  },
+  "serhiy-tkach": {
+    "slug": "serhiy-tkach",
+    "query": "Dnipro Ukraine city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "2017 - Київ - Світанок над Дніпром.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/42/2017_-_%D0%9A%D0%B8%D1%97%D0%B2_-_%D0%A1%D0%B2%D1%96%D1%82%D0%B0%D0%BD%D0%BE%D0%BA_%D0%BD%D0%B0%D0%B4_%D0%94%D0%BD%D1%96%D0%BF%D1%80%D0%BE%D0%BC.jpg",
+    "artist": "Moahim",
+    "license": "CC BY-SA 4.0"
+  },
+  "bela-kiss": {
+    "slug": "bela-kiss",
+    "query": "Budapest Hungary parliament",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Budapest Parliament 4604.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/87/Budapest_Parliament_4604.JPG",
+    "artist": "Dirk Beyer",
+    "license": "CC BY-SA 3.0"
+  },
+  "tsutomu-miyazaki": {
+    "slug": "tsutomu-miyazaki",
+    "query": "Tokyo District Court",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Buisiness Court Meguro.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/52/Buisiness_Court_Meguro.jpg",
+    "artist": "Doricono",
+    "license": "CC BY-SA 4.0"
+  },
+  "shoko-asahara": {
+    "slug": "shoko-asahara",
+    "query": "Tokyo subway sarin attack memorial",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Shigeki Iwai 20210320 2.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Shigeki_Iwai_20210320_2.jpg",
+    "artist": "国土交通省",
+    "license": "CC BY 4.0"
+  },
+  "yoo-young-chul": {
+    "slug": "yoo-young-chul",
+    "query": "Seoul South Korea courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Old courthouse of the Supreme Court of Korea at Seosomun-dong in 1983.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/15/Old_courthouse_of_the_Supreme_Court_of_Korea_at_Seosomun-dong_in_1983.jpg",
+    "artist": "서울특별시청",
+    "license": "KOGL Type 1"
+  },
+  "yang-xinhai": {
+    "slug": "yang-xinhai",
+    "query": "Zhengzhou China city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "20240817 Zhengzhou Shang City Site 02.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/27/20240817_Zhengzhou_Shang_City_Site_02.jpg",
+    "artist": "Windmemories",
+    "license": "CC BY-SA 4.0"
+  },
+  "surinder-koli": {
+    "slug": "surinder-koli",
+    "query": "Noida India city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "View of Noida city from the Hilton Noida.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/bb/View_of_Noida_city_from_the_Hilton_Noida.jpg",
+    "artist": "Edmund Gall",
+    "license": "CC BY-SA 2.0"
+  },
+  "javed-iqbal": {
+    "slug": "javed-iqbal",
+    "query": "Lahore High Court",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Lahore High Court Building.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Lahore_High_Court_Building.jpg",
+    "artist": "MariyamAftab",
+    "license": "CC BY-SA 4.0"
+  },
+  "javed-iqbal-urdu": {
+    "slug": "javed-iqbal-urdu",
+    "query": "Lahore High Court",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Lahore High Court Building.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Lahore_High_Court_Building.jpg",
+    "artist": "MariyamAftab",
+    "license": "CC BY-SA 4.0"
+  },
+  "saeed-hanaei": {
+    "slug": "saeed-hanaei",
+    "query": "Mashhad Iran city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Main Gate of Imam Riza, Mashhad, Iran-1850s.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Main_Gate_of_Imam_Riza%2C_Mashhad%2C_Iran-1850s.jpg",
+    "artist": "Possibly by Luigi Pesce (Italian, 1818–1891)",
+    "license": "Public domain"
+  },
+  "saeed-hanaei-esfahan": {
+    "slug": "saeed-hanaei-esfahan",
+    "query": "Esfahan Iran Naqsh-e Jahan",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Naghsh-e Jahan Square.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/06/Naghsh-e_Jahan_Square.jpg",
+    "artist": "Arosha-photo(Reza Sobhani)",
+    "license": "CC BY-SA 4.0"
+  },
+  "charles-sobhraj": {
+    "slug": "charles-sobhraj",
+    "query": "Bangkok Grand Palace",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Temple of the Emerald Buddha.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Temple_of_the_Emerald_Buddha.jpg",
+    "artist": "Nawit science",
+    "license": "CC BY-SA 4.0"
+  },
+  "adrian-lim": {
+    "slug": "adrian-lim",
+    "query": "Singapore Supreme Court",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Singapore Old-Supreme-Court-Building-01.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Singapore_Old-Supreme-Court-Building-01.jpg",
+    "artist": "CEphoto, Uwe Aranas",
+    "license": "CC BY-SA 3.0"
+  },
+  "chen-chin-hsing": {
+    "slug": "chen-chin-hsing",
+    "query": "Taipei Taiwan courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Taiwan Taipei District Courthouse 20230621.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Taiwan_Taipei_District_Courthouse_20230621.jpg",
+    "artist": "Yu tptw",
+    "license": "CC BY-SA 4.0"
+  },
+  "pedro-rodrigues-filho": {
+    "slug": "pedro-rodrigues-filho",
+    "query": "Sao Paulo Brazil courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Palácio da Justiça de São Paulo por Rodrigo Tetsuo Argenton (10).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/Pal%C3%A1cio_da_Justi%C3%A7a_de_S%C3%A3o_Paulo_por_Rodrigo_Tetsuo_Argenton_%2810%29.jpg",
+    "artist": "Ramos de Azevedo",
+    "license": "CC BY-SA 4.0"
+  },
+  "carlos-robledo-puch": {
+    "slug": "carlos-robledo-puch",
+    "query": "Carlos Robledo Puch mugshot",
+    "kind": "portrait",
+    "sensitive": true,
+    "title": "Mugshot of Robledo Puch.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Mugshot_of_Robledo_Puch.jpg",
+    "artist": "Eduardo Frias",
+    "license": "Public domain"
+  },
+  "adolfo-constanzo": {
+    "slug": "adolfo-constanzo",
+    "query": "Matamoros Mexico city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Plaza matamoros.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Plaza_matamoros.jpg",
+    "artist": "Gerardoprz",
+    "license": "CC BY-SA 4.0"
+  },
+  "gracious-david-west": {
+    "slug": "gracious-david-west",
+    "query": "Port Harcourt Nigeria",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Audience and Stunt Arena at Muscle on the Wheel in Port Harcourt 04.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Audience_and_Stunt_Arena_at_Muscle_on_the_Wheel_in_Port_Harcourt_04.jpg",
+    "artist": "ABORISADEADETONA",
+    "license": "CC0"
+  },
+  "philip-onyancha": {
+    "slug": "philip-onyancha",
+    "query": "Nairobi city Kenya",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Nairobi City Market.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Nairobi_City_Market.jpg",
+    "artist": "Queen Asali",
+    "license": "CC BY-SA 4.0"
+  },
+  "sture-bergwall": {
+    "slug": "sture-bergwall",
+    "query": "Stockholm Sweden courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Södra Roslags tingsrätt Stockholm 20060509.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/de/S%C3%B6dra_Roslags_tingsr%C3%A4tt_Stockholm_20060509.jpg",
+    "artist": "No machine-readable author provided. FriskoKry~commonswiki assumed (based on copyright claims).",
+    "license": "CC BY-SA 2.5"
+  },
+  "peter-lundin": {
+    "slug": "peter-lundin",
+    "query": "Copenhagen Denmark courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Nykøbing Falster courthouse.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Nyk%C3%B8bing_Falster_courthouse.jpg",
+    "artist": "Lars K Jensen from Copenhagen, Denmark",
+    "license": "CC BY 2.0"
+  },
+  "lake-bodom": {
+    "slug": "lake-bodom",
+    "query": "Lake Bodom Finland",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Bodomjarvi talvella.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Bodomjarvi_talvella.jpg",
+    "artist": "Wikimedia Commons",
+    "license": "CC BY-SA 3.0"
+  },
+  "david-bain": {
+    "slug": "david-bain",
+    "query": "Dunedin New Zealand courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "00 1511 Dunedin, New Zealand - Law Courts.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/80/00_1511_Dunedin%2C_New_Zealand_-_Law_Courts.jpg",
+    "artist": "W. Bulach",
+    "license": "CC BY-SA 4.0"
+  },
+  "mira-bare": {
+    "slug": "mira-bare",
+    "query": "Prague Czech Republic courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Interior of a gun safe for visitors at a courthouse in Prague, Czech Republic.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Interior_of_a_gun_safe_for_visitors_at_a_courthouse_in_Prague%2C_Czech_Republic.jpg",
+    "artist": "Cimmerian praetor",
+    "license": "CC BY-SA 4.0"
+  },
+  "mona-fandey": {
+    "slug": "mona-fandey",
+    "query": "Kuala Lumpur city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "The Twins SE Asia 2019 (49171985716).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/The_Twins_SE_Asia_2019_%2849171985716%29.jpg",
+    "artist": "James Kerwin from Tbilisi",
+    "license": "CC BY 2.0"
+  },
+  "amrozi-nurhasyim": {
+    "slug": "amrozi-nurhasyim",
+    "query": "Bali bombing memorial",
+    "kind": "location",
+    "sensitive": false,
+    "title": "London (UK), War memorial -- 2010 -- 1947.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/London_%28UK%29%2C_War_memorial_--_2010_--_1947.jpg",
+    "artist": "Dietmar Rabich",
+    "license": "CC BY-SA 4.0"
+  },
+  "yishai-schlissel": {
+    "slug": "yishai-schlissel",
+    "query": "Jerusalem Israel courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Jerusalem Municipal Court.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/27/Jerusalem_Municipal_Court.JPG",
+    "artist": "Yagasi",
+    "license": "CC0"
+  },
+  "yishai-schlissel-he": {
+    "slug": "yishai-schlissel-he",
+    "query": "Jerusalem Israel courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Jerusalem Municipal Court.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/27/Jerusalem_Municipal_Court.JPG",
+    "artist": "Yagasi",
+    "license": "CC0"
+  },
+  "ramadan-mansour": {
+    "slug": "ramadan-mansour",
+    "query": "Cairo Egypt courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "New Cairo Court House sieged.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/74/New_Cairo_Court_House_sieged.jpg",
+    "artist": "Hossam el-Hamalawy",
+    "license": "CC BY-SA 2.0"
+  },
+  "volkmar-heinrich": {
+    "slug": "volkmar-heinrich",
+    "query": "Santiago Chile courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Edificio de Avenida España 503, Santiago 20220626.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Edificio_de_Avenida_Espa%C3%B1a_503%2C_Santiago_20220626.jpg",
+    "artist": "Carlos Figueroa Rojas",
+    "license": "CC BY-SA 4.0"
+  },
+  "abimael-guzman": {
+    "slug": "abimael-guzman",
+    "query": "Lima Peru courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Frontis interno corte lima norte.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Frontis_interno_corte_lima_norte.jpg",
+    "artist": "Limanortepj",
+    "license": "CC BY-SA 4.0"
+  },
+  "krzysztof-gawlik": {
+    "slug": "krzysztof-gawlik",
+    "query": "Wroclaw Poland courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "District Court building in Wrocław, 20240811.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/1c/District_Court_building_in_Wroc%C5%82aw%2C_20240811.jpg",
+    "artist": "Abzeronow",
+    "license": "CC BY 4.0"
+  },
+  "werner-fischer": {
+    "slug": "werner-fischer",
+    "query": "Bern Switzerland courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Regionalgericht Bern-Mittelland Zivilabteilung.jpeg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/25/Regionalgericht_Bern-Mittelland_Zivilabteilung.jpeg",
+    "artist": "Albinfo",
+    "license": "CC BY-SA 4.0"
+  },
+  "nguyen-thanh-vu": {
+    "slug": "nguyen-thanh-vu",
+    "query": "Ho Chi Minh City courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Saigon courthouse, Ho Chi Minh City (5679606510).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Saigon_courthouse%2C_Ho_Chi_Minh_City_%285679606510%29.jpg",
+    "artist": "Andrea Schaffer from Sydney, Australia",
+    "license": "CC BY 2.0"
+  },
+  "andres-bustamante": {
+    "slug": "andres-bustamante",
+    "query": "Cebu Philippines courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Bantayan legislative building.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Bantayan_legislative_building.jpg",
+    "artist": "John Martin PERRY",
+    "license": "CC BY-SA 3.0"
+  },
+  "gheorghe-solovan": {
+    "slug": "gheorghe-solovan",
+    "query": "Bucharest Romania courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Bucharest - Palace of Justice (Justizpalast) - no filter (29340923631).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Bucharest_-_Palace_of_Justice_%28Justizpalast%29_-_no_filter_%2829340923631%29.jpg",
+    "artist": "Ștefan Jurcă from Munich, Germany",
+    "license": "CC BY 2.0"
+  },
+  "mehmet-oktas": {
+    "slug": "mehmet-oktas",
+    "query": "Ankara Turkey courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Turkish Court of Cassation.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Turkish_Court_of_Cassation.jpg",
+    "artist": "Yıldız Yazıcıoğlu",
+    "license": "Public domain"
+  },
+  "dimitris-papageorgiou": {
+    "slug": "dimitris-papageorgiou",
+    "query": "Athens Greece courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Palace of Justice - Pretoria.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Palace_of_Justice_-_Pretoria.jpg",
+    "artist": "The Wandering Angel from Makati City, Philippines",
+    "license": "CC BY 2.0"
+  },
+  "dimitris-papageorgiou-el": {
+    "slug": "dimitris-papageorgiou-el",
+    "query": "Athens Greece courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Palace of Justice - Pretoria.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Palace_of_Justice_-_Pretoria.jpg",
+    "artist": "The Wandering Angel from Makati City, Philippines",
+    "license": "CC BY 2.0"
+  },
+  "alexander-pichushkin": {
+    "slug": "alexander-pichushkin",
+    "query": "Moscow Russia courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Arbat District, Moscow, Russia - panoramio (48).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/de/Arbat_District%2C_Moscow%2C_Russia_-_panoramio_%2848%29.jpg",
+    "artist": "alexandergroshev",
+    "license": "CC BY 3.0"
+  },
+  "gao-chengyong": {
+    "slug": "gao-chengyong",
+    "query": "Baiyin China city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "ChinaBaiyinBaiyin.png",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/05/ChinaBaiyinBaiyin.png",
+    "artist": "Slb nsk",
+    "license": "CC BY-SA 4.0"
+  },
+  "henri-landru": {
+    "slug": "henri-landru",
+    "query": "Henri Landru mugshot",
+    "kind": "portrait",
+    "sensitive": true,
+    "title": "LANDRU 1.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/16/LANDRU_1.jpg",
+    "artist": "AnonymousUnknown author",
+    "license": "Public domain"
+  },
+  "auto-shankar": {
+    "slug": "auto-shankar",
+    "query": "Chennai India High Court",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Chennai High Court.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/62/Chennai_High_Court.jpg",
+    "artist": "Yoga Balaji",
+    "license": "CC BY 3.0"
+  },
+  "lucjan-staniak": {
+    "slug": "lucjan-staniak",
+    "query": "Warsaw Poland courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Sądy na Lesznie 2015 01.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/S%C4%85dy_na_Lesznie_2015_01.jpg",
+    "artist": "Adrian Grycuk",
+    "license": "CC BY-SA 3.0 pl"
+  },
+  "john-ausonius": {
+    "slug": "john-ausonius",
+    "query": "Stockholm Sweden courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Södra Roslags tingsrätt Stockholm 20060509.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/de/S%C3%B6dra_Roslags_tingsr%C3%A4tt_Stockholm_20060509.jpg",
+    "artist": "No machine-readable author provided. FriskoKry~commonswiki assumed (based on copyright claims).",
+    "license": "CC BY-SA 2.5"
+  },
+  "akira-nishiguchi": {
+    "slug": "akira-nishiguchi",
+    "query": "Fukuoka Japan courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Courthouse of Fukuoka High-District-Family-Summary Court Ropponmatsu-4-chōme Chūō-ku Fukuoka City 20230505.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Courthouse_of_Fukuoka_High-District-Family-Summary_Court_Ropponmatsu-4-ch%C5%8Dme_Ch%C5%AB%C5%8D-ku_Fukuoka_City_20230505.jpg",
+    "artist": "Hirho",
+    "license": "CC BY-SA 4.0"
+  },
+  "donato-bilancia": {
+    "slug": "donato-bilancia",
+    "query": "Genoa Italy courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Genova, il Palazzo di Giustizia con la ricostruzione dello storico cortile del precedente Ospedale di Pammatone.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Genova%2C_il_Palazzo_di_Giustizia_con_la_ricostruzione_dello_storico_cortile_del_precedente_Ospedale_di_Pammatone.jpg",
+    "artist": "Stefano15",
+    "license": "CC BY-SA 4.0"
+  },
+  "alcasser-girls": {
+    "slug": "alcasser-girls",
+    "query": "Valencia Spain courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Santa Barbara County Courthouse.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/91/Santa_Barbara_County_Courthouse.jpg",
+    "artist": "Konrad Summers from Santa Clarita (Valencia) , California, USA",
+    "license": "CC BY-SA 2.0"
+  },
+  "mikhail-popkov": {
+    "slug": "mikhail-popkov",
+    "query": "Angarsk Russia city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Angarsk car Volga GAZ-21 (25720495842).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Angarsk_car_Volga_GAZ-21_%2825720495842%29.jpg",
+    "artist": "Artem Svetlov from Moscow, Russia",
+    "license": "CC BY 2.0"
+  },
+  "ahmad-suradji": {
+    "slug": "ahmad-suradji",
+    "query": "Medan Indonesia city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Medan Montage.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Medan_Montage.jpg",
+    "artist": "File:Graha Maria Annai Velangkanni Medan.jpg: Ronald Tagra\nFile:Londonsumatraindonesia.jpg: Bayu Aditya\nFile:Medan_old_city_hall.jpg: Rochelimit\nFile:Hillpark_Castle.jpg: Doc Buddie\nFile:File:Sun_Plaza_Medan_(Medium).jpg: Martin Heider\nFile:Great Mosque Medan Indonesia.JPG: Mimihitam\nderivative work: Badpuccini",
+    "license": "CC BY-SA 3.0"
+  },
+  "tiago-henrique-rocha": {
+    "slug": "tiago-henrique-rocha",
+    "query": "Goiania Brazil",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Athene cunicularia -near Goiania, Goias, Brazil-8 edit.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Athene_cunicularia_-near_Goiania%2C_Goias%2C_Brazil-8_edit.jpg",
+    "artist": "Wagner Machado Carlos Lemes from Goiânia, Brazil; derivative work by King of Hearts",
+    "license": "CC BY 2.0"
+  },
+  "armin-meiwes": {
+    "slug": "armin-meiwes",
+    "query": "Kassel Germany courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Hessischer Verwaltungsgerichtshof.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Hessischer_Verwaltungsgerichtshof.jpg",
+    "artist": "Reise Reise",
+    "license": "CC BY-SA 4.0"
+  },
+  "kaspars-petrovs": {
+    "slug": "kaspars-petrovs",
+    "query": "Riga Latvia courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Tiesas nams, Brīvības bulvāris 34, Rīga.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/97/Tiesas_nams%2C_Br%C4%ABv%C4%ABbas_bulv%C4%81ris_34%2C_R%C4%ABga.JPG",
+    "artist": "Kleivas",
+    "license": "CC BY-SA 4.0"
+  },
+  "umesh-reddy": {
+    "slug": "umesh-reddy",
+    "query": "Bangalore India High Court",
+    "kind": "location",
+    "sensitive": false,
+    "title": "High Court of Karnataka, Bangalore MMK.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/High_Court_of_Karnataka%2C_Bangalore_MMK.jpg",
+    "artist": "Muhammad Mahdi Karim/ Augustus Binu",
+    "license": "GFDL 1.2"
+  },
+  "mamoru-takuma": {
+    "slug": "mamoru-takuma",
+    "query": "Osaka Japan courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Osaka Court of Appeals.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Osaka_Court_of_Appeals.JPG",
+    "artist": "Unknown authorUnknown author",
+    "license": "Public domain"
+  },
+  "richard-klinkhamer": {
+    "slug": "richard-klinkhamer",
+    "query": "Amsterdam Netherlands courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "De Bunker - Q2533841 - 2.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/97/De_Bunker_-_Q2533841_-_2.jpg",
+    "artist": "Hay Kranen",
+    "license": "CC BY 4.0"
+  },
+  "abdul-latif-rashid": {
+    "slug": "abdul-latif-rashid",
+    "query": "Baghdad Iraq courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "U.S. Army Sgt. Brian Holm puts handcuffs on a prisoners after the prisoner's trial at the courthouse in Baghdad, Iraq, Aug 060803-F-MM807-092.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/U.S._Army_Sgt._Brian_Holm_puts_handcuffs_on_a_prisoners_after_the_prisoner%27s_trial_at_the_courthouse_in_Baghdad%2C_Iraq%2C_Aug_060803-F-MM807-092.jpg",
+    "artist": "SENIOR AIRMAN RICHARD ROSE",
+    "license": "Public domain"
+  },
+  "kang-ho-sun": {
+    "slug": "kang-ho-sun",
+    "query": "Seoul South Korea courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Old courthouse of the Supreme Court of Korea at Seosomun-dong in 1983.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/15/Old_courthouse_of_the_Supreme_Court_of_Korea_at_Seosomun-dong_in_1983.jpg",
+    "artist": "서울특별시청",
+    "license": "KOGL Type 1"
+  },
+  "somkid-pumpuang": {
+    "slug": "somkid-pumpuang",
+    "query": "Sukhothai Thailand",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Tuk-tuk in Sukhothai 02.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/65/Tuk-tuk_in_Sukhothai_02.JPG",
+    "artist": "Ilya Plekhanov",
+    "license": "CC BY-SA 3.0"
+  },
+  "juha-valjakkala": {
+    "slug": "juha-valjakkala",
+    "query": "Helsinki Finland courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Helsinki Court of Appeal courthouse interior.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/83/Helsinki_Court_of_Appeal_courthouse_interior.jpg",
+    "artist": "MakeF",
+    "license": "CC BY-SA 2.5"
+  },
+  "arnfinn-nesset": {
+    "slug": "arnfinn-nesset",
+    "query": "Trondheim Norway courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Trondheim Tinghus.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Trondheim_Tinghus.jpg",
+    "artist": "Jensens",
+    "license": "Public domain"
+  },
+  "laszlo-pandy": {
+    "slug": "laszlo-pandy",
+    "query": "Budapest Hungary courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Óbuda, II. és III. Kerületi Bíróság 2021 01.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/%C3%93buda%2C_II._%C3%A9s_III._Ker%C3%BCleti_B%C3%ADr%C3%B3s%C3%A1g_2021_01.jpg",
+    "artist": "Pasztilla aka Attila Terbócs",
+    "license": "CC BY-SA 4.0"
+  },
+  "romulus-veres": {
+    "slug": "romulus-veres",
+    "query": "Timisoara Romania courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Timișoara - Palatul Dicasterial (44104369934).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Timi%C8%99oara_-_Palatul_Dicasterial_%2844104369934%29.jpg",
+    "artist": "Fred Romero from Paris, France",
+    "license": "CC BY 2.0"
+  },
+  "ozgur-dengiz": {
+    "slug": "ozgur-dengiz",
+    "query": "Ankara Turkey courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Turkish Court of Cassation.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Turkish_Court_of_Cassation.jpg",
+    "artist": "Yıldız Yazıcıoğlu",
+    "license": "Public domain"
+  },
+  "juraj-krajcik": {
+    "slug": "juraj-krajcik",
+    "query": "Bratislava Slovakia courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Bratislava 2007 10 31 22.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/60/Bratislava_2007_10_31_22.jpg",
+    "artist": "Wizzard",
+    "license": "Public domain"
+  },
+  "vlado-taneski": {
+    "slug": "vlado-taneski",
+    "query": "Skopje North Macedonia courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Administrative Court, Skopje, Macedonia (50354028412).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Administrative_Court%2C_Skopje%2C_Macedonia_%2850354028412%29.jpg",
+    "artist": "Andrew Milligan sumo",
+    "license": "CC BY 2.0"
+  },
+  "petr-zelenka": {
+    "slug": "petr-zelenka",
+    "query": "Czech Republic courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Building of the Supreme Administrative Court of the Czech Republic (interior).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Building_of_the_Supreme_Administrative_Court_of_the_Czech_Republic_%28interior%29.jpg",
+    "artist": "Qasinka",
+    "license": "CC0"
+  },
+  "ershad-sikder": {
+    "slug": "ershad-sikder",
+    "query": "Dhaka Bangladesh courthouse",
+    "kind": "location",
+    "sensitive": false,
+    "title": "Old High Court Building beyond fence in Dhaka, Bangladesh.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Old_High_Court_Building_beyond_fence_in_Dhaka%2C_Bangladesh.jpg",
+    "artist": "Sorensen, Clarence Woodrow, 1907-1982",
+    "license": "Public domain"
+  },
+  "nguyen-tien-dung": {
+    "slug": "nguyen-tien-dung",
+    "query": "Hanoi Vietnam city",
+    "kind": "context",
+    "sensitive": false,
+    "title": "Lotte Center Hanoi 2.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Lotte_Center_Hanoi_2.jpg",
+    "artist": "Jspeed1310 at Vietnamese Wikipedia",
+    "license": "CC BY-SA 3.0"
+  }
+}

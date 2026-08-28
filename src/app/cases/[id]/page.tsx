@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { CaseImagePanel } from "@/components/CaseImagePanel";
+import { CaseImageGallery } from "@/components/CaseImageGallery";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseTabs } from "@/components/CaseTabs";
 import { CaseTabKeyboardNav } from "@/components/CaseTabKeyboardNav";
@@ -254,6 +255,9 @@ export default async function CasePage({ params, searchParams }: Props) {
                   {crimeCase.overview}
                 </p>
               </section>
+              {crimeCase.images && crimeCase.images.length > 1 ? (
+                <CaseImageGallery images={crimeCase.images} />
+              ) : null}
               <section className="card p-6 md:p-8">
                 <h2 className="display text-2xl">Legal outcome</h2>
                 <p className="body-copy mt-3 text-[var(--ink-soft)]">
