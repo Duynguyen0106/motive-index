@@ -112,7 +112,14 @@ export const enrichments: Record<string, CaseEnrichment> = {
       { label: "Power / control", detail: "Instrumental predation with dominance themes in public analyses." },
       { label: "Sexual violence (inferred)", detail: "Widely inferred from case facts; graphic detail omitted here." },
     ],
-    relatedCaseSlugs: ["dennis-rader-btk", "zodiac-killer"],
+    relatedCaseSlugs: [
+      "dennis-rader-btk",
+      "zodiac-killer",
+      "john-wayne-gacy",
+      "richard-ramirez",
+      "edmund-kemper",
+      "golden-state-killer",
+    ],
     documentIds: ["doc-bundy-trial-summary", "doc-fbi-organized-notes"],
     references: [
       {

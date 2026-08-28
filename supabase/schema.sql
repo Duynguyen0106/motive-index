@@ -214,3 +214,10 @@ create or replace view public.cases_published as
 select *
 from public.cases
 where coalesce(payload->'analysis'->>'status', '') = 'published';
+
+-- Migration 003: featured + published analysis indexes
+create index if not exists cases_featured_idx
+  on public.cases ((payload @> '{"featured": true}'::jsonb));
+
+create index if not exists cases_analysis_published_idx
+  on public.cases ((payload @> '{"analysis": {"status": "published"}}'::jsonb));

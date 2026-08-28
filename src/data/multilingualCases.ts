@@ -1837,6 +1837,60 @@ export const MULTILINGUAL_CASE_DEFS: MultilingualCaseDef[] = [
     ],
     psychologicalFactors: ["ideological_extremism", "antisocial_traits"],
   },
+  {
+    slug: "josef-fritzl",
+    name: "Josef Fritzl",
+    nameOriginal: "Josef Fritzl",
+    subtitle: "Amstetten captivity case — basement imprisonment and family coercion",
+    country: "AT",
+    location: "Amstetten, Austria",
+    jurisdiction: "Austria",
+    yearStart: 1984,
+    yearEnd: 2008,
+    era: "1980s–2000s",
+    status: "closed",
+    crimeCategories: ["domestic_homicide", "homicide"],
+    offenderName: "Josef Fritzl",
+    offenderNameOriginal: "Josef Fritzl",
+    primarySourceLanguage: "de",
+    primarySourceLanguageLabel: "German",
+    translationNote:
+      "English dossier synthesized from Austrian court records and German-language press (Der Standard, ORF). Verify legal findings in original German judgments.",
+    overview:
+      "Fritzl imprisoned his daughter Elisabeth in a concealed basement for 24 years, fathering seven children with her while maintaining a public family life upstairs. The 2008 Amstetten case became a global study in extreme domestic control, dissociation, and institutional blind spots.",
+    lat: 48.1225,
+    lng: 14.8728,
+    sources: [
+      {
+        title: "Landesgericht St. Pölten — Fritzl trial (German)",
+        originalTitle: "Landesgericht St. Pölten — Josef Fritzl",
+        language: "de",
+        languageLabel: "German",
+        kind: "court",
+      },
+      {
+        title: "Der Standard — Amstetten case coverage",
+        originalTitle: "Der Standard — Amstetten-Fall",
+        language: "de",
+        languageLabel: "German",
+        kind: "news",
+        url: "https://www.derstandard.at/",
+      },
+    ],
+    references: [
+      {
+        id: "ref-fritzl-de-1",
+        citation: "Regional Court St. Pölten, Fritzl (2009). Life imprisonment.",
+        originalCitation: "Landesgericht St. Pölten — Josef Fritzl (2009)",
+        language: "de",
+        languageLabel: "German",
+        kind: "court",
+      },
+    ],
+    psychologicalFactors: ["power_control", "compartmentalization", "impression_management"],
+    theoreticalFrameworks: ["psychodynamic", "attachment", "personality"],
+    tags: ["captivity", "family-abuse"],
+  },
 ];
 
 // Multilingual seed exports

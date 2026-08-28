@@ -10,6 +10,14 @@ import type {
 
 export type SyncResult = { ok: boolean; skipped?: boolean; error?: string };
 
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    out.push(items.slice(i, i + size));
+  }
+  return out;
+}
+
 function caseRow(crimeCase: CrimeCase) {
   return {
     id: crimeCase.id,
@@ -300,30 +308,69 @@ export async function syncFullStoreToSupabase(store: {
   let updates = 0;
   let contributions = 0;
 
-  for (const c of store.cases) {
-    const r = await syncCaseToSupabase(c);
-    if (r.ok) cases += 1;
-    else if (r.error) errors.push(`case ${c.id}: ${r.error}`);
+  if (!isSupabaseConfigured()) {
+    return { cases: 0, documents: 0, updates: 0, contributions: 0, errors: ["Supabase not configured"] };
   }
 
-  for (const d of store.documents) {
-    const crimeCase = store.cases.find((c) => c.slug === d.caseSlug);
-    if (!crimeCase) continue;
-    const r = await syncDocumentToSupabase(d, crimeCase.id);
-    if (r.ok) documents += 1;
-    else if (r.error) errors.push(`document ${d.id}: ${r.error}`);
+  const supabase = getSupabaseServerClient();
+
+  for (const batch of chunk(store.cases, 25)) {
+    const { error } = await supabase
+      .from("cases")
+      .upsert(batch.map(caseRow), { onConflict: "id" });
+    if (error) {
+      for (const c of batch) errors.push(`case batch ${c.id}: ${error.message}`);
+    } else {
+      cases += batch.length;
+    }
   }
 
-  for (const u of store.updates) {
-    const r = await syncUpdateToSupabase(u);
-    if (r.ok) updates += 1;
-    else if (r.error) errors.push(`update ${u.id}: ${r.error}`);
+  for (const batch of chunk(store.documents, 25)) {
+    const rows = batch
+      .map((d) => {
+        const crimeCase = store.cases.find((c) => c.slug === d.caseSlug);
+        if (!crimeCase) return null;
+        return {
+          id: d.id,
+          case_id: crimeCase.id,
+          case_slug: d.caseSlug,
+          title: d.title,
+          type: d.type,
+          date: d.date ?? null,
+          author: d.author ?? null,
+          source: d.source,
+          public_domain: d.publicDomain,
+          summary: d.summary,
+          psych_relevance: d.psychRelevance,
+          content_warning: d.contentWarning,
+          url: d.url ?? null,
+          hosted: d.hosted,
+        };
+      })
+      .filter(Boolean) as Record<string, unknown>[];
+    if (!rows.length) continue;
+    const { error } = await supabase.from("documents").upsert(rows, { onConflict: "id" });
+    if (error) {
+      errors.push(`document batch: ${error.message}`);
+    } else {
+      documents += rows.length;
+    }
   }
 
-  for (const c of store.contributions) {
-    const r = await syncContributionToSupabase(c);
-    if (r.ok) contributions += 1;
-    else if (r.error) errors.push(`contribution ${c.id}: ${r.error}`);
+  for (const batch of chunk(store.updates, 25)) {
+    const { error } = await supabase
+      .from("live_updates")
+      .upsert(batch.map(updateRow), { onConflict: "id" });
+    if (error) errors.push(`update batch: ${error.message}`);
+    else updates += batch.length;
+  }
+
+  for (const batch of chunk(store.contributions, 25)) {
+    const { error } = await supabase
+      .from("contributions")
+      .upsert(batch.map(contributionRow), { onConflict: "id" });
+    if (error) errors.push(`contribution batch: ${error.message}`);
+    else contributions += batch.length;
   }
 
   return { cases, documents, updates, contributions, errors };
