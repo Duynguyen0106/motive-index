@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { EmptyState, QuickLinks } from "@/components/ui";
 import {
   CRIME_CATEGORY_LABELS,
   DOCUMENT_TYPE_LABELS,
@@ -51,10 +52,19 @@ export default async function SearchPage({ searchParams }: Props) {
         country, period, location, and document type.
       </p>
 
+      <QuickLinks
+        links={[
+          { href: "/", label: "World monitor" },
+          { href: "/archive", label: "Archive" },
+          { href: "/search?status=unsolved", label: "Unsolved" },
+          { href: "/search?country=US", label: "United States" },
+        ]}
+      />
+
       <form
         action="/search"
         method="get"
-        className="card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3"
+        className="filter-toolbar card mt-8 grid gap-4 p-5 md:grid-cols-2 md:p-6 lg:grid-cols-3"
       >
         <label className="block text-sm md:col-span-2 lg:col-span-3">
           <span className="font-medium text-[var(--ink)]">Full-text query</span>
@@ -63,7 +73,7 @@ export default async function SearchPage({ searchParams }: Props) {
             defaultValue={filters.q}
             autoFocus={focusSearch}
             placeholder="e.g. compartmentalization, manifesto, trust"
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           />
         </label>
 
@@ -72,7 +82,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="crimeCategory"
             defaultValue={filters.crimeCategory ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             {(Object.keys(CRIME_CATEGORY_LABELS) as CrimeCategory[]).map((k) => (
@@ -88,7 +98,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="psychologicalFactor"
             defaultValue={filters.psychologicalFactor ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             {(Object.keys(FACTOR_LABELS) as PsychologicalFactor[]).map((k) => (
@@ -104,7 +114,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="theoreticalFramework"
             defaultValue={filters.theoreticalFramework ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             {(Object.keys(FRAMEWORK_LABELS) as TheoreticalFramework[]).map((k) => (
@@ -121,7 +131,7 @@ export default async function SearchPage({ searchParams }: Props) {
             name="diagnosis"
             defaultValue={filters.diagnosis}
             placeholder="e.g. psychopathy"
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           />
         </label>
 
@@ -130,7 +140,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="country"
             defaultValue={filters.country ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             {countryOptions.map((code) => (
@@ -147,7 +157,7 @@ export default async function SearchPage({ searchParams }: Props) {
             name="location"
             defaultValue={filters.location}
             placeholder="e.g. California"
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           />
         </label>
 
@@ -157,7 +167,7 @@ export default async function SearchPage({ searchParams }: Props) {
             name="period"
             defaultValue={filters.period}
             placeholder="e.g. 1974 or 1970s"
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           />
         </label>
 
@@ -166,7 +176,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="offenderSex"
             defaultValue={filters.offenderSex ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             <option value="male">Male</option>
@@ -180,7 +190,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="documentType"
             defaultValue={filters.documentType ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map((k) => (
@@ -196,7 +206,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <select
             name="status"
             defaultValue={filters.status ?? ""}
-            className="mt-1 w-full rounded border border-[var(--line)] px-3 py-2"
+            className="field mt-1"
           >
             <option value="">Any</option>
             <option value="closed">Closed</option>
@@ -206,16 +216,10 @@ export default async function SearchPage({ searchParams }: Props) {
         </label>
 
         <div className="flex items-end gap-3 md:col-span-2 lg:col-span-3">
-          <button
-            type="submit"
-            className="rounded bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90"
-          >
+          <button type="submit" className="btn btn-primary">
             Apply filters
           </button>
-          <Link
-            href="/search"
-            className="rounded border border-[var(--line)] px-5 py-2.5 text-sm font-semibold text-[var(--ink-soft)]"
-          >
+          <Link href="/search" className="btn btn-ghost">
             Reset
           </Link>
         </div>
@@ -278,9 +282,18 @@ export default async function SearchPage({ searchParams }: Props) {
                   </div>
                 </li>
               ))}
-              {!cases.length ? (
-                <li className="text-[var(--muted)]">No cases match these filters.</li>
-              ) : null}
+          {!cases.length ? (
+            <li>
+              <EmptyState
+                title="No cases match"
+                description="Broaden your filters or try the monitor map view."
+                actions={[
+                  { href: monitorHref, label: "View on map", primary: true },
+                  { href: "/search", label: "Clear filters" },
+                ]}
+              />
+            </li>
+          ) : null}
             </ul>
           </section>
 

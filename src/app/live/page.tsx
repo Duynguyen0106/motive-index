@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
+import { QuickLinks } from "@/components/ui";
 import { LiveFeedClient } from "@/components/LiveFeedClient";
 import { PageHeader } from "@/components/PageHeader";
 import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
@@ -46,7 +47,16 @@ export default async function LivePage({ searchParams }: Props) {
         title={country ? `World crime news · ${COUNTRY_LABELS[country]}` : "World crime news"}
         description="Regional RSS clusters translated/summarized in English, linked to Motive Index dossiers where available."
       />
-      <div className="site-shell mt-6 flex flex-wrap items-center gap-4">
+      <div className="site-shell mt-6">
+        <QuickLinks
+          links={[
+            { href: "/", label: "World monitor" },
+            { href: "/archive", label: "Archive" },
+            { href: "/search", label: "Advanced search" },
+          ]}
+        />
+      </div>
+      <div className="site-shell mt-4 flex flex-wrap items-center gap-4">
         <Link href="/" className="text-link text-sm">
           ← Back to monitor
         </Link>
@@ -89,7 +99,7 @@ export default async function LivePage({ searchParams }: Props) {
       <section className="site-shell mt-10">
         <h2 className="display text-2xl">Global feed</h2>
         <p className="mt-2 text-sm text-[var(--muted)]">Refreshes every 60 seconds</p>
-        <div className="mt-6 border border-[var(--line)] bg-[var(--paper)] p-5">
+        <div className="mt-6 card p-5">
           <WorldNewsFeed initial={initialNews} countryFilter={country} />
         </div>
       </section>

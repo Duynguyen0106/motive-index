@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CaseStatusBadge, EmptyState } from "@/components/ui";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
 import { monitorUrlFromFilters } from "@/lib/search";
 import type { CrimeCase, CrimeCategory, CountryCode } from "@/lib/types";
@@ -22,6 +23,7 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
   );
 
   const countryOptions = useMemo(() => listCountryOptions(cases), [cases]);
+  const hasFilters = Boolean(country || crimeType || q.trim());
 
   useEffect(() => {
     setQ(searchParams.get("q") ?? "");
@@ -77,7 +79,7 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
   return (
     <div>
       <form
-        className="mb-8 grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-4 md:grid-cols-[1fr_180px_180px_auto] md:items-end"
+        className="filter-toolbar mb-4 grid gap-4 p-4 md:grid-cols-[1fr_180px_180px_auto] md:items-end"
         onSubmit={(e) => e.preventDefault()}
       >
         <label className="block text-sm">
@@ -124,24 +126,24 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
         </button>
       </form>
 
+      {hasFilters ? (
+        <div className="active-filters mb-4 flex flex-wrap items-center gap-2">
+          {q.trim() ? <span className="filter-chip">Keyword: {q.trim()}</span> : null}
+          {country ? <span className="filter-chip">{COUNTRY_LABELS[country]}</span> : null}
+          {crimeType ? (
+            <span className="filter-chip">{CRIME_CATEGORY_LABELS[crimeType]}</span>
+          ) : null}
+          <Link
+            href={monitorUrlFromFilters({ country, crimeCategory: crimeType, q: q.trim() })}
+            className="filter-chip filter-chip-link"
+          >
+            View on map →
+          </Link>
+        </div>
+      ) : null}
+
       <p className="mb-3 text-sm text-[var(--muted)]">
         {filtered.length} of {cases.length} shown
-        {country || crimeType || q.trim() ? (
-          <>
-            {" "}
-            ·{" "}
-            <Link
-              href={monitorUrlFromFilters({
-                country,
-                crimeCategory: crimeType,
-                q: q.trim(),
-              })}
-              className="text-[var(--accent)] hover:underline"
-            >
-              View on map
-            </Link>
-          </>
-        ) : null}
       </p>
 
       <div className="index-table">
@@ -157,7 +159,10 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
               {c.yearEnd ? `–${c.yearEnd}` : ""}
             </span>
             <span>
-              <span className="index-title group-hover:text-[var(--accent)]">{c.name}</span>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="index-title group-hover:text-[var(--accent)]">{c.name}</span>
+                {c.status === "unsolved" ? <CaseStatusBadge status={c.status} /> : null}
+              </span>
               <span className="mt-1 block text-sm text-[var(--ink-soft)] line-clamp-2">
                 {c.subtitle}
               </span>
@@ -173,7 +178,15 @@ export function CasesGrid({ cases }: { cases: CrimeCase[] }) {
       </div>
 
       {!filtered.length ? (
-        <p className="mt-8 text-[var(--muted)]">No records match this filter.</p>
+        <EmptyState
+          title="No matching dossiers"
+          description="Try clearing filters or searching with a broader keyword."
+          actions={[
+            { href: "/archive", label: "Clear filters", primary: true },
+            { href: "/search", label: "Advanced search" },
+            { href: "/search?status=unsolved", label: "Unsolved cases" },
+          ]}
+        />
       ) : null}
     </div>
   );

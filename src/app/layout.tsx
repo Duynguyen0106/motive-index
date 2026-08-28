@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans, Literata } from "next/font/google";
 import { Suspense } from "react";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SkipLink } from "@/components/SkipLink";
 import { ThemeInitScript } from "@/components/ThemeInitScript";
 import { DEFAULT_DESCRIPTION, getSiteUrl, SITE_NAME } from "@/lib/seo";
 import "./globals.css";
@@ -57,9 +59,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeInitScript />
       </head>
       <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--ink)]">
+        <SkipLink />
         <SiteHeader />
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">
+          {children}
+        </main>
         <SiteFooter />
+        <ScrollToTop />
         <Suspense fallback={null}>
           <KeyboardShortcuts />
         </Suspense>

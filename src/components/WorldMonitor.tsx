@@ -14,6 +14,7 @@ import {
 } from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
+import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
@@ -338,6 +339,15 @@ export function WorldMonitor({ initial }: Props) {
           <span className="monitor-stat-label">Unsolved</span>
         </div>
       </div>
+
+      <QuickLinks
+        links={[
+          { href: "/archive", label: "Full archive" },
+          { href: "/search", label: "Advanced search" },
+          { href: "/live", label: "World news" },
+          { href: "/search?status=unsolved", label: "Unsolved dossiers" },
+        ]}
+      />
 
       {unplottedCount > 0 ? (
         <div className="monitor-notice" role="status">
