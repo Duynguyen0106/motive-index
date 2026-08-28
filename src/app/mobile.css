@@ -5,8 +5,25 @@
     --site-header-height: 3.75rem;
   }
 
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  #main-content,
+  .dossier-page,
+  .dossier-body,
+  .dossier-sticky-stack,
+  .case-narrative {
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .site-shell {
     width: min(1120px, calc(100% - 1.25rem));
+    min-width: 0;
+    max-width: 100%;
   }
 
   .mobile-hide {
@@ -74,6 +91,12 @@
     min-height: 44px;
     padding-top: 0.65rem;
     padding-bottom: 0.65rem;
+  }
+
+  .dossier-tab-scroll {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .search-form {
@@ -272,16 +295,24 @@
   }
 
   .story-chapter-nav {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     margin-bottom: 0.5rem;
+    overflow: hidden;
   }
 
   .story-chapter-scroll {
     display: flex;
     gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 0.25rem;
     scrollbar-width: none;
+    overscroll-behavior-x: contain;
   }
 
   .story-chapter-scroll::-webkit-scrollbar {

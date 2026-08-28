@@ -129,7 +129,7 @@ export default async function CasePage({ params, searchParams }: Props) {
   };
 
   return (
-    <article className="dossier-page pb-16">
+    <article className="dossier-page w-full min-w-0 max-w-full overflow-x-clip pb-16">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -233,7 +233,7 @@ export default async function CasePage({ params, searchParams }: Props) {
       <div className="dossier-sticky-stack">
         <Suspense fallback={null}>
           <CaseTabKeyboardNav />
-          <CaseTabs slug={crimeCase.slug} />
+          <CaseTabs slug={crimeCase.slug} defaultTab={tab} />
         </Suspense>
         <DossierActionBar
           name={crimeCase.name}
@@ -243,7 +243,7 @@ export default async function CasePage({ params, searchParams }: Props) {
         />
       </div>
 
-      <div className="dossier-body site-shell py-8">
+      <div className="dossier-body site-shell w-full min-w-0 max-w-full py-8">
         {tab === "story" && narrative ? (
           <CaseNarrativeView
             narrative={narrative}

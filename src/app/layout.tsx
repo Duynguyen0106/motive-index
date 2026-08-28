@@ -62,7 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-[var(--bg)] text-[var(--ink)]">
         <SkipLink />
         <SiteHeader />
-        <main id="main-content" className="flex flex-1 flex-col">
+        <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-x-clip">
           {children}
         </main>
         <SiteFooter />

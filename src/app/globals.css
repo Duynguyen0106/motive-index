@@ -2685,4 +2685,39 @@ html[data-theme="light"] .keyboard-help-fab {
   padding-top: 1rem;
 }
 
+/* Long-form dossier text — always wrap inside the viewport */
+.prose-safe {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
+.prose-safe p,
+.prose-safe h2,
+.prose-safe aside p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
+.case-narrative {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.case-narrative > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dossier-page .lede,
+.dossier-page .body-copy {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
 @import "./mobile.css";
