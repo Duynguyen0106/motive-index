@@ -23,6 +23,8 @@ export type MonitorMapViewState = {
   timelineMinYear: number;
   timelineMaxYear: number;
   bboxFilter: [[number, number], [number, number]] | null;
+  /** Empty = all crime types; otherwise show pins matching any listed category. */
+  crimeCategoryFilter: CrimeCategory[];
 };
 
 export type MonitorNewsPin = {

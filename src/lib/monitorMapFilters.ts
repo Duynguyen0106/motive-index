@@ -10,7 +10,17 @@ import type {
 } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
 import { defaultTimelineRange } from "@/lib/monitorMapUtils";
-import { CRIME_CATEGORY_LABELS, type CountryCode } from "@/lib/types";
+import { CRIME_CATEGORY_LABELS, type CountryCode, type CrimeCategory } from "@/lib/types";
+
+const CRIME_CATEGORIES = new Set<CrimeCategory>(Object.keys(CRIME_CATEGORY_LABELS) as CrimeCategory[]);
+
+export function pinMatchesCrimeFilter(
+  pin: Pick<MonitorCasePin, "crimeCategories">,
+  filter: CrimeCategory[],
+): boolean {
+  if (!filter.length) return true;
+  return pin.crimeCategories.some((c) => filter.includes(c));
+}
 
 export function pinPassesProvenance(
   pin: MonitorCasePin,
@@ -51,14 +61,19 @@ export function filterVisiblePins(
   pins: MonitorCasePin[],
   view: Pick<
     MonitorMapViewState,
-    "provenanceFilter" | "timelineMinYear" | "timelineMaxYear" | "bboxFilter"
+    | "provenanceFilter"
+    | "timelineMinYear"
+    | "timelineMaxYear"
+    | "bboxFilter"
+    | "crimeCategoryFilter"
   >,
 ): MonitorCasePin[] {
   return pins.filter(
     (p) =>
       pinPassesProvenance(p, view.provenanceFilter) &&
       pinInTimeline(p, view.timelineMinYear, view.timelineMaxYear) &&
-      pinInBbox(p, view.bboxFilter),
+      pinInBbox(p, view.bboxFilter) &&
+      pinMatchesCrimeFilter(p, view.crimeCategoryFilter),
   );
 }
 
@@ -89,14 +104,19 @@ export function buildCountryStatsFromPins(pins: MonitorCasePin[]): CountryMonito
 export function mapFiltersAffectPins(
   view: Pick<
     MonitorMapViewState,
-    "provenanceFilter" | "timelineMinYear" | "timelineMaxYear" | "bboxFilter"
+    | "provenanceFilter"
+    | "timelineMinYear"
+    | "timelineMaxYear"
+    | "bboxFilter"
+    | "crimeCategoryFilter"
   >,
 ): boolean {
   return (
     view.provenanceFilter !== "hide-composite" ||
     view.timelineMinYear !== TIMELINE_YEAR_MIN ||
     view.timelineMaxYear !== TIMELINE_YEAR_MAX ||
-    view.bboxFilter !== null
+    view.bboxFilter !== null ||
+    view.crimeCategoryFilter.length > 0
   );
 }
 
@@ -167,6 +187,7 @@ export const MAP_VIEW_PRESETS: MapViewPreset[] = [
       contentLayer: "cases",
       bboxFilter: null,
       showGhostPins: false,
+      crimeCategoryFilter: [],
     },
   },
 ];
@@ -210,6 +231,14 @@ export function parseMapViewFromSearchParams(
     }
   }
 
+  let crimeCategoryFilter: CrimeCategory[] = [];
+  const mcatRaw = params.get("mcat");
+  if (mcatRaw) {
+    crimeCategoryFilter = mcatRaw
+      .split(",")
+      .filter((c): c is CrimeCategory => CRIME_CATEGORIES.has(c as CrimeCategory));
+  }
+
   return {
     choroplethEnabled: choroRaw !== "0",
     choroplethMetric: CHORO_METRICS.has(chmRaw as ChoroplethMetric)
@@ -227,6 +256,7 @@ export function parseMapViewFromSearchParams(
     timelineMinYear: Math.min(ym, yx - 1),
     timelineMaxYear: Math.max(yx, ym + 1),
     bboxFilter,
+    crimeCategoryFilter,
   };
 }
 
@@ -248,9 +278,10 @@ export function mapViewToSearchParams(
     timelineMinYear: TIMELINE_YEAR_MIN,
     timelineMaxYear: TIMELINE_YEAR_MAX,
     bboxFilter: null,
+    crimeCategoryFilter: [],
   };
 
-  const keys = ["ym", "yx", "mlayer", "mcontent", "mprov", "mchoro", "mchm", "mghost", "marcs", "mbbox"] as const;
+  const keys = ["ym", "yx", "mlayer", "mcontent", "mprov", "mchoro", "mchm", "mghost", "marcs", "mbbox", "mcat"] as const;
   for (const k of keys) p.delete(k);
 
   if (view.timelineMinYear !== defaults.timelineMinYear) p.set("ym", String(view.timelineMinYear));
@@ -265,6 +296,9 @@ export function mapViewToSearchParams(
   if (view.bboxFilter) {
     const [[s, w], [n, e]] = view.bboxFilter;
     p.set("mbbox", [s, w, n, e].map((v) => v.toFixed(2)).join(","));
+  }
+  if (view.crimeCategoryFilter.length) {
+    p.set("mcat", view.crimeCategoryFilter.join(","));
   }
 
   return p;

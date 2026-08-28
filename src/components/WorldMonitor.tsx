@@ -23,7 +23,7 @@ import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
-import { exportCasesCsv } from "@/lib/monitorMapUtils";
+import { exportCasesCsv, sidebarPinClasses } from "@/lib/monitorMapUtils";
 import {
   buildCountryStatsFromPins,
   filterVisiblePins,
@@ -594,6 +594,7 @@ export function WorldMonitor({ initial }: Props) {
 
       {activeFilterCount(filters) > 0 ||
       mapView.bboxFilter ||
+      mapView.crimeCategoryFilter.length > 0 ||
       mapView.timelineMinYear !== TIMELINE_YEAR_MIN ||
       mapView.timelineMaxYear !== TIMELINE_YEAR_MAX ? (
         <div className="monitor-chips" aria-label="Active filters">
@@ -627,6 +628,20 @@ export function WorldMonitor({ initial }: Props) {
               {filters.period} <span aria-hidden>×</span>
             </button>
           ) : null}
+          {mapView.crimeCategoryFilter.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              className="monitor-chip"
+              onClick={() =>
+                updateMapView({
+                  crimeCategoryFilter: mapView.crimeCategoryFilter.filter((c) => c !== cat),
+                })
+              }
+            >
+              Map type: {CRIME_CATEGORY_LABELS[cat]} <span aria-hidden>×</span>
+            </button>
+          ))}
           {mapView.bboxFilter ? (
             <button
               type="button"
@@ -1058,8 +1073,15 @@ export function WorldMonitor({ initial }: Props) {
                         </span>
                         {pin ? (
                           <span
-                            className={`monitor-case-pin${c.status === "unsolved" ? " monitor-case-pin-unsolved" : ""}`}
-                            title={c.status === "unsolved" ? "Unsolved · plotted on map" : "Closed / historical · plotted on map"}
+                            className={sidebarPinClasses(
+                              pin.primaryCategory ?? c.crimeCategories[0] ?? "other",
+                              c.status,
+                            )}
+                            title={
+                              c.status === "unsolved"
+                                ? "Unsolved · plotted on map"
+                                : "Closed / historical · plotted on map"
+                            }
                           />
                         ) : (
                           <span className="monitor-case-pin monitor-case-pin-off" title="No coordinates" />

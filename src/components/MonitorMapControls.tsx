@@ -11,7 +11,8 @@ import type {
 } from "@/lib/monitorMapTypes";
 import { REGION_PRESETS, TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
 import { MAP_VIEW_PRESETS, type MapViewPreset } from "@/lib/monitorMapFilters";
-import { decadeMarkers } from "@/lib/monitorMapUtils";
+import { decadeMarkers, CRIME_CATEGORY_FILTER_ORDER, markerCategoryClass, markerShapeClass } from "@/lib/monitorMapUtils";
+import { CRIME_CATEGORY_LABELS, type CrimeCategory } from "@/lib/types";
 
 type Props = {
   view: MonitorMapViewState;
@@ -73,6 +74,23 @@ export function MonitorMapControls({
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
+
+  function toggleCrimeCategory(cat: CrimeCategory) {
+    const filter = view.crimeCategoryFilter;
+    if (filter.length === 0) {
+      onChange({ crimeCategoryFilter: [cat] });
+      return;
+    }
+    if (filter.includes(cat)) {
+      onChange({ crimeCategoryFilter: filter.filter((c) => c !== cat) });
+      return;
+    }
+    onChange({ crimeCategoryFilter: [...filter, cat] });
+  }
+
+  function crimeChipActive(cat: CrimeCategory): boolean {
+    return view.crimeCategoryFilter.length === 0 || view.crimeCategoryFilter.includes(cat);
+  }
 
   return (
     <div className={`monitor-map-controls ${collapsed ? "is-collapsed" : ""}`}>
@@ -198,6 +216,36 @@ export function MonitorMapControls({
               />
               Related arcs
             </label>
+          </div>
+
+          <div className="monitor-map-controls-row monitor-crime-filter-row">
+            <span className="monitor-map-controls-label">Crime type</span>
+            <div className="monitor-crime-filter-chips">
+              {CRIME_CATEGORY_FILTER_ORDER.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`monitor-crime-chip ${crimeChipActive(cat) ? "is-active" : ""}`}
+                  title={CRIME_CATEGORY_LABELS[cat]}
+                  onClick={() => toggleCrimeCategory(cat)}
+                >
+                  <span
+                    className={`monitor-crime-chip-icon ${markerCategoryClass(cat)} ${markerShapeClass(cat)}`}
+                    aria-hidden
+                  />
+                  <span className="monitor-crime-chip-label">{CRIME_CATEGORY_LABELS[cat]}</span>
+                </button>
+              ))}
+              {view.crimeCategoryFilter.length ? (
+                <button
+                  type="button"
+                  className="monitor-map-toggle monitor-crime-chip-clear"
+                  onClick={() => onChange({ crimeCategoryFilter: [] })}
+                >
+                  All types
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="monitor-map-controls-row monitor-timeline-row">

@@ -32,6 +32,24 @@
   --map-pin-resolved-ring: #b8dce8;
   --map-pin-unsolved: #ffb020;
   --map-pin-unsolved-ring: #ffd080;
+  --crime-cat-serial_murder: #e05252;
+  --crime-cat-serial_murder-ring: #f0a0a0;
+  --crime-cat-mass_violence: #e87830;
+  --crime-cat-mass_violence-ring: #f5b880;
+  --crime-cat-homicide: #9b6dd4;
+  --crime-cat-homicide-ring: #c8aae8;
+  --crime-cat-domestic_homicide: #d46a9b;
+  --crime-cat-domestic_homicide-ring: #e8a8c8;
+  --crime-cat-healthcare_murder: #4db8a8;
+  --crime-cat-healthcare_murder-ring: #90ddd0;
+  --crime-cat-terrorism_ideological: #c9a020;
+  --crime-cat-terrorism_ideological-ring: #e8c860;
+  --crime-cat-fraud: #6ab84d;
+  --crime-cat-fraud-ring: #a8d890;
+  --crime-cat-arson: #e85a30;
+  --crime-cat-arson-ring: #f59870;
+  --crime-cat-other: #8899aa;
+  --crime-cat-other-ring: #b8c4d0;
   --overlay: rgba(47, 26, 32, 0.88);
   --background: var(--bg);
   --foreground: var(--ink);
@@ -64,6 +82,24 @@ html[data-theme="light"] {
   --map-pin-resolved-ring: #7eb8cf;
   --map-pin-unsolved: #c87800;
   --map-pin-unsolved-ring: #e8a830;
+  --crime-cat-serial_murder: #c03030;
+  --crime-cat-serial_murder-ring: #e06060;
+  --crime-cat-mass_violence: #c86018;
+  --crime-cat-mass_violence-ring: #e89050;
+  --crime-cat-homicide: #7850b0;
+  --crime-cat-homicide-ring: #a880d8;
+  --crime-cat-domestic_homicide: #b05078;
+  --crime-cat-domestic_homicide-ring: #d080a8;
+  --crime-cat-healthcare_murder: #289888;
+  --crime-cat-healthcare_murder-ring: #58c0b0;
+  --crime-cat-terrorism_ideological: #987818;
+  --crime-cat-terrorism_ideological-ring: #c8a840;
+  --crime-cat-fraud: #489830;
+  --crime-cat-fraud-ring: #78c060;
+  --crime-cat-arson: #c84018;
+  --crime-cat-arson-ring: #e87048;
+  --crime-cat-other: #607080;
+  --crime-cat-other-ring: #90a0b0;
   --overlay: rgba(236, 233, 233, 0.94);
 }
 
@@ -971,11 +1007,6 @@ a {
   border: 1px solid var(--line);
 }
 
-.monitor-case-pin-off {
-  background: var(--line) !important;
-  opacity: 0.45;
-}
-
 .monitor-unplotted-card {
   padding: 0.75rem;
   border: 1px dashed var(--line-strong);
@@ -1200,19 +1231,18 @@ a.monitor-news-headline:hover {
   transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
 }
 
-.monitor-leaflet-marker.status-resolved {
+.monitor-leaflet-marker.shape-circle {
   border-radius: 50%;
-  background: var(--map-pin-resolved);
-  border-color: var(--map-pin-resolved-ring);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--map-pin-resolved) 45%, transparent);
+}
+
+.monitor-leaflet-marker.status-closed {
+  box-shadow: 0 0 8px color-mix(in srgb, currentColor 35%, transparent);
 }
 
 .monitor-leaflet-marker.status-unsolved {
-  border-radius: 2px;
-  background: var(--map-pin-unsolved);
-  border-color: var(--map-pin-unsolved-ring);
-  transform: rotate(45deg);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--map-pin-unsolved) 50%, transparent);
+  box-shadow:
+    0 0 0 2px var(--map-pin-unsolved),
+    0 0 10px color-mix(in srgb, var(--map-pin-unsolved) 55%, transparent);
 }
 
 .monitor-leaflet-marker.is-active {
@@ -1220,7 +1250,8 @@ a.monitor-news-headline:hover {
   z-index: 2;
 }
 
-.monitor-leaflet-marker.status-unsolved.is-active {
+.monitor-leaflet-marker.shape-diamond.is-active,
+.monitor-leaflet-marker.shape-cross.is-active {
   transform: rotate(45deg) scale(1.2);
 }
 
@@ -1228,12 +1259,58 @@ a.monitor-news-headline:hover {
   transform: scale(1.08);
 }
 
-.monitor-leaflet-marker.status-unsolved.is-hover {
+.monitor-leaflet-marker.shape-diamond.is-hover,
+.monitor-leaflet-marker.shape-cross.is-hover {
   transform: rotate(45deg) scale(1.08);
 }
 
 .monitor-leaflet-marker.is-dimmed {
   opacity: 0.35;
+}
+
+.crime-cat-serial_murder {
+  background: var(--crime-cat-serial_murder);
+  border-color: var(--crime-cat-serial_murder-ring);
+}
+
+.crime-cat-mass_violence {
+  background: var(--crime-cat-mass_violence);
+  border-color: var(--crime-cat-mass_violence-ring);
+}
+
+.crime-cat-homicide {
+  background: var(--crime-cat-homicide);
+  border-color: var(--crime-cat-homicide-ring);
+}
+
+.crime-cat-domestic_homicide {
+  background: var(--crime-cat-domestic_homicide);
+  border-color: var(--crime-cat-domestic_homicide-ring);
+}
+
+.crime-cat-healthcare_murder {
+  background: var(--crime-cat-healthcare_murder);
+  border-color: var(--crime-cat-healthcare_murder-ring);
+}
+
+.crime-cat-terrorism_ideological {
+  background: var(--crime-cat-terrorism_ideological);
+  border-color: var(--crime-cat-terrorism_ideological-ring);
+}
+
+.crime-cat-fraud {
+  background: var(--crime-cat-fraud);
+  border-color: var(--crime-cat-fraud-ring);
+}
+
+.crime-cat-arson {
+  background: var(--crime-cat-arson);
+  border-color: var(--crime-cat-arson-ring);
+}
+
+.crime-cat-other {
+  background: var(--crime-cat-other);
+  border-color: var(--crime-cat-other-ring);
 }
 
 .monitor-map-float-controls {
@@ -1280,12 +1357,33 @@ a.monitor-news-headline:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem 1rem;
   padding: 0.55rem 1rem;
   border-top: 1px solid var(--line);
   font-size: 0.6875rem;
   color: var(--muted);
   background: var(--paper);
+}
+
+.monitor-legend-heading {
+  flex-basis: 100%;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.monitor-legend-heading:first-child {
+  margin-top: 0;
+}
+
+.monitor-legend-crime-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.85rem;
+  flex-basis: 100%;
 }
 
 .monitor-legend-item {
@@ -1320,17 +1418,21 @@ a.monitor-news-headline:hover {
   border: 2px solid transparent;
 }
 
-.monitor-legend-marker.status-resolved {
+.monitor-legend-marker.shape-circle {
   border-radius: 50%;
-  background: var(--map-pin-resolved);
-  border-color: var(--map-pin-resolved-ring);
 }
 
-.monitor-legend-marker.status-unsolved {
-  border-radius: 2px;
-  background: var(--map-pin-unsolved);
-  border-color: var(--map-pin-unsolved-ring);
-  transform: rotate(45deg);
+.monitor-legend-marker.status-ring-closed {
+  border-radius: 50%;
+  background: var(--crime-cat-homicide);
+  border-color: var(--crime-cat-homicide-ring);
+}
+
+.monitor-legend-marker.status-ring-unsolved {
+  border-radius: 50%;
+  background: var(--crime-cat-homicide);
+  border-color: var(--crime-cat-homicide-ring);
+  box-shadow: 0 0 0 2px var(--map-pin-unsolved);
 }
 
 .monitor-legend-meta {
@@ -1400,6 +1502,64 @@ a.monitor-news-headline:hover {
   gap: 0.3rem;
   font-size: 0.6875rem;
   color: var(--muted);
+}
+
+.monitor-crime-filter-row {
+  align-items: flex-start;
+}
+
+.monitor-crime-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.monitor-crime-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.45rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-size: 0.625rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.monitor-crime-chip:hover {
+  border-color: var(--accent);
+}
+
+.monitor-crime-chip.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.monitor-crime-chip-icon {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+}
+
+.monitor-crime-chip-icon.shape-circle {
+  border-radius: 50%;
+}
+
+.monitor-crime-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monitor-crime-chip-clear {
+  align-self: center;
 }
 
 .monitor-timeline-sliders {
@@ -1521,29 +1681,70 @@ a.monitor-news-headline:hover {
   border: 1px solid var(--line);
 }
 
-.monitor-leaflet-marker.shape-square {
+.monitor-leaflet-marker.shape-square,
+.monitor-legend-marker.shape-square,
+.monitor-crime-chip-icon.shape-square,
+.monitor-case-pin.shape-square {
   border-radius: 2px;
 }
 
-.monitor-leaflet-marker.shape-diamond {
+.monitor-leaflet-marker.shape-diamond,
+.monitor-legend-marker.shape-diamond,
+.monitor-crime-chip-icon.shape-diamond,
+.monitor-case-pin.shape-diamond {
   transform: rotate(45deg);
   border-radius: 1px;
 }
 
-.monitor-leaflet-marker.shape-triangle {
+.monitor-leaflet-marker.shape-triangle,
+.monitor-legend-marker.shape-triangle,
+.monitor-crime-chip-icon.shape-triangle,
+.monitor-case-pin.shape-triangle {
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   border-radius: 0;
 }
 
-.monitor-leaflet-marker.shape-cross {
+.monitor-leaflet-marker.shape-cross,
+.monitor-legend-marker.shape-cross,
+.monitor-crime-chip-icon.shape-cross,
+.monitor-case-pin.shape-cross {
   border-radius: 2px;
   transform: rotate(45deg);
 }
 
 .monitor-leaflet-marker.shape-star,
+.monitor-legend-marker.shape-star,
+.monitor-crime-chip-icon.shape-star,
+.monitor-case-pin.shape-star {
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  border-radius: 0;
+}
+
 .monitor-leaflet-marker.shape-hex,
-.monitor-leaflet-marker.shape-pentagon {
-  border-radius: 2px;
+.monitor-legend-marker.shape-hex,
+.monitor-crime-chip-icon.shape-hex,
+.monitor-case-pin.shape-hex {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  border-radius: 0;
+}
+
+.monitor-leaflet-marker.shape-pentagon,
+.monitor-legend-marker.shape-pentagon,
+.monitor-crime-chip-icon.shape-pentagon,
+.monitor-case-pin.shape-pentagon {
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  border-radius: 0;
 }
 
 .monitor-marker-ring {
@@ -2602,19 +2803,26 @@ textarea:focus-visible {
 
 .monitor-case-pin {
   flex-shrink: 0;
+  display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
   margin-top: 0.35rem;
-  border-radius: 50%;
-  background: var(--map-pin-resolved);
-  border: 1px solid var(--map-pin-resolved-ring);
+  box-sizing: border-box;
+  border: 1px solid transparent;
 }
 
-.monitor-case-pin-unsolved {
-  border-radius: 2px;
-  background: var(--map-pin-unsolved);
-  border-color: var(--map-pin-unsolved-ring);
-  transform: rotate(45deg);
+.monitor-case-pin.shape-circle {
+  border-radius: 50%;
+}
+
+.monitor-case-pin.status-unsolved {
+  box-shadow: 0 0 0 1px var(--map-pin-unsolved);
+}
+
+.monitor-case-pin-off {
+  border-radius: 50%;
+  background: var(--line) !important;
+  opacity: 0.45;
 }
 
 .monitor-pill {

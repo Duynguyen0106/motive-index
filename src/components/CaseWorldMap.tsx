@@ -31,10 +31,14 @@ import type {
 import { choroplethFillOpacity, choroplethValue } from "@/lib/monitorMapTypes";
 import {
   buildRichPopupHtml,
+  CRIME_CATEGORY_FILTER_ORDER,
   escapeHtml,
+  markerCategoryClass,
+  markerClassesForPin,
+  markerShapeClass,
 } from "@/lib/monitorMapUtils";
 import type { CountryCode } from "@/lib/types";
-import { CRIME_CATEGORY_LABELS } from "@/lib/types";
+import { CRIME_CATEGORY_LABELS, type CrimeCategory } from "@/lib/types";
 import type { GeoJSON as GeoJSONType, FeatureGroup, Layer, LayerGroup, Map as LeafletMap, Path } from "leaflet";
 
 type Props = {
@@ -75,10 +79,12 @@ function markerHtml(
   hovered: boolean,
   provenanceDimmed: boolean,
 ): string {
-  const statusClass = pin.status === "unsolved" ? "status-unsolved" : "status-resolved";
-  const stateClass = active ? "is-active" : hovered ? "is-hover" : "";
-  const dimClass = provenanceDimmed ? "is-dimmed" : "";
-  return `<span class="monitor-leaflet-marker ${statusClass} ${stateClass} ${dimClass}"></span>`;
+  const classes = markerClassesForPin(pin, {
+    active,
+    hovered,
+    dimmed: provenanceDimmed,
+  });
+  return `<span class="${classes}"></span>`;
 }
 
 function newsMarkerHtml(): string {
@@ -700,11 +706,24 @@ export function CaseWorldMap({
         <span className="monitor-map-hint">{hint}</span>
       </div>
       <div className="monitor-map-legend">
+        <span className="monitor-legend-heading">Crime types</span>
+        <div className="monitor-legend-crime-grid">
+          {CRIME_CATEGORY_FILTER_ORDER.filter((cat) => cat !== "other").map((cat) => (
+            <span key={cat} className="monitor-legend-item">
+              <span
+                className={`monitor-legend-marker ${markerCategoryClass(cat)} ${markerShapeClass(cat)}`}
+                aria-hidden
+              />
+              {CRIME_CATEGORY_LABELS[cat]}
+            </span>
+          ))}
+        </div>
+        <span className="monitor-legend-heading">Status</span>
         <span className="monitor-legend-item">
-          <span className="monitor-legend-marker status-resolved" aria-hidden /> Closed / historical
+          <span className="monitor-legend-marker status-ring-closed" aria-hidden /> Closed / historical
         </span>
         <span className="monitor-legend-item">
-          <span className="monitor-legend-marker status-unsolved" aria-hidden /> Unsolved
+          <span className="monitor-legend-marker status-ring-unsolved" aria-hidden /> Unsolved (amber ring)
         </span>
         <span className="monitor-legend-item">
           <span className="monitor-news-marker monitor-legend-news">◆</span> News

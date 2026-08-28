@@ -118,8 +118,67 @@ const CATEGORY_MARKER_CLASS: Record<CrimeCategory, string> = {
   other: "shape-circle",
 };
 
+/** Display order for map crime-type filter chips. */
+export const CRIME_CATEGORY_FILTER_ORDER: CrimeCategory[] = [
+  "serial_murder",
+  "mass_violence",
+  "homicide",
+  "domestic_homicide",
+  "healthcare_murder",
+  "terrorism_ideological",
+  "fraud",
+  "arson",
+  "other",
+];
+
 export function markerShapeClass(category: CrimeCategory): string {
   return CATEGORY_MARKER_CLASS[category] ?? "shape-circle";
+}
+
+export function markerCategoryClass(category: CrimeCategory): string {
+  return `crime-cat-${category}`;
+}
+
+function markerStatusClass(status: MonitorCasePin["status"]): string {
+  return status === "unsolved" ? "status-unsolved" : "status-closed";
+}
+
+function markerClassesForCategoryPin(
+  category: CrimeCategory,
+  status: MonitorCasePin["status"],
+  baseClass: string,
+  opts?: { active?: boolean; hovered?: boolean; dimmed?: boolean },
+): string {
+  const cat = category ?? "other";
+  const parts = [
+    baseClass,
+    markerCategoryClass(cat),
+    markerShapeClass(cat),
+    markerStatusClass(status),
+  ];
+  if (opts?.active) parts.push("is-active");
+  else if (opts?.hovered) parts.push("is-hover");
+  if (opts?.dimmed) parts.push("is-dimmed");
+  return parts.join(" ");
+}
+
+export function markerClassesForPin(
+  pin: Pick<MonitorCasePin, "primaryCategory" | "status">,
+  opts?: { active?: boolean; hovered?: boolean; dimmed?: boolean },
+): string {
+  return markerClassesForCategoryPin(
+    pin.primaryCategory ?? "other",
+    pin.status,
+    "monitor-leaflet-marker",
+    opts,
+  );
+}
+
+export function sidebarPinClasses(
+  category: CrimeCategory,
+  status: MonitorCasePin["status"],
+): string {
+  return markerClassesForCategoryPin(category, status, "monitor-case-pin");
 }
 
 export function escapeHtml(text: string): string {
