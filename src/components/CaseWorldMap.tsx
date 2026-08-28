@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
+import { MonitorMapOverlay } from "@/components/MonitorMapOverlay";
 import { getLeaflet, getLeafletWithCluster } from "@/lib/leafletClient";
+import { filterVisiblePins } from "@/lib/monitorMapFilters";
 import type { CountryMonitorStat } from "@/lib/monitor";
 import {
   COUNTRY_BOUNDS,
@@ -106,28 +108,6 @@ async function fetchCountryGeoJson(): Promise<GeoJSON.FeatureCollection> {
   throw new Error("Country boundaries unavailable");
 }
 
-function pinPassesProvenance(pin: MonitorCasePin, filter: MonitorMapViewState["provenanceFilter"]): boolean {
-  switch (filter) {
-    case "verified":
-      return pin.provenanceTier === "verified";
-    case "curated":
-      return pin.provenanceTier === "verified" || pin.provenanceTier === "curated";
-    case "hide-composite":
-      return pin.provenanceTier !== "composite";
-    default:
-      return true;
-  }
-}
-
-function pinInBbox(
-  pin: { lat: number; lng: number },
-  bbox: MonitorMapViewState["bboxFilter"],
-): boolean {
-  if (!bbox) return true;
-  const [[south, west], [north, east]] = bbox;
-  return pin.lat >= south && pin.lat <= north && pin.lng >= west && pin.lng <= east;
-}
-
 export function CaseWorldMap({
   pins,
   ghostPins = [],
@@ -173,13 +153,8 @@ export function CaseWorldMap({
     selectedCountryRef.current = selectedCountry;
   }, [onSelectCountry, onSelectCase, onHoverCase, onBboxChange, selectedCountry]);
 
-  const filteredPins = pins.filter(
-    (p) =>
-      pinPassesProvenance(p, view.provenanceFilter) &&
-      p.yearStart <= view.timelineMaxYear &&
-      (p.yearEnd ?? p.yearStart) >= view.timelineMinYear &&
-      pinInBbox(p, view.bboxFilter),
-  );
+  const filteredPins = filterVisiblePins(pins, view);
+  const unsolvedVisible = filteredPins.filter((p) => p.status === "unsolved").length;
 
   const statsByCode = useMemoMap(countryStats);
   const choroplethMax = Math.max(
@@ -359,13 +334,12 @@ export function CaseWorldMap({
         for (const pin of filteredPins) {
           const active = selectedCaseId === pin.id;
           const hovered = hoveredCaseId === pin.id;
-          const dimmed = !pinPassesProvenance(pin, "all") ? false : false;
           const marker = L.marker([pin.lat, pin.lng], {
             unsolved: pin.status === "unsolved",
             caseId: pin.id,
             icon: L.divIcon({
               className: "monitor-leaflet-icon",
-              html: markerHtml(pin, active, hovered, dimmed),
+              html: markerHtml(pin, active, hovered, false),
               iconSize: [20, 20],
               iconAnchor: [10, 10],
             }),
@@ -548,9 +522,13 @@ export function CaseWorldMap({
 
     if (!isDrawingBbox) {
       map.getContainer().style.cursor = "";
+      map.dragging.enable();
+      map.doubleClickZoom.enable();
       return;
     }
 
+    map.dragging.disable();
+    map.doubleClickZoom.disable();
     map.getContainer().style.cursor = "crosshair";
     let start: { lat: number; lng: number } | null = null;
     let rect: Layer | null = null;
@@ -594,6 +572,8 @@ export function CaseWorldMap({
       map.off("mousemove", onMove);
       map.off("mouseup", onUp);
       map.getContainer().style.cursor = "";
+      map.dragging.enable();
+      map.doubleClickZoom.enable();
       if (rect) map.removeLayer(rect);
     };
   }, [isDrawingBbox, ready]);
@@ -623,6 +603,19 @@ export function CaseWorldMap({
   return (
     <div className="monitor-map-wrap">
       <div ref={containerRef} className="monitor-leaflet-map" aria-label="Interactive world map" />
+      <MonitorMapOverlay
+        visibleCaseCount={filteredPins.length}
+        totalCaseCount={pins.length}
+        unsolvedVisible={unsolvedVisible}
+        newsCount={
+          view.contentLayer === "news" || view.contentLayer === "both" ? newsPins.length : 0
+        }
+        choroplethEnabled={view.choroplethEnabled}
+        choroplethMetric={view.choroplethMetric}
+        choroplethMax={choroplethMax}
+        timelineLabel={`${view.timelineMinYear}–${view.timelineMaxYear}`}
+        bboxActive={Boolean(view.bboxFilter)}
+      />
       <div className="monitor-map-float-controls">
         <button type="button" className="monitor-map-btn" onClick={resetView} title="Reset view">
           ⟲

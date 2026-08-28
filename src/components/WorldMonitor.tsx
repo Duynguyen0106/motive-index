@@ -14,6 +14,7 @@ import {
 } from "react";
 import { CaseWorldMap, MonitorCaseCard } from "@/components/CaseWorldMap";
 import { MonitorCountryPicker } from "@/components/MonitorCountryPicker";
+import { MonitorComparePanel } from "@/components/MonitorComparePanel";
 import { MonitorMapControls } from "@/components/MonitorMapControls";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { QuickLinks } from "@/components/ui";
@@ -22,7 +23,13 @@ import { searchUrlFromFilters } from "@/lib/search";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
-import { defaultTimelineRange, exportCasesCsv } from "@/lib/monitorMapUtils";
+import { exportCasesCsv } from "@/lib/monitorMapUtils";
+import {
+  filterVisiblePins,
+  mapViewToSearchParams,
+  parseMapViewFromSearchParams,
+  type MapViewPreset,
+} from "@/lib/monitorMapFilters";
 import type { MonitorCaseSummary } from "@/lib/types";
 import {
   CRIME_CATEGORY_LABELS,
@@ -38,19 +45,6 @@ type SidebarTab = "overview" | "cases" | "news" | "signals";
 
 const TAB_IDS: SidebarTab[] = ["overview", "cases", "news", "signals"];
 
-const DEFAULT_MAP_VIEW: MonitorMapViewState = {
-  choroplethEnabled: true,
-  choroplethMetric: "cases",
-  layerMode: "pins",
-  contentLayer: "cases",
-  provenanceFilter: "hide-composite",
-  showGhostPins: false,
-  showRelatedArcs: true,
-  timelineMinYear: TIMELINE_YEAR_MIN,
-  timelineMaxYear: TIMELINE_YEAR_MAX,
-  bboxFilter: null,
-};
-
 function parseSidebarTab(value: string | null): SidebarTab {
   if (value && TAB_IDS.includes(value as SidebarTab)) return value as SidebarTab;
   return "overview";
@@ -58,6 +52,7 @@ function parseSidebarTab(value: string | null): SidebarTab {
 
 function buildMonitorQuery(
   filters: SearchFilters,
+  mapView: MonitorMapViewState,
   opts?: { caseSlug?: string; tab?: SidebarTab },
 ): string {
   const p = new URLSearchParams();
@@ -66,7 +61,7 @@ function buildMonitorQuery(
   }
   if (opts?.caseSlug) p.set("case", opts.caseSlug);
   if (opts?.tab && opts.tab !== "overview") p.set("tab", opts.tab);
-  return p.toString();
+  return mapViewToSearchParams(mapView, p).toString();
 }
 
 function activeFilterCount(filters: SearchFilters): number {
@@ -96,10 +91,11 @@ export function WorldMonitor({ initial }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showAllCountries, setShowAllCountries] = useState(false);
   const [keyword, setKeyword] = useState(initial.filters.q ?? "");
-  const [mapView, setMapView] = useState<MonitorMapViewState>(() => {
-    const era = defaultTimelineRange(initial.filters.period ?? "");
-    return { ...DEFAULT_MAP_VIEW, timelineMinYear: era.min, timelineMaxYear: era.max };
-  });
+  const [mapView, setMapView] = useState<MonitorMapViewState>(() =>
+    parseMapViewFromSearchParams(searchParams, initial.filters.period ?? ""),
+  );
+  const [controlsCollapsed, setControlsCollapsed] = useState(true);
+  const [shareCopied, setShareCopied] = useState(false);
   const [hoveredCaseId, setHoveredCaseId] = useState("");
   const [compareCaseId, setCompareCaseId] = useState("");
   const [compareMode, setCompareMode] = useState(false);
@@ -117,6 +113,14 @@ export function WorldMonitor({ initial }: Props) {
   const selectedPin = data.pins.find((p) => p.id === selectedCaseId);
   const selectedCase = data.cases.find((c) => c.id === selectedCaseId);
   const comparePin = compareCaseId ? data.pins.find((p) => p.id === compareCaseId) : undefined;
+  const visiblePins = useMemo(
+    () => filterVisiblePins(data.pins, mapView),
+    [data.pins, mapView],
+  );
+  const visibleUnsolved = useMemo(
+    () => visiblePins.filter((p) => p.status === "unsolved").length,
+    [visiblePins],
+  );
   const unsolvedCount = useMemo(
     () => data.cases.filter((c) => c.status === "unsolved").length,
     [data.cases],
@@ -127,6 +131,32 @@ export function WorldMonitor({ initial }: Props) {
     ? data.countryStats
     : data.countryStats.slice(0, 8);
 
+  const syncUrl = useCallback(
+    (
+      nextFilters: SearchFilters,
+      nextMapView: MonitorMapViewState,
+      opts?: { caseSlug?: string; tab?: SidebarTab },
+    ) => {
+      const qs = buildMonitorQuery(nextFilters, nextMapView, opts);
+      startTransition(() => {
+        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+      });
+    },
+    [router],
+  );
+
+  const updateMapView = useCallback(
+    (patch: Partial<MonitorMapViewState>) => {
+      const next = { ...mapView, ...patch };
+      setMapView(next);
+      const slug = selectedCaseId
+        ? data.cases.find((c) => c.id === selectedCaseId)?.slug
+        : undefined;
+      syncUrl(filters, next, { caseSlug: slug, tab: sidebarTab });
+    },
+    [mapView, filters, selectedCaseId, sidebarTab, data.cases, syncUrl],
+  );
+
   const applyFilters = useCallback(
     (next: Partial<SearchFilters>, caseId?: string) => {
       const merged = { ...filters, ...next };
@@ -135,12 +165,9 @@ export function WorldMonitor({ initial }: Props) {
         : selectedCaseId
           ? data.cases.find((c) => c.id === selectedCaseId)?.slug
           : undefined;
-      const qs = buildMonitorQuery(merged, { caseSlug: slug, tab: sidebarTab });
-      startTransition(() => {
-        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
-      });
+      syncUrl(merged, mapView, { caseSlug: slug, tab: sidebarTab });
     },
-    [filters, router, selectedCaseId, sidebarTab, data.cases],
+    [filters, mapView, selectedCaseId, sidebarTab, data.cases, syncUrl],
   );
 
   const syncMonitorUrl = useCallback(
@@ -153,12 +180,9 @@ export function WorldMonitor({ initial }: Props) {
             ? data.cases.find((c) => c.id === selectedCaseId)?.slug
             : undefined;
       const tab = opts?.tab ?? sidebarTab;
-      const qs = buildMonitorQuery(filters, { caseSlug: slug, tab });
-      startTransition(() => {
-        router.replace(qs ? `/?${qs}` : "/", { scroll: false });
-      });
+      syncUrl(filters, mapView, { caseSlug: slug, tab });
     },
-    [data.cases, filters, router, selectedCaseId, sidebarTab],
+    [data.cases, filters, mapView, selectedCaseId, sidebarTab, syncUrl],
   );
 
   const selectTab = useCallback(
@@ -191,20 +215,14 @@ export function WorldMonitor({ initial }: Props) {
       if (opts?.syncUrl !== false && id) {
         const slug = data.cases.find((c) => c.id === id)?.slug;
         if (slug) {
-          const qs = buildMonitorQuery(filters, { caseSlug: slug, tab: nextTab });
-          startTransition(() => {
-            router.replace(`/?${qs}`, { scroll: false });
-          });
+          syncUrl(filters, mapView, { caseSlug: slug, tab: nextTab });
         }
       }
       if (!id) {
-        const qs = buildMonitorQuery(filters, { tab: sidebarTab });
-        startTransition(() => {
-          router.replace(qs ? `/?${qs}` : "/", { scroll: false });
-        });
+        syncUrl(filters, mapView, { tab: sidebarTab });
       }
     },
-    [data.cases, filters, router, sidebarTab, isMobileLayout],
+    [compareMode, selectedCaseId, sidebarTab, isMobileLayout, data.cases, filters, mapView, syncUrl],
   );
 
   const clearFilter = useCallback(
@@ -218,8 +236,7 @@ export function WorldMonitor({ initial }: Props) {
   useEffect(() => {
     setData(initial);
     setKeyword(initial.filters.q ?? "");
-    const era = defaultTimelineRange(initial.filters.period ?? "");
-    setMapView((v) => ({ ...v, timelineMinYear: era.min, timelineMaxYear: era.max }));
+    setMapView(parseMapViewFromSearchParams(searchParams, initial.filters.period ?? ""));
     const slug = searchParams.get("case") ?? "";
     if (slug) {
       const id = caseIdFromSlug(initial.cases, slug);
@@ -234,6 +251,7 @@ export function WorldMonitor({ initial }: Props) {
       const mobile = mq.matches;
       setIsMobileLayout(mobile);
       if (!mobile) setSidebarOpen(true);
+      setControlsCollapsed(mobile);
     };
     update();
     mq.addEventListener("change", update);
@@ -352,7 +370,7 @@ export function WorldMonitor({ initial }: Props) {
   }, [isPlayingTimeline]);
 
   function handleExportCsv() {
-    const rows = data.pins.map((p) => ({
+    const rows = visiblePins.map((p) => ({
       name: p.name,
       slug: p.slug,
       country: p.country,
@@ -369,6 +387,20 @@ export function WorldMonitor({ initial }: Props) {
     a.download = "motive-index-map-export.csv";
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function shareMapView() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  function applyMapPreset(preset: MapViewPreset) {
+    updateMapView(preset.patch);
   }
 
   // Scroll case card into view on mobile when selected
@@ -468,16 +500,20 @@ export function WorldMonitor({ initial }: Props) {
           <span className="monitor-stat-label">Cases shown</span>
         </div>
         <div className="monitor-stat">
+          <span className="monitor-stat-value">{visiblePins.length}</span>
+          <span className="monitor-stat-label">Visible on map</span>
+        </div>
+        <div className="monitor-stat">
           <span className="monitor-stat-value">{data.plottedCount}</span>
-          <span className="monitor-stat-label">On map</span>
+          <span className="monitor-stat-label">Plotted total</span>
         </div>
         <div className="monitor-stat">
           <span className="monitor-stat-value">{data.countryStats.length}</span>
           <span className="monitor-stat-label">Regions</span>
         </div>
         <div className="monitor-stat monitor-stat-alert">
-          <span className="monitor-stat-value">{unsolvedCount}</span>
-          <span className="monitor-stat-label">Unsolved</span>
+          <span className="monitor-stat-value">{visibleUnsolved || unsolvedCount}</span>
+          <span className="monitor-stat-label">Unsolved{visibleUnsolved ? " (visible)" : ""}</span>
         </div>
       </div>
 
@@ -503,7 +539,7 @@ export function WorldMonitor({ initial }: Props) {
             <button
               type="button"
               className="text-[var(--accent)] hover:underline"
-              onClick={() => setMapView((v) => ({ ...v, showGhostPins: true }))}
+              onClick={() => updateMapView({ showGhostPins: true })}
             >
               Show country estimates on map
             </button>
@@ -515,7 +551,10 @@ export function WorldMonitor({ initial }: Props) {
         </div>
       ) : null}
 
-      {activeFilterCount(filters) > 0 ? (
+      {activeFilterCount(filters) > 0 ||
+      mapView.bboxFilter ||
+      mapView.timelineMinYear !== TIMELINE_YEAR_MIN ||
+      mapView.timelineMaxYear !== TIMELINE_YEAR_MAX ? (
         <div className="monitor-chips" aria-label="Active filters">
           {filters.q ? (
             <button type="button" className="monitor-chip" onClick={() => clearFilter("q")}>
@@ -547,6 +586,31 @@ export function WorldMonitor({ initial }: Props) {
               {filters.period} <span aria-hidden>×</span>
             </button>
           ) : null}
+          {mapView.bboxFilter ? (
+            <button
+              type="button"
+              className="monitor-chip"
+              onClick={() => updateMapView({ bboxFilter: null })}
+            >
+              Map area filter <span aria-hidden>×</span>
+            </button>
+          ) : null}
+          {(mapView.timelineMinYear !== TIMELINE_YEAR_MIN ||
+            mapView.timelineMaxYear !== TIMELINE_YEAR_MAX) ? (
+            <button
+              type="button"
+              className="monitor-chip"
+              onClick={() =>
+                updateMapView({
+                  timelineMinYear: TIMELINE_YEAR_MIN,
+                  timelineMaxYear: TIMELINE_YEAR_MAX,
+                })
+              }
+            >
+              Timeline: {mapView.timelineMinYear}–{mapView.timelineMaxYear}{" "}
+              <span aria-hidden>×</span>
+            </button>
+          ) : null}
           <Link href="/" className="monitor-chip monitor-chip-clear">
             Clear all
           </Link>
@@ -561,24 +625,30 @@ export function WorldMonitor({ initial }: Props) {
           <div className="monitor-map-header">
             <h2 className="display text-lg">Global map</h2>
             <span className="text-xs text-[var(--muted)]">
-              {data.pins.length
-                ? `${data.pins.length} cases · zoom in to expand clusters`
-                : "No markers for current filters"}
+              {visiblePins.length
+                ? `${visiblePins.length}${visiblePins.length !== data.pins.length ? ` of ${data.pins.length}` : ""} visible · zoom clusters to expand`
+                : "No markers for current map filters"}
             </span>
           </div>
           <MonitorMapControls
             view={mapView}
-            onChange={(patch) => setMapView((v) => ({ ...v, ...patch }))}
+            onChange={updateMapView}
             caseCount={data.pins.length}
+            visibleCount={visiblePins.length}
             newsCount={data.newsPins.length}
+            collapsed={controlsCollapsed}
+            onToggleCollapsed={() => setControlsCollapsed((v) => !v)}
             isFullscreen={isFullscreen}
             isDrawingBbox={isDrawingBbox}
             compareSlug={comparePin?.slug}
+            shareCopied={shareCopied}
             onExplore={exploreRandom}
             onFullscreen={() => setIsFullscreen((v) => !v)}
             onDrawBbox={() => setIsDrawingBbox((v) => !v)}
-            onClearBbox={() => setMapView((v) => ({ ...v, bboxFilter: null }))}
+            onClearBbox={() => updateMapView({ bboxFilter: null })}
             onExport={handleExportCsv}
+            onShareView={() => void shareMapView()}
+            onApplyPreset={applyMapPreset}
             onRegionPreset={(p) => {
               setRegionFlyRequest(p);
               window.setTimeout(() => setRegionFlyRequest(null), 1200);
@@ -602,14 +672,20 @@ export function WorldMonitor({ initial }: Props) {
             onSelectCase={(id) => selectCase(id)}
             onHoverCase={setHoveredCaseId}
             onBboxChange={(bbox) => {
-              setMapView((v) => ({ ...v, bboxFilter: bbox }));
+              updateMapView({ bboxFilter: bbox });
               setIsDrawingBbox(false);
             }}
           />
-          {selectedPin ? (
+          {selectedPin && comparePin ? (
+            <MonitorComparePanel
+              pinA={selectedPin}
+              pinB={comparePin}
+              onClose={() => setCompareCaseId("")}
+            />
+          ) : null}
+          {selectedPin && !comparePin ? (
             <MonitorCaseCard
               pin={selectedPin}
-              comparePin={comparePin}
               onClose={() => {
                 selectCase("");
                 setCompareCaseId("");
@@ -617,13 +693,13 @@ export function WorldMonitor({ initial }: Props) {
               cardRef={caseCardRef as RefObject<HTMLDivElement | null>}
             />
           ) : null}
-          {selectedPin ? (
+          {selectedPin && !comparePin ? (
             <button
               type="button"
               className="monitor-compare-btn btn btn-ghost text-xs"
               onClick={() => setCompareMode(true)}
             >
-              {compareMode ? "Select second case…" : "Compare with another case"}
+              {compareMode ? "Select second case on map…" : "Compare with another case"}
             </button>
           ) : null}
           {!data.pins.length ? (
