@@ -1,0 +1,61 @@
+/** City-level coordinates inferred from case names / locations (longest match first). */
+export const CITY_FROM_TEXT: [RegExp, { lat: number; lng: number }, string][] = [
+  [/\bsadr city\b/, { lat: 33.3803, lng: 44.395 }, "Sadr City, Baghdad"],
+  [/\bodesa\b|\bodessa\b/, { lat: 46.4825, lng: 30.7233 }, "Odesa"],
+  [/\bbaghdad\b/, { lat: 33.3152, lng: 44.3661 }, "Baghdad"],
+  [/\bkabul\b/, { lat: 34.5553, lng: 69.2075 }, "Kabul"],
+  [/\b(fez|fes)\b/, { lat: 34.0181, lng: -5.0078 }, "Fez"],
+  [/\b(new york|nyc|manhattan|brooklyn|bronx)\b/, { lat: 40.7128, lng: -74.006 }, "New York"],
+  [/\blos angeles\b/, { lat: 34.0522, lng: -118.2437 }, "Los Angeles"],
+  [/\bsan francisco\b/, { lat: 37.7749, lng: -122.4194 }, "San Francisco"],
+  [/\bchicago\b/, { lat: 41.8781, lng: -87.6298 }, "Chicago"],
+  [/\bboston\b/, { lat: 42.3601, lng: -71.0589 }, "Boston"],
+  [/\bhouston\b/, { lat: 29.7604, lng: -95.3698 }, "Houston"],
+  [/\bdallas\b/, { lat: 32.7767, lng: -96.797 }, "Dallas"],
+  [/\bphiladelphia\b/, { lat: 39.9526, lng: -75.1652 }, "Philadelphia"],
+  [/\bnew orleans\b/, { lat: 29.9511, lng: -90.0715 }, "New Orleans"],
+  [/\blas vegas\b/, { lat: 36.1699, lng: -115.1398 }, "Las Vegas"],
+  [/\bseattle\b/, { lat: 47.6062, lng: -122.3321 }, "Seattle"],
+  [/\bdenver\b/, { lat: 39.7392, lng: -104.9903 }, "Denver"],
+  [/\bportland\b/, { lat: 45.5152, lng: -122.6784 }, "Portland"],
+  [/\b(manchester)\b/, { lat: 53.4808, lng: -2.2426 }, "Manchester"],
+  [/\blondon\b/, { lat: 51.5074, lng: -0.1278 }, "London"],
+  [/\bparis\b/, { lat: 48.8566, lng: 2.3522 }, "Paris"],
+  [/\bberlin\b/, { lat: 52.52, lng: 13.405 }, "Berlin"],
+  [/\bmunich\b/, { lat: 48.1351, lng: 11.582 }, "Munich"],
+  [/\bmoscow\b/, { lat: 55.7558, lng: 37.6173 }, "Moscow"],
+  [/\b(kyiv|kiev)\b/, { lat: 50.4501, lng: 30.5234 }, "Kyiv"],
+  [/\bbeirut\b/, { lat: 33.8938, lng: 35.5018 }, "Beirut"],
+  [/\bjerusalem\b/, { lat: 31.7683, lng: 35.2137 }, "Jerusalem"],
+  [/\btel aviv\b/, { lat: 32.0853, lng: 34.7818 }, "Tel Aviv"],
+  [/\btokyo\b/, { lat: 35.6762, lng: 139.6503 }, "Tokyo"],
+  [/\bsydney\b/, { lat: -33.8688, lng: 151.2093 }, "Sydney"],
+  [/\bmelbourne\b/, { lat: -37.8136, lng: 144.9631 }, "Melbourne"],
+  [/\bmumbai\b/, { lat: 19.076, lng: 72.8777 }, "Mumbai"],
+  [/\bdelhi\b/, { lat: 28.7041, lng: 77.1025 }, "Delhi"],
+  [/\bkarachi\b/, { lat: 24.8607, lng: 67.0011 }, "Karachi"],
+  [/\blahore\b/, { lat: 31.5204, lng: 74.3587 }, "Lahore"],
+  [/\bistanbul\b/, { lat: 41.0082, lng: 28.9784 }, "Istanbul"],
+  [/\bankara\b/, { lat: 39.9334, lng: 32.8597 }, "Ankara"],
+  [/\brome\b/, { lat: 41.9028, lng: 12.4964 }, "Rome"],
+  [/\bmadrid\b/, { lat: 40.4168, lng: -3.7038 }, "Madrid"],
+  [/\bbarcelona\b/, { lat: 41.3851, lng: 2.1734 }, "Barcelona"],
+  [/\bbrussels\b/, { lat: 50.8503, lng: 4.3517 }, "Brussels"],
+  [/\bamsterdam\b/, { lat: 52.3676, lng: 4.9041 }, "Amsterdam"],
+  [/\bstockholm\b/, { lat: 59.3293, lng: 18.0686 }, "Stockholm"],
+  [/\bcairo\b/, { lat: 30.0444, lng: 31.2357 }, "Cairo"],
+  [/\bnairobi\b/, { lat: -1.2921, lng: 36.8219 }, "Nairobi"],
+  [/\blagos\b/, { lat: 6.5244, lng: 3.3792 }, "Lagos"],
+  [/\b(columbine|littleton)\b/, { lat: 39.6133, lng: -105.0166 }, "Littleton, Colorado"],
+  [/\boklahoma city\b/, { lat: 35.4676, lng: -97.5164 }, "Oklahoma City"],
+  [/\bniagara falls\b/, { lat: 43.0962, lng: -79.0377 }, "Niagara Falls"],
+  [/\bwhitechapel\b/, { lat: 51.5154, lng: -0.0606 }, "Whitechapel, London"],
+];
+
+export function inferCityFromText(text: string): { point: { lat: number; lng: number }; label: string } | null {
+  const lower = text.toLowerCase();
+  for (const [pattern, point, label] of CITY_FROM_TEXT) {
+    if (pattern.test(lower)) return { point, label };
+  }
+  return null;
+}

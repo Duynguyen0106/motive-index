@@ -29,7 +29,7 @@ async function main() {
   const { getAllCases } = await import(join(root, "src/lib/data.ts"));
   const { isCompositeCase } = await import(join(root, "src/lib/caseSummaries.ts"));
   const { resolveCaseCountry } = await import(join(root, "src/lib/country.ts"));
-  const { getCatalogCoords } = await import(join(root, "src/lib/geo.ts"));
+  const { resolveCaseGeo } = await import(join(root, "src/lib/geo.ts"));
   const { WORLD_CASE_DEFS, IMPORTED_WIKIDATA_DEFS } = await import(join(root, "src/data/worldCases.ts"));
   const { RETIRED_WORLD_SLUGS } = await import(join(root, "src/lib/validation/retiredSlugs.ts"));
   const { validateProvenance, COMPOSITE_NAME_PREFIXES } = await import(
@@ -161,13 +161,17 @@ async function main() {
     if (country === "OTHER" && !isCompositeCase(c) && !isDraftStub) {
       warnings.push(`Curated case with OTHER country: ${c.slug}`);
     }
-    if ((c.lat == null || c.lng == null) && !isDraftStub) {
-      const coords = getCatalogCoords(c.slug);
-      if (!coords) {
-        warnings.push(`No coordinates: ${c.slug}`);
-      } else {
-        warnings.push(`Coordinates not propagated to case object: ${c.slug}`);
-      }
+    const resolved = resolveCaseGeo({
+      slug: c.slug,
+      name: c.name,
+      location: c.location,
+      jurisdiction: c.jurisdiction,
+      country: c.country,
+      lat: c.lat,
+      lng: c.lng,
+    });
+    if (!resolved && !isDraftStub) {
+      warnings.push(`No map coordinates: ${c.slug}`);
     }
   }
 

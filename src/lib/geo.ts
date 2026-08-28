@@ -1,8 +1,9 @@
 import type { CrimeCase, CountryCode, CrimeCategory } from "@/lib/types";
 import type { CaseProvenanceTier } from "@/lib/validation/caseProvenance";
+import { inferCountry, resolveCaseCountry } from "@/lib/country";
+import { inferCityFromText } from "@/lib/cityCoords";
 import { MULTILINGUAL_CASE_COORDS } from "@/data/multilingualCases";
 import { WORLD_CASE_COORDS } from "@/data/worldCases";
-import { resolveCaseCountry } from "@/lib/country";
 
 export type GeoPoint = { lat: number; lng: number };
 
@@ -85,37 +86,102 @@ export const COUNTRY_CENTROIDS: Record<CountryCode, GeoPoint> = {
   OTHER: { lat: 20, lng: 0 },
 };
 
+type CaseGeoInput = Pick<
+  CrimeCase,
+  "slug" | "name" | "location" | "jurisdiction" | "country" | "lat" | "lng" | "tags"
+>;
+
+export type CoordAccuracy = "city" | "centroid" | "country";
+
+type ResolvedCaseGeo = { point: GeoPoint; accuracy: CoordAccuracy };
+
+/** Wikidata / import placeholders and null-island coords must not be plotted as-is. */
+export function isInvalidMapCoord(lat: number, lng: number): boolean {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return true;
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return true;
+  if (Math.abs(lat) < 0.05 && Math.abs(lng) < 0.05) return true;
+  if (Math.abs(lat - 20) < 0.05 && Math.abs(lng) < 0.05) return true;
+  return false;
+}
+
+function locationHintCoords(text: string): GeoPoint | null {
+  const lower = text.toLowerCase();
+  if (/\bkansas\b/.test(lower)) return { lat: 37.6872, lng: -97.3301 };
+  if (/\bflorida\b/.test(lower)) return { lat: 27.9944, lng: -81.7603 };
+  if (/\bcalifornia\b|san francisco|northern california/.test(lower)) {
+    return { lat: 37.7749, lng: -122.4194 };
+  }
+  if (/\bengland|manchester|united kingdom/.test(lower)) {
+    return { lat: 53.4478, lng: -2.0809 };
+  }
+  return null;
+}
+
+/** Resolve best map coordinates and accuracy tier for a catalog case. */
+export function resolveCaseGeo(c: CaseGeoInput): ResolvedCaseGeo | null {
+  const resolved = resolveCaseGeoInner(c);
+  if (!resolved || isInvalidMapCoord(resolved.point.lat, resolved.point.lng)) return null;
+  return resolved;
+}
+
+function resolveCaseGeoInner(c: CaseGeoInput): ResolvedCaseGeo | null {
+  const text = `${c.name} ${c.location} ${c.jurisdiction}`;
+  let country = resolveCaseCountry(c);
+  if (country === "OTHER") {
+    const inferred = inferCountry(c.jurisdiction, text);
+    if (inferred !== "OTHER") country = inferred;
+  }
+
+  const genericStoredLocation =
+    /\(see wikipedia\)|\(country estimate\)|\(inferred\)/i.test(c.location) ||
+    c.tags?.includes("wikidata-import");
+
+  if (
+    !genericStoredLocation &&
+    typeof c.lat === "number" &&
+    typeof c.lng === "number" &&
+    !isInvalidMapCoord(c.lat, c.lng)
+  ) {
+    return { point: { lat: c.lat, lng: c.lng }, accuracy: "city" };
+  }
+
+  const slugPoint = SLUG_COORDS[c.slug];
+  if (slugPoint && !isInvalidMapCoord(slugPoint.lat, slugPoint.lng)) {
+    return { point: slugPoint, accuracy: "city" };
+  }
+
+  const city = inferCityFromText(text);
+  if (city) return { point: city.point, accuracy: "city" };
+
+  const hint = locationHintCoords(text);
+  if (hint) return { point: hint, accuracy: "city" };
+
+  if (
+    !genericStoredLocation &&
+    typeof c.lat === "number" &&
+    typeof c.lng === "number" &&
+    !isInvalidMapCoord(c.lat, c.lng)
+  ) {
+    return { point: { lat: c.lat, lng: c.lng }, accuracy: "city" };
+  }
+
+  if (country !== "OTHER") {
+    const point = COUNTRY_CENTROIDS[country];
+    if (isInvalidMapCoord(point.lat, point.lng)) return null;
+    return { point, accuracy: "centroid" };
+  }
+
+  return null;
+}
+
 /** Static catalog coordinates keyed by slug (world, multilingual, flagship). */
 export function getCatalogCoords(slug: string): GeoPoint | undefined {
   return SLUG_COORDS[slug];
 }
 
-export function resolveCaseCoordinates(
-  c: Pick<CrimeCase, "slug" | "location" | "jurisdiction" | "country" | "lat" | "lng">,
-): GeoPoint | null {
-  if (typeof c.lat === "number" && typeof c.lng === "number") {
-    return { lat: c.lat, lng: c.lng };
-  }
-  const slugPoint = SLUG_COORDS[c.slug];
-  if (slugPoint) return slugPoint;
-
-  const country = resolveCaseCountry(c);
-  if (country === "OTHER") return null;
-
-  const text = `${c.location} ${c.jurisdiction}`.toLowerCase();
-  if (/\bkansas\b/.test(text)) return { lat: 37.6872, lng: -97.3301 };
-  if (/\bflorida\b/.test(text)) return { lat: 27.9944, lng: -81.7603 };
-  if (/\bcalifornia\b|san francisco|northern california/.test(text)) {
-    return { lat: 37.7749, lng: -122.4194 };
-  }
-  if (/\bengland|manchester|united kingdom/.test(text)) {
-    return { lat: 53.4478, lng: -2.0809 };
-  }
-
-  return COUNTRY_CENTROIDS[country];
+export function resolveCaseCoordinates(c: CaseGeoInput): GeoPoint | null {
+  return resolveCaseGeo(c)?.point ?? null;
 }
-
-export type CoordAccuracy = "city" | "centroid" | "country";
 
 export type MonitorCasePin = {
   id: string;
@@ -137,18 +203,8 @@ export type MonitorCasePin = {
   tags: string[];
 };
 
-export function resolveCoordAccuracy(
-  c: Pick<CrimeCase, "slug" | "location" | "jurisdiction" | "country" | "lat" | "lng">,
-): CoordAccuracy {
-  if (typeof c.lat === "number" && typeof c.lng === "number") return "city";
-  if (SLUG_COORDS[c.slug]) return "city";
-  const text = `${c.location} ${c.jurisdiction}`.toLowerCase();
-  if (/\bkansas\b|\bflorida\b|\bcalifornia\b|san francisco|northern california|\bengland|manchester|united kingdom/.test(text)) {
-    return "city";
-  }
-  const country = resolveCaseCountry(c);
-  if (country === "OTHER") return "country";
-  return "centroid";
+export function resolveCoordAccuracy(c: CaseGeoInput): CoordAccuracy {
+  return resolveCaseGeo(c)?.accuracy ?? "country";
 }
 
 export function toMonitorPin(
@@ -158,8 +214,8 @@ export function toMonitorPin(
     imageUrl?: string;
   },
 ): MonitorCasePin | null {
-  const coords = resolveCaseCoordinates(c);
-  if (!coords) return null;
+  const resolved = resolveCaseGeo(c);
+  if (!resolved) return null;
   const primaryCategory = c.crimeCategories[0] ?? "homicide";
   return {
     id: c.id,
@@ -172,34 +228,34 @@ export function toMonitorPin(
     primaryCategory,
     yearStart: c.yearStart,
     yearEnd: c.yearEnd,
-    lat: coords.lat,
-    lng: coords.lng,
+    lat: resolved.point.lat,
+    lng: resolved.point.lng,
     provenanceTier: extras?.provenanceTier ?? "curated",
-    coordAccuracy: resolveCoordAccuracy(c),
+    coordAccuracy: resolved.accuracy,
     relatedCaseSlugs: c.relatedCaseSlugs ?? [],
     imageUrl: extras?.imageUrl,
     tags: c.tags,
   };
 }
 
-/** Offset overlapping pins in geographic space so clusters stay readable when zoomed in. */
-export function spreadPins(pins: MonitorCasePin[], minDistDeg = 0.35): MonitorCasePin[] {
-  const out = pins.map((p) => ({ ...p }));
-  for (let i = 0; i < out.length; i++) {
-    for (let j = 0; j < i; j++) {
-      const dLat = out[i].lat - out[j].lat;
-      const dLng = out[i].lng - out[j].lng;
-      const dist = Math.hypot(dLat, dLng);
-      if (dist < minDistDeg && dist > 0) {
-        const push = (minDistDeg - dist) / 2;
-        const nx = dLat / dist;
-        const ny = dLng / dist;
-        out[i].lat += nx * push;
-        out[i].lng += ny * push;
-        out[j].lat -= nx * push;
-        out[j].lng -= ny * push;
-      }
-    }
-  }
-  return out;
+function hashJitter(seed: string): { lat: number; lng: number } {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  const a = ((h & 0xffff) / 0xffff - 0.5) * 2;
+  const b = (((h >> 16) & 0xffff) / 0xffff - 0.5) * 2;
+  return { lat: a, lng: b };
+}
+
+/** Spread centroid pins slightly so stacks remain readable without drifting far from true region. */
+export function spreadPins(pins: MonitorCasePin[]): MonitorCasePin[] {
+  return pins.map((p) => {
+    if (p.coordAccuracy === "city") return p;
+    const jitter = hashJitter(p.slug);
+    const scale = p.coordAccuracy === "centroid" ? 2.5 : 1.5;
+    return {
+      ...p,
+      lat: p.lat + jitter.lat * scale,
+      lng: p.lng + jitter.lng * scale,
+    };
+  });
 }

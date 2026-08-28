@@ -16,6 +16,7 @@
     "db:reseed": "node scripts/reseed-store.mjs",
     "db:generate-bulk": "node scripts/generate-bulk-cases.mjs",
     "db:import-wikidata": "node scripts/import-wikidata-cases.mjs",
+    "db:fix-coordinates": "node scripts/fix-case-coordinates.mjs",
     "db:import-wikipedia": "node scripts/import-wikipedia-categories.mjs",
     "live-update": "curl -s -X POST http://localhost:3000/api/cron/live-update -H 'content-type: application/json' -d '{\"limit\":5}'"
   },

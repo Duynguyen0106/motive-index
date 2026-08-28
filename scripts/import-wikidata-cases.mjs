@@ -9,6 +9,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  defaultCoords,
+  inferCityFromText,
+  parseWikidataCoord,
+} from "./lib/coordinateUtils.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -197,16 +202,6 @@ function slugFromArticleUrl(url) {
   }
 }
 
-function parseCoord(wkt) {
-  if (!wkt || typeof wkt !== "string") return null;
-  const m = wkt.match(/Point\(([-\d.]+)\s+([-\d.]+)\)/);
-  if (!m) return null;
-  const lng = Number(m[1]);
-  const lat = Number(m[2]);
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
-  return { lat, lng };
-}
-
 function yearFromWikidata(value) {
   if (!value) return null;
   const m = String(value).match(/^([+-]?\d{4})/);
@@ -231,16 +226,8 @@ function countryFromBinding(b) {
   return "OTHER";
 }
 
-function defaultCoords(country) {
-  const centers = {
-    US: { lat: 39.8283, lng: -98.5795 },
-    GB: { lat: 54.0, lng: -2.0 },
-    DE: { lat: 51.1657, lng: 10.4515 },
-    FR: { lat: 46.6034, lng: 1.8883 },
-    AU: { lat: -25.2744, lng: 133.7751 },
-    CA: { lat: 56.1304, lng: -106.3468 },
-  };
-  return centers[country] ?? { lat: 20, lng: 0 };
+function defaultCoordsForCountry(country) {
+  return defaultCoords(country);
 }
 
 function isCrimeEntity(label, description, slug) {
@@ -333,8 +320,9 @@ function bindingToCase(binding, profile, existingNames) {
   if (existingNames.has(normName)) return null;
 
   const country = countryFromBinding(binding);
-  const coord = parseCoord(binding.coord?.value);
-  const coords = coord ?? defaultCoords(country);
+  const coord = parseWikidataCoord(binding.coord?.value);
+  const city = inferCityFromText(label);
+  const coords = coord ?? city ?? defaultCoordsForCountry(country);
 
   const inception = yearFromWikidata(binding.inception?.value);
   const dissolved = yearFromWikidata(binding.dissolved?.value);
