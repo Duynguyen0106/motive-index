@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import type {
   ChoroplethMetric,
+  CoordAccuracyFilter,
+  MapBasemap,
   MapContentLayer,
   MapLayerMode,
   MonitorMapViewState,
@@ -169,7 +171,7 @@ export function MonitorMapControls({
             ))}
           </div>
           <p className="monitor-mobile-regions-hint text-xs text-[var(--muted)]">
-            Area draw needs a mouse — use region jumps or country filters on touch devices.
+            Drag one finger on the map to draw an area filter, or use region jumps below.
           </p>
         </details>
       ) : null}
@@ -236,18 +238,45 @@ export function MonitorMapControls({
             </button>
             {view.choroplethEnabled ? (
               <div className="monitor-map-toggle-group">
-                {(["cases", "unsolved"] as ChoroplethMetric[]).map((m) => (
+                {(["cases", "unsolved", "unsolved_rate"] as ChoroplethMetric[]).map((m) => (
                   <button
                     key={m}
                     type="button"
                     className={`monitor-map-toggle ${view.choroplethMetric === m ? "is-active" : ""}`}
                     onClick={() => onChange({ choroplethMetric: m })}
                   >
-                    {m === "cases" ? "Case count" : "Unsolved"}
+                    {m === "cases" ? "Case count" : m === "unsolved" ? "Unsolved" : "Unsolved %"}
                   </button>
                 ))}
               </div>
             ) : null}
+          </div>
+
+          <div className="monitor-map-controls-row">
+            <span className="monitor-map-controls-label">Pin accuracy</span>
+            <select
+              className="monitor-map-select field"
+              value={view.coordAccuracyFilter}
+              onChange={(e) =>
+                onChange({ coordAccuracyFilter: e.target.value as CoordAccuracyFilter })
+              }
+            >
+              <option value="all">All pins</option>
+              <option value="city-only">City-level only</option>
+              <option value="hide-estimates">Hide estimates</option>
+            </select>
+            <div className="monitor-map-toggle-group">
+              {(["dark", "light"] as MapBasemap[]).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  className={`monitor-map-toggle ${view.basemap === b ? "is-active" : ""}`}
+                  onClick={() => onChange({ basemap: b })}
+                >
+                  {b === "dark" ? "Dark map" : "Light map"}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="monitor-map-controls-row">
@@ -396,8 +425,7 @@ export function MonitorMapControls({
                   type="button"
                   className={`monitor-map-toggle ${isDrawingBbox ? "is-active" : ""}`}
                   onClick={onDrawBbox}
-                  disabled={coarsePointer}
-                  title={coarsePointer ? "Area filter requires a mouse — use region presets on touch devices" : undefined}
+                  title="Draw a rectangle on the map to filter by area"
                 >
                   {isDrawingBbox ? "Drawing…" : "Draw area filter"}
                 </button>

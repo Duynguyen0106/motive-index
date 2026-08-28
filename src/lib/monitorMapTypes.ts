@@ -2,7 +2,7 @@ import type { CountryMonitorStat } from "@/lib/monitor";
 import type { CountryCode, CrimeCategory } from "@/lib/types";
 import type { CaseProvenanceTier } from "@/lib/validation/caseProvenance";
 
-export type ChoroplethMetric = "cases" | "unsolved";
+export type ChoroplethMetric = "cases" | "unsolved" | "unsolved_rate";
 
 export type MapLayerMode = "pins" | "heatmap";
 
@@ -11,6 +11,11 @@ export type MapContentLayer = "cases" | "news" | "both";
 export type ProvenanceFilter = "all" | "verified" | "curated" | "hide-composite";
 
 export type CoordAccuracy = "city" | "centroid" | "country";
+
+/** Hide estimated pins or show city-level coordinates only. */
+export type CoordAccuracyFilter = "all" | "city-only" | "hide-estimates";
+
+export type MapBasemap = "dark" | "light";
 
 export type MonitorMapViewState = {
   choroplethEnabled: boolean;
@@ -25,6 +30,12 @@ export type MonitorMapViewState = {
   bboxFilter: [[number, number], [number, number]] | null;
   /** Empty = all crime types; otherwise show pins matching any listed category. */
   crimeCategoryFilter: CrimeCategory[];
+  coordAccuracyFilter: CoordAccuracyFilter;
+  basemap: MapBasemap;
+  /** Saved map viewport; null = auto-fit on load. */
+  viewportLat: number | null;
+  viewportLng: number | null;
+  viewportZoom: number | null;
 };
 
 export type MonitorNewsPin = {
@@ -87,12 +98,28 @@ export type EnhancedMonitorPin = {
   tags: string[];
 };
 
+export function choroplethMetricLabel(metric: ChoroplethMetric): string {
+  switch (metric) {
+    case "unsolved":
+      return "Unsolved count";
+    case "unsolved_rate":
+      return "Unsolved %";
+    default:
+      return "Case count";
+  }
+}
+
 export function choroplethValue(
   stat: CountryMonitorStat | undefined,
   metric: ChoroplethMetric,
 ): number {
   if (!stat) return 0;
-  return metric === "unsolved" ? stat.unsolvedCount : stat.caseCount;
+  if (metric === "unsolved") return stat.unsolvedCount;
+  if (metric === "unsolved_rate") {
+    if (stat.caseCount <= 0) return 0;
+    return Math.round((stat.unsolvedCount / stat.caseCount) * 100);
+  }
+  return stat.caseCount;
 }
 
 export function choroplethFillOpacity(value: number, max: number): number {

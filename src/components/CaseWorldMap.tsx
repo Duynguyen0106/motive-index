@@ -6,7 +6,7 @@ import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
 import { MonitorMapOverlay } from "@/components/MonitorMapOverlay";
 import { getLeaflet, getLeafletWithCluster } from "@/lib/leafletClient";
-import { filterVisiblePins, pinInBbox, pinInTimeline, pinMatchesCrimeFilter, pinPassesProvenance } from "@/lib/monitorMapFilters";
+import { filterVisiblePins } from "@/lib/monitorMapFilters";
 import type { CountryMonitorStat } from "@/lib/monitor";
 import {
   COUNTRY_BOUNDS,
@@ -15,7 +15,8 @@ import {
   DEFAULT_MAP_ZOOM,
   ISO3_TO_COUNTRY,
   MAP_TILE_ATTRIBUTION,
-  MAP_TILE_URL,
+  MAP_TILE_URL_DARK,
+  MAP_TILE_URL_LIGHT,
   MAX_MAP_ZOOM,
   MIN_MAP_ZOOM,
   WORLD_GEOJSON_FALLBACK,
@@ -31,6 +32,7 @@ import type {
 import { choroplethFillOpacity, choroplethValue } from "@/lib/monitorMapTypes";
 import {
   buildRichPopupHtml,
+  buildClusterPopupHtml,
   CRIME_CATEGORY_FILTER_ORDER,
   escapeHtml,
   markerCategoryClass,
@@ -39,7 +41,7 @@ import {
 } from "@/lib/monitorMapUtils";
 import type { CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS, type CrimeCategory } from "@/lib/types";
-import type { GeoJSON as GeoJSONType, FeatureGroup, Layer, LayerGroup, Map as LeafletMap, Path } from "leaflet";
+import type { GeoJSON as GeoJSONType, FeatureGroup, Layer, LayerGroup, Map as LeafletMap, LeafletMouseEvent, Path } from "leaflet";
 
 type Props = {
   pins: MonitorCasePin[];
@@ -57,6 +59,7 @@ type Props = {
   onHoverCase?: (id: string) => void;
   onRegionPreset?: (preset: RegionPreset) => void;
   onBboxChange?: (bbox: MonitorMapViewState["bboxFilter"]) => void;
+  onViewportChange?: (lat: number, lng: number, zoom: number) => void;
   regionFlyRequest?: RegionPreset | null;
   isDrawingBbox?: boolean;
   isFullscreen?: boolean;
@@ -78,12 +81,10 @@ function markerHtml(
   pin: MonitorCasePin,
   active: boolean,
   hovered: boolean,
-  provenanceDimmed: boolean,
 ): string {
   const classes = markerClassesForPin(pin, {
     active,
     hovered,
-    dimmed: provenanceDimmed,
   });
   return `<span class="${classes}"></span>`;
 }
@@ -127,10 +128,12 @@ export function CaseWorldMap({
   isDrawingBbox = false,
   isFullscreen = false,
   onBboxChange,
+  onViewportChange,
   onClearMapFilters,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
+  const tileLayerRef = useRef<import("leaflet").TileLayer | null>(null);
   const clusterRef = useRef<FeatureGroup | null>(null);
   const newsLayerRef = useRef<LayerGroup | null>(null);
   const ghostLayerRef = useRef<LayerGroup | null>(null);
@@ -143,10 +146,13 @@ export function CaseWorldMap({
   const markerPinRef = useRef<Map<string, MonitorCasePin>>(new Map());
   const drawStartRef = useRef<{ lat: number; lng: number } | null>(null);
   const drawRectRef = useRef<Layer | null>(null);
+  const bboxDrawCleanupRef = useRef<(() => void) | null>(null);
   const onSelectCountryRef = useRef(onSelectCountry);
   const onSelectCaseRef = useRef(onSelectCase);
   const onHoverCaseRef = useRef(onHoverCase);
   const onBboxChangeRef = useRef(onBboxChange);
+  const onViewportChangeRef = useRef(onViewportChange);
+  const viewportSyncSkipRef = useRef(true);
   const selectedCountryRef = useRef(selectedCountry);
   const [ready, setReady] = useState(false);
   const [hint, setHint] = useState("Loading map…");
@@ -157,13 +163,6 @@ export function CaseWorldMap({
   }, []);
 
   const filteredPins = filterVisiblePins(pins, view);
-  const contextualPins = pins.filter(
-    (p) =>
-      pinPassesProvenance(p, view.provenanceFilter) &&
-      pinInTimeline(p, view.timelineMinYear, view.timelineMaxYear) &&
-      pinInBbox(p, view.bboxFilter),
-  );
-  const crimeFilterActive = view.crimeCategoryFilter.length > 0;
   const unsolvedVisible = filteredPins.filter((p) => p.status === "unsolved").length;
   const filteredOutCount = pins.length - filteredPins.length;
 
@@ -172,8 +171,9 @@ export function CaseWorldMap({
     onSelectCaseRef.current = onSelectCase;
     onHoverCaseRef.current = onHoverCase;
     onBboxChangeRef.current = onBboxChange;
+    onViewportChangeRef.current = onViewportChange;
     selectedCountryRef.current = selectedCountry;
-  }, [onSelectCountry, onSelectCase, onHoverCase, onBboxChange, selectedCountry]);
+  }, [onSelectCountry, onSelectCase, onHoverCase, onBboxChange, onViewportChange, selectedCountry]);
 
   const statsByCode = useMemoMap(countryStats);
   const choroplethMax = Math.max(
@@ -200,9 +200,16 @@ export function CaseWorldMap({
         const isTouch =
           typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
+        const initialCenter: [number, number] =
+          view.viewportLat !== null && view.viewportLng !== null
+            ? [view.viewportLat, view.viewportLng]
+            : DEFAULT_MAP_CENTER;
+        const initialZoom =
+          view.viewportZoom !== null ? view.viewportZoom : DEFAULT_MAP_ZOOM;
+
         const map = L.map(el, {
-          center: DEFAULT_MAP_CENTER,
-          zoom: DEFAULT_MAP_ZOOM,
+          center: initialCenter,
+          zoom: initialZoom,
           minZoom: MIN_MAP_ZOOM,
           maxZoom: MAX_MAP_ZOOM,
           worldCopyJump: true,
@@ -210,15 +217,21 @@ export function CaseWorldMap({
           zoomControl: true,
         });
 
-        L.tileLayer(MAP_TILE_URL, {
-          attribution: MAP_TILE_ATTRIBUTION,
-          maxZoom: MAX_MAP_ZOOM,
-        }).addTo(map);
+        const tileLayer = L.tileLayer(
+          view.basemap === "light" ? MAP_TILE_URL_LIGHT : MAP_TILE_URL_DARK,
+          {
+            attribution: MAP_TILE_ATTRIBUTION,
+            maxZoom: MAX_MAP_ZOOM,
+          },
+        );
+        tileLayer.addTo(map);
+        tileLayerRef.current = tileLayer;
 
         const cluster = L.markerClusterGroup({
           showCoverageOnHover: false,
           maxClusterRadius: 52,
           spiderfyOnMaxZoom: true,
+          zoomToBoundsOnClick: false,
           disableClusteringAtZoom: 8,
           iconCreateFunction: (group) => {
             const count = group.getChildCount();
@@ -235,6 +248,33 @@ export function CaseWorldMap({
         });
         cluster.addTo(map);
         clusterRef.current = cluster;
+
+        cluster.on("clusterclick", (ev: { layer: import("leaflet").MarkerCluster }) => {
+          const childMarkers = ev.layer.getAllChildMarkers();
+          const clusterPins = childMarkers
+            .map((m) => {
+              const id = (m.options as { caseId?: string }).caseId;
+              return id ? markerPinRef.current.get(id) : undefined;
+            })
+            .filter((p): p is MonitorCasePin => Boolean(p));
+          if (!clusterPins.length) return;
+          ev.layer
+            .bindPopup(buildClusterPopupHtml(clusterPins), {
+              maxWidth: 300,
+              className: "monitor-leaflet-popup monitor-cluster-popup-wrap",
+            })
+            .openPopup();
+        });
+
+        map.on("moveend", () => {
+          if (viewportSyncSkipRef.current) return;
+          const c = map.getCenter();
+          onViewportChangeRef.current?.(c.lat, c.lng, map.getZoom());
+        });
+
+        window.setTimeout(() => {
+          viewportSyncSkipRef.current = false;
+        }, 800);
 
         const newsLayer = L.layerGroup().addTo(map);
         newsLayerRef.current = newsLayer;
@@ -272,7 +312,7 @@ export function CaseWorldMap({
         setReady(true);
         setHint(
           isTouch
-            ? "Pinch to zoom · Tap markers and clusters"
+            ? "Pinch to zoom · Tap markers and clusters · Draw area in controls"
             : "Drag to pan · Scroll to zoom · Draw area filter in controls",
         );
 
@@ -308,8 +348,14 @@ export function CaseWorldMap({
               const code = iso3 ? ISO3_TO_COUNTRY[iso3] : undefined;
               if (!code) return;
               const stat = statsByCode.get(code);
+              const rateLabel =
+                view.choroplethMetric === "unsolved_rate" && stat && stat.caseCount > 0
+                  ? `${Math.round((stat.unsolvedCount / stat.caseCount) * 100)}% unsolved`
+                  : null;
               const label = stat
-                ? `${COUNTRY_LABELS[code]}: ${stat.caseCount} cases${stat.unsolvedCount ? `, ${stat.unsolvedCount} unsolved` : ""}`
+                ? rateLabel
+                  ? `${COUNTRY_LABELS[code]}: ${stat.caseCount} cases · ${rateLabel}`
+                  : `${COUNTRY_LABELS[code]}: ${stat.caseCount} cases${stat.unsolvedCount ? `, ${stat.unsolvedCount} unsolved` : ""}`
                 : COUNTRY_LABELS[code];
               featureLayer.bindTooltip(label, { sticky: true, opacity: 0.92 });
               featureLayer.on({
@@ -376,16 +422,14 @@ export function CaseWorldMap({
         heat.addTo(map);
         heatLayerRef.current = heat;
       } else if (showCases) {
-        for (const pin of contextualPins) {
-          const crimeMatch = pinMatchesCrimeFilter(pin, view.crimeCategoryFilter);
-          const dimmed = crimeFilterActive && !crimeMatch;
+        for (const pin of filteredPins) {
           const active = selectedCaseId === pin.id;
           const marker = L.marker([pin.lat, pin.lng], {
             unsolved: pin.status === "unsolved",
             caseId: pin.id,
             icon: L.divIcon({
               className: "monitor-leaflet-icon",
-              html: markerHtml(pin, active, false, dimmed),
+              html: markerHtml(pin, active, false),
               iconSize: [20, 20],
               iconAnchor: [10, 10],
             }),
@@ -394,13 +438,10 @@ export function CaseWorldMap({
           marker.bindPopup(buildRichPopupHtml(pin), { maxWidth: 280, className: "monitor-leaflet-popup" });
 
           marker.on("click", () => {
-            if (dimmed) return;
             onSelectCaseRef.current?.(pin.id);
             map.flyTo([pin.lat, pin.lng], Math.max(map.getZoom(), 6), { duration: 0.6 });
           });
-          marker.on("mouseover", () => {
-            if (!dimmed) onHoverCaseRef.current?.(pin.id);
-          });
+          marker.on("mouseover", () => onHoverCaseRef.current?.(pin.id));
           marker.on("mouseout", () => onHoverCaseRef.current?.(""));
 
           caseMarkersRef.current.set(pin.id, marker);
@@ -410,7 +451,7 @@ export function CaseWorldMap({
       }
 
     })();
-  }, [filteredPins, contextualPins, ready, selectedCaseId, view.contentLayer, view.layerMode, view.crimeCategoryFilter]);
+  }, [filteredPins, ready, selectedCaseId, view.contentLayer, view.layerMode]);
 
   // Update marker highlight on hover/select without rebuilding all markers
   useEffect(() => {
@@ -420,21 +461,19 @@ export function CaseWorldMap({
       for (const [id, marker] of caseMarkersRef.current) {
         const pin = markerPinRef.current.get(id);
         if (!pin) continue;
-        const crimeMatch = pinMatchesCrimeFilter(pin, view.crimeCategoryFilter);
-        const dimmed = crimeFilterActive && !crimeMatch;
         const active = selectedCaseId === id;
         const hovered = hoveredCaseId === id;
         marker.setIcon(
           L.divIcon({
             className: "monitor-leaflet-icon",
-            html: markerHtml(pin, active, hovered, dimmed),
+            html: markerHtml(pin, active, hovered),
             iconSize: [20, 20],
             iconAnchor: [10, 10],
           }),
         );
       }
     })();
-  }, [hoveredCaseId, selectedCaseId, ready, view.crimeCategoryFilter, crimeFilterActive]);
+  }, [hoveredCaseId, selectedCaseId, ready]);
 
   // News markers
   useEffect(() => {
@@ -587,6 +626,37 @@ export function CaseWorldMap({
     })();
   }, [ready, view.bboxFilter]);
 
+  // Basemap swap
+  const prevBasemapRef = useRef(view.basemap);
+  useEffect(() => {
+    if (!ready || !mapRef.current || !tileLayerRef.current) return;
+    if (prevBasemapRef.current === view.basemap) return;
+    prevBasemapRef.current = view.basemap;
+    void (async () => {
+      const L = await getLeaflet();
+      const map = mapRef.current!;
+      const url = view.basemap === "light" ? MAP_TILE_URL_LIGHT : MAP_TILE_URL_DARK;
+      map.removeLayer(tileLayerRef.current!);
+      const next = L.tileLayer(url, {
+        attribution: MAP_TILE_ATTRIBUTION,
+        maxZoom: MAX_MAP_ZOOM,
+      });
+      next.addTo(map);
+      tileLayerRef.current = next;
+    })();
+  }, [ready, view.basemap]);
+
+  // Apply saved viewport from URL / share link
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+    if (view.viewportLat === null || view.viewportLng === null || view.viewportZoom === null) return;
+    viewportSyncSkipRef.current = true;
+    mapRef.current.setView([view.viewportLat, view.viewportLng], view.viewportZoom, { animate: false });
+    window.setTimeout(() => {
+      viewportSyncSkipRef.current = false;
+    }, 400);
+  }, [ready, view.viewportLat, view.viewportLng, view.viewportZoom]);
+
   // Recalculate map size on fullscreen toggle
   useEffect(() => {
     if (!ready || !mapRef.current) return;
@@ -666,10 +736,14 @@ export function CaseWorldMap({
     mapRef.current.flyToBounds(regionFlyRequest.bounds, { padding: [24, 24], duration: 0.9, maxZoom: 4 });
   }, [regionFlyRequest, ready]);
 
-  // Bbox drawing
+
+  // Bbox drawing (pointer + touch events)
   useEffect(() => {
     if (!ready || !mapRef.current) return;
     const map = mapRef.current;
+
+    bboxDrawCleanupRef.current?.();
+    bboxDrawCleanupRef.current = null;
 
     if (!isDrawingBbox) {
       map.getContainer().style.cursor = "";
@@ -681,51 +755,81 @@ export function CaseWorldMap({
     map.dragging.disable();
     map.doubleClickZoom.disable();
     map.getContainer().style.cursor = "crosshair";
-    let start: { lat: number; lng: number } | null = null;
+
+    let cancelled = false;
     let rect: Layer | null = null;
+    let start: { lat: number; lng: number } | null = null;
+    let drawing = false;
 
-    const onDown = (e: { latlng: { lat: number; lng: number } }) => {
-      start = e.latlng;
-      drawStartRef.current = { lat: e.latlng.lat, lng: e.latlng.lng };
-    };
+    void (async () => {
+      const L = await getLeaflet();
+      if (cancelled) return;
 
-    const onMove = (e: { latlng: { lat: number; lng: number } }) => {
-      if (!start) return;
-      void getLeaflet().then((L) => {
+      const finishDraw = (latlng: { lat: number; lng: number }) => {
+        if (!start) return;
+        const south = Math.min(start.lat, latlng.lat);
+        const north = Math.max(start.lat, latlng.lat);
+        const west = Math.min(start.lng, latlng.lng);
+        const east = Math.max(start.lng, latlng.lng);
+        if (Math.abs(north - south) > 0.05 || Math.abs(east - west) > 0.05) {
+          onBboxChangeRef.current?.([
+            [south, west],
+            [north, east],
+          ]);
+        }
+        start = null;
+        drawing = false;
+        if (rect) {
+          map.removeLayer(rect);
+          rect = null;
+        }
+      };
+
+      const onDown: L.LeafletEventHandlerFn = (ev) => {
+        const e = ev as LeafletMouseEvent;
+        L.DomEvent.preventDefault(e.originalEvent);
+        L.DomEvent.stopPropagation(e.originalEvent);
+        start = e.latlng;
+        drawing = true;
+        drawStartRef.current = { lat: e.latlng.lat, lng: e.latlng.lng };
+      };
+
+      const onMove: L.LeafletEventHandlerFn = (ev) => {
+        const e = ev as LeafletMouseEvent;
+        if (!start || !drawing) return;
         if (rect) map.removeLayer(rect);
-        const bounds = L.latLngBounds([start!, e.latlng]);
+        const bounds = L.latLngBounds([start, e.latlng]);
         rect = L.rectangle(bounds, { color: "var(--accent)", weight: 1.5, fillOpacity: 0.08 });
         rect.addTo(map);
         drawRectRef.current = rect;
-      });
-    };
+      };
 
-    const onUp = (e: { latlng: { lat: number; lng: number } }) => {
-      if (!start) return;
-      const south = Math.min(start.lat, e.latlng.lat);
-      const north = Math.max(start.lat, e.latlng.lat);
-      const west = Math.min(start.lng, e.latlng.lng);
-      const east = Math.max(start.lng, e.latlng.lng);
-      onBboxChangeRef.current?.([
-        [south, west],
-        [north, east],
-      ]);
-      start = null;
-      map.getContainer().style.cursor = "";
-    };
+      const onUp: L.LeafletEventHandlerFn = (ev) => {
+        const e = ev as LeafletMouseEvent;
+        if (!drawing) return;
+        L.DomEvent.preventDefault(e.originalEvent);
+        finishDraw(e.latlng);
+      };
 
-    map.on("mousedown", onDown);
-    map.on("mousemove", onMove);
-    map.on("mouseup", onUp);
+      map.on("mousedown", onDown);
+      map.on("mousemove", onMove);
+      map.on("mouseup", onUp);
+
+      bboxDrawCleanupRef.current = () => {
+        map.off("mousedown", onDown);
+        map.off("mousemove", onMove);
+        map.off("mouseup", onUp);
+        map.getContainer().style.cursor = "";
+        map.dragging.enable();
+        map.doubleClickZoom.enable();
+        if (rect) map.removeLayer(rect);
+      };
+    })();
 
     return () => {
-      map.off("mousedown", onDown);
-      map.off("mousemove", onMove);
-      map.off("mouseup", onUp);
-      map.getContainer().style.cursor = "";
-      map.dragging.enable();
-      map.doubleClickZoom.enable();
-      if (rect) map.removeLayer(rect);
+      cancelled = true;
+      bboxDrawCleanupRef.current?.();
+      bboxDrawCleanupRef.current = null;
     };
   }, [isDrawingBbox, ready]);
 
@@ -829,11 +933,9 @@ export function CaseWorldMap({
                 <span className="monitor-ghost-marker monitor-legend-ghost">?</span> Estimated pin
               </span>
             ) : null}
-            {crimeFilterActive ? (
-              <span className="monitor-legend-item">
-                <span className="monitor-legend-marker is-dimmed-preview" aria-hidden /> Dimmed = filtered out
-              </span>
-            ) : null}
+            <span className="monitor-legend-item">
+              <span className="monitor-legend-marker acc-centroid monitor-legend-acc" aria-hidden /> Dashed = country estimate
+            </span>
             {filteredOutCount > 0 ? (
               <span className="monitor-legend-filter-note">
                 {filteredOutCount.toLocaleString()} filtered out

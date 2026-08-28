@@ -148,8 +148,15 @@ export const WORLD_GEOJSON_FALLBACK =
 export const WORLD_GEOJSON_URL = WORLD_GEOJSON_LOCAL;
 
 /** Dark basemap — Esri Canvas (no API key; fits crime-scene palette). */
-export const MAP_TILE_URL =
+export const MAP_TILE_URL_DARK =
   "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+
+/** Light basemap — Esri Canvas light variant. */
+export const MAP_TILE_URL_LIGHT =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+
+/** @deprecated Use MAP_TILE_URL_DARK */
+export const MAP_TILE_URL = MAP_TILE_URL_DARK;
 
 export const MAP_TILE_ATTRIBUTION =
   '&copy; <a href="https://www.esri.com/">Esri</a> &mdash; DeLorme, NAVTEQ';

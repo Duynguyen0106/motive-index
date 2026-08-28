@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChoroplethMetric } from "@/lib/monitorMapTypes";
-import { choroplethFillOpacity } from "@/lib/monitorMapTypes";
+import { choroplethFillOpacity, choroplethMetricLabel } from "@/lib/monitorMapTypes";
 
 type Props = {
   visibleCaseCount: number;
@@ -52,13 +52,16 @@ export function MonitorMapOverlay({
       {choroplethEnabled ? (
         <div className="monitor-choropleth-legend" aria-hidden>
           <span className="monitor-choropleth-legend-label">
-            {choroplethMetric === "unsolved" ? "Unsolved count" : "Case count"}
+            {choroplethMetricLabel(choroplethMetric)}
           </span>
           <span className="monitor-choropleth-scale">
             <span className="monitor-choropleth-min">0</span>
             {Array.from({ length: 5 }, (_, i) => {
               const value = ((i + 1) / 5) * choroplethMax;
-              const opacity = choroplethFillOpacity(value, choroplethMax);
+              const opacity = choroplethFillOpacity(
+                value,
+                choroplethMetric === "unsolved_rate" ? 100 : choroplethMax,
+              );
               return (
                 <span
                   key={i}
@@ -68,7 +71,9 @@ export function MonitorMapOverlay({
               );
             })}
           </span>
-          <span className="monitor-choropleth-max">{choroplethMax}+</span>
+          <span className="monitor-choropleth-max">
+            {choroplethMetric === "unsolved_rate" ? `${choroplethMax}%` : `${choroplethMax}+`}
+          </span>
         </div>
       ) : null}
     </div>
