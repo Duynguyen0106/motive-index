@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { EmptyState, QuickLinks } from "@/components/ui";
+import { SearchFilterChips } from "@/components/SearchFilterChips";
 import {
   CRIME_CATEGORY_LABELS,
   DOCUMENT_TYPE_LABELS,
@@ -224,6 +225,8 @@ export default async function SearchPage({ searchParams }: Props) {
           </Link>
         </div>
       </form>
+
+      {hasQuery ? <SearchFilterChips filters={filters} /> : null}
 
       {!hasQuery ? (
         <section className="card mt-10 p-8 text-center">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/", label: "Monitor", match: (p: string) => p === "/" || p.startsWith("/monitor") },
@@ -14,35 +15,74 @@ const links = [
 
 export function SiteNav() {
   const pathname = usePathname() ?? "";
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   return (
-    <nav
-      className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[var(--ink-soft)]"
-      aria-label="Primary"
-    >
-      {links.map((l) => {
-        const active = l.match(pathname);
-        return (
-          <Link
-            key={l.href}
-            href={l.href}
-            aria-current={active ? "page" : undefined}
-            className={`nav-link border-b pb-0.5 transition-colors hover:border-[var(--line-strong)] hover:text-[var(--ink)] ${
-              active
-                ? "is-active border-[var(--accent)] font-medium text-[var(--ink)]"
-                : "border-transparent"
-            }`}
-          >
-            {l.label}
-          </Link>
-        );
-      })}
-      <Link
-        href="/admin/moderation"
-        className="nav-link border-b border-transparent pb-0.5 text-[var(--muted)] transition-colors hover:border-[var(--line-strong)] hover:text-[var(--ink)]"
+    <>
+      <button
+        type="button"
+        className="nav-toggle md:hidden"
+        aria-expanded={open}
+        aria-controls="primary-nav"
+        onClick={() => setOpen((v) => !v)}
       >
-        Admin
-      </Link>
-    </nav>
+        <span className="nav-toggle-icon" aria-hidden>
+          {open ? "✕" : "☰"}
+        </span>
+        <span>{open ? "Close" : "Menu"}</span>
+      </button>
+
+      {open ? (
+        <button
+          type="button"
+          className="nav-overlay md:hidden"
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+        />
+      ) : null}
+
+      <nav
+        id="primary-nav"
+        className={`site-nav ${open ? "is-open" : ""}`}
+        aria-label="Primary"
+      >
+        <div className="site-nav-links">
+          {links.map((l) => {
+            const active = l.match(pathname);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                className={`nav-link ${active ? "is-active" : ""}`}
+                onClick={() => setOpen(false)}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+          <Link
+            href="/admin/moderation"
+            className="nav-link nav-link-muted"
+            onClick={() => setOpen(false)}
+          >
+            Admin
+          </Link>
+        </div>
+      </nav>
+    </>
   );
 }

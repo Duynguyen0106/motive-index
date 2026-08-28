@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/ui";
 import { COUNTRY_LABELS } from "@/lib/country";
 import { readJsonResponse } from "@/lib/clientFetch";
 import type { CountryCode } from "@/lib/types";
@@ -128,8 +129,15 @@ export function WorldNewsFeed({ initial, countryFilter = "", onSelectCase, compa
           <NewsRow key={item.id} item={item} onSelectCase={onSelectCase} compact={compact} />
         ))}
         {!payload.items.length ? (
-          <li className="py-6 text-center text-sm text-[var(--muted)]">
-            No news for current filters.
+          <li className="list-none">
+            <EmptyState
+              title="No stories for this filter"
+              description="Try clearing the region filter or check back after the next RSS sync."
+              actions={[
+                { href: "/live", label: "All regions", primary: true },
+                { href: "/", label: "World monitor" },
+              ]}
+            />
           </li>
         ) : null}
       </ul>

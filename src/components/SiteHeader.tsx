@@ -7,7 +7,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-shell py-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <Link href="/" className="group">
+          <Link href="/" className="group min-w-0">
             <p className="brand-sub flex items-center gap-2">
               <span className="monitor-live-dot inline-block shrink-0" aria-hidden />
               Forensic intelligence · live monitor
@@ -16,7 +16,7 @@ export function SiteHeader() {
               Motive Index
             </p>
           </Link>
-          <div className="flex flex-col items-start gap-3 md:items-end">
+          <div className="flex items-center justify-between gap-3 md:flex-col md:items-end">
             <ThemeToggle />
             <SiteNav />
           </div>

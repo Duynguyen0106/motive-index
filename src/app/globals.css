@@ -1138,6 +1138,211 @@ a.monitor-news-headline:hover {
   text-shadow: 0 0 12px rgba(210, 91, 91, 0.25);
 }
 
+/* Primary navigation */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.nav-link:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.nav-link.is-active {
+  border-color: var(--cs-signal);
+  font-weight: 500;
+  color: var(--ink);
+  text-shadow: none;
+}
+
+.nav-link-muted {
+  color: var(--muted);
+}
+
+.nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, box-shadow 0.12s;
+}
+
+.nav-toggle:hover {
+  border-color: var(--cs-signal);
+  color: var(--ink);
+}
+
+.nav-toggle-icon {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  border: none;
+  background: var(--overlay);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.site-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+}
+
+@media (max-width: 767px) {
+  .site-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 300;
+    width: min(18rem, 88vw);
+    height: 100dvh;
+    padding: 5rem 1.25rem 1.5rem;
+    border-left: 1px solid var(--line-strong);
+    background: color-mix(in srgb, var(--cs-void) 96%, transparent);
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+    transform: translateX(105%);
+    transition: transform 0.22s ease;
+    overflow-y: auto;
+  }
+
+  .site-nav.is-open {
+    transform: translateX(0);
+  }
+
+  .site-nav-links {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .site-nav .nav-link {
+    width: 100%;
+    padding: 0.85rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 1rem;
+  }
+
+  .site-nav .nav-link.is-active {
+    border-bottom-color: var(--cs-signal);
+    background: var(--accent-soft);
+  }
+}
+
+html[data-theme="light"] .site-nav {
+  background: color-mix(in srgb, var(--cs-fog) 96%, transparent);
+}
+
+/* Dossier sticky actions */
+.dossier-action-bar {
+  position: fixed;
+  top: 5rem;
+  left: 0;
+  right: 0;
+  z-index: 190;
+  border-bottom: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--cs-void) 94%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: dossier-bar-in 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .dossier-action-bar {
+    top: 4.5rem;
+  }
+}
+
+@keyframes dossier-bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html[data-theme="light"] .dossier-action-bar {
+  background: color-mix(in srgb, var(--cs-fog) 94%, transparent);
+}
+
+.dossier-actions .btn-primary {
+  box-shadow: 0 0 14px rgba(100, 4, 4, 0.2);
+}
+
+.dossier-tab-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 1.5rem,
+    black calc(100% - 1.5rem),
+    transparent
+  );
+}
+
+.dossier-tab-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip-removable {
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.filter-chip-removable:hover {
+  background: var(--accent-soft);
+  border-color: var(--cs-signal);
+  color: var(--ink);
+}
+
+.filter-chip-clear {
+  border-style: dashed;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.filter-chip-clear:hover {
+  border-color: var(--cs-signal);
+  color: var(--cs-signal);
+  background: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--cs-signal);
+  outline-offset: 2px;
+}
+
+.field:focus {
+  outline: none;
+}
+
 .monitor-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

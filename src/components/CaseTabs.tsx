@@ -12,7 +12,7 @@ export function CaseTabs({ slug }: { slug: string }) {
   return (
     <div className="dossier-tabs border-b border-[var(--line-strong)] bg-[var(--bg-subtle)]/80 backdrop-blur-sm">
       <nav
-        className="site-shell flex gap-0 overflow-x-auto"
+        className="site-shell dossier-tab-scroll flex gap-0 overflow-x-auto"
         aria-label="Case sections"
       >
         {CASE_TABS.map((tab) => {

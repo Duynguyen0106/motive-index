@@ -8,8 +8,10 @@ import { CaseTabKeyboardNav } from "@/components/CaseTabKeyboardNav";
 import { CaseNarrativeView } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
+import { DossierActionBar } from "@/components/DossierActionBar";
 import { PsychMap } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
+import { CaseStatusBadge } from "@/components/ui";
 import { getActiveTab, CASE_TABS } from "@/lib/case-tabs";
 import {
   getAllCases,
@@ -99,6 +101,12 @@ export default async function CasePage({ params, searchParams }: Props) {
 
   return (
     <article className="dossier-page pb-16">
+      <DossierActionBar
+        name={crimeCase.name}
+        slug={crimeCase.slug}
+        searchSimilar={searchSimilar}
+        country={country}
+      />
       <header className="dossier-header site-shell py-10 md:py-12">
         <Breadcrumbs
           items={[
@@ -108,10 +116,12 @@ export default async function CasePage({ params, searchParams }: Props) {
             { label: tabLabel },
           ]}
         />
-        <p className="label mt-5">
-          {crimeCase.yearStart}
-          {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location} ·{" "}
-          {crimeCase.status}
+        <p className="label mt-5 flex flex-wrap items-center gap-2">
+          <span>
+            {crimeCase.yearStart}
+            {crimeCase.yearEnd ? `–${crimeCase.yearEnd}` : ""} · {crimeCase.location}
+          </span>
+          <CaseStatusBadge status={crimeCase.status} />
         </p>
         <h1 className="display mt-2 max-w-4xl text-[clamp(2.4rem,6vw,3.75rem)] text-[var(--ink)]">
           {crimeCase.name}
@@ -149,8 +159,8 @@ export default async function CasePage({ params, searchParams }: Props) {
         {!narrative ? (
           <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">{crimeCase.subtitle}</p>
         ) : null}
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Link href={monitorUrlFromFilters({}, crimeCase.slug)} className="btn btn-ghost text-sm">
+        <div className="dossier-actions mt-5 flex flex-wrap gap-2">
+          <Link href={monitorUrlFromFilters({}, crimeCase.slug)} className="btn btn-primary text-sm">
             View on map
           </Link>
           <Link href={searchUrlFromFilters(searchSimilar)} className="btn btn-ghost text-sm">
