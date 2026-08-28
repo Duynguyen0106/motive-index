@@ -227,6 +227,9 @@ function toEnrichment(d: MultilingualCaseDef): CaseEnrichment {
           originalCitation,
           language,
           languageLabel,
+          note:
+            rest.note ??
+            `Primary ${rest.kind} record for verifying behavioral claims; consult original-language citation before citing.`,
         })),
       },
     ),

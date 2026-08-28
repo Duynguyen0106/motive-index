@@ -190,7 +190,8 @@ export function validateSingleReference(
   if (
     isPrimarySourceReference(ref) &&
     !ref.synthetic &&
-    !ref.note?.trim()
+    !ref.note?.trim() &&
+    !ref.originalCitation?.trim()
   ) {
     violations.push({
       level: "warning",

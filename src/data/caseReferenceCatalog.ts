@@ -765,4 +765,394 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
       note: "Two murder convictions; broader series attribution contested.",
     },
   ],
+  "dorothea-puente": [
+    {
+      id: "ref-puente-trial",
+      citation: "People of California v. Dorothea Montalvo Puente (1993) — Sacramento County.",
+      kind: "court",
+      year: "1993",
+      url: "https://en.wikipedia.org/wiki/Dorothea_Puente",
+      note: "Boarding-house fraud and homicide; trust exploitation of elderly tenants.",
+    },
+  ],
+  "clifford-olson": [
+    {
+      id: "ref-olson-trial",
+      citation: "R v Clifford Olson (1982) — British Columbia serial murder series.",
+      kind: "court",
+      year: "1982",
+      url: "https://en.wikipedia.org/wiki/Clifford_Olson",
+      note: "11 victims; controversial plea agreement and forensic linkage record.",
+    },
+  ],
+  "john-christie": [
+    {
+      id: "ref-christie-trial",
+      citation: "R v John Reginald Christie (1953) — Notting Hill murders.",
+      kind: "court",
+      year: "1953",
+      url: "https://en.wikipedia.org/wiki/John_Christie_(serial_killer)",
+      note: "10 Rillington Place victims; contested prior conviction of Evans.",
+    },
+  ],
+  "michel-fourniret": [
+    {
+      id: "ref-fourniret-trial",
+      citation: "Cour d'assises — Michel Fourniret & Monique Olivier (2008).",
+      kind: "court",
+      year: "2008",
+      url: "https://en.wikipedia.org/wiki/Michel_Fourniret",
+      note: "Partnered predation across France and Belgium; accomplice dynamics.",
+    },
+  ],
+  "guy-georges": [
+    {
+      id: "ref-georges-trial",
+      citation: "Cour d'assises de Paris — Guy Georges (2001).",
+      kind: "court",
+      year: "2001",
+      url: "https://en.wikipedia.org/wiki/Guy_Georges",
+      note: "DNA-linked serial rape-murders in Île-de-France.",
+    },
+  ],
+  "fritz-haarmann": [
+    {
+      id: "ref-haarmann-trial",
+      citation: "Hanover serial murders trial — Fritz Haarmann (1924).",
+      kind: "court",
+      year: "1924",
+      url: "https://en.wikipedia.org/wiki/Fritz_Haarmann",
+      note: "Weimar-era case; victim count and cannibalism claims in court record.",
+    },
+  ],
+  "beate-zschaepe": [
+    {
+      id: "ref-nsu-trial",
+      citation: "Munich Higher Regional Court — NSU trial (2013–2018).",
+      kind: "court",
+      year: "2018",
+      url: "https://en.wikipedia.org/wiki/National_Socialist_Underground",
+      note: "Ideological extremism and institutional failure to link xenophobic murders.",
+    },
+  ],
+  "jack-unterweger": [
+    {
+      id: "ref-unterweger-trial",
+      citation: "Austria v. Jack Unterweger (1976; 1992) — murder series.",
+      kind: "court",
+      year: "1992",
+      url: "https://en.wikipedia.org/wiki/Jack_Unterweger",
+      note: "Recidivism after release; journalist double-life presentation.",
+    },
+  ],
+  "monster-of-florence": [
+    {
+      id: "ref-mof-case",
+      citation: "Monster of Florence investigations (1968–1985) — Tuscany.",
+      kind: "report",
+      year: "1985",
+      url: "https://en.wikipedia.org/wiki/Monster_of_Florence",
+      note: "Unsolved double-homicide series; contested suspect identifications.",
+    },
+  ],
+  "willem-van-eijk": [
+    {
+      id: "ref-vaneijk-trial",
+      citation: "Netherlands v. Willem van Eijk (1971–1976).",
+      kind: "court",
+      year: "1976",
+      url: "https://en.wikipedia.org/wiki/Willem_van_Eijk",
+      note: "Healthcare-adjacent trust setting; five confirmed nursing-home homicides.",
+    },
+  ],
+  "malcolm-macarthur": [
+    {
+      id: "ref-macarthur-trial",
+      citation: "R v Malcolm MacArthur (1982) — Dublin murder series.",
+      kind: "court",
+      year: "1982",
+      url: "https://en.wikipedia.org/wiki/Malcolm_MacArthur",
+      note: "GUBU political scandal context; mobile offending in Dublin.",
+    },
+  ],
+  "diogo-alves": [
+    {
+      id: "ref-alves-record",
+      citation: "Diogo Alves — Águas Livres Aqueduct executions (1841).",
+      kind: "court",
+      year: "1841",
+      url: "https://en.wikipedia.org/wiki/Diogo_Alves",
+      note: "Historical Lisbon case; victim counts vary in archival sources.",
+    },
+  ],
+  "moses-sithole": [
+    {
+      id: "ref-sithole-trial",
+      citation: "R v Moses Sithole (1997) — South Africa serial murder series.",
+      kind: "court",
+      year: "1997",
+      url: "https://en.wikipedia.org/wiki/Moses_Sithole",
+      note: "38 murder counts; trust-based rural lures documented at trial.",
+    },
+  ],
+  "serhiy-tkach": [
+    {
+      id: "ref-tkach-trial",
+      citation: "Ukraine v. Serhiy Tkach (2005) — cross-region murder series.",
+      kind: "court",
+      year: "2005",
+      url: "https://en.wikipedia.org/wiki/Serhiy_Tkach",
+      note: "37+ victims; law-enforcement insider status delayed detection.",
+    },
+  ],
+  "bela-kiss": [
+    {
+      id: "ref-kiss-case",
+      citation: "Béla Kiss — Cinkota barrel murders (1916).",
+      kind: "report",
+      year: "1916",
+      url: "https://en.wikipedia.org/wiki/B%C3%A9la_Kiss",
+      note: "WWI-era Hungary; offender escaped; victim totals disputed.",
+    },
+  ],
+  "tsutomu-miyazaki": [
+    {
+      id: "ref-miyazaki-trial",
+      citation: "Tokyo District Court — Tsutomu Miyazaki (1989–1997).",
+      kind: "court",
+      year: "1997",
+      url: "https://en.wikipedia.org/wiki/Tsutomu_Miyazaki",
+      note: "Otaku panic context; child victims in Tokyo suburbs.",
+    },
+  ],
+  "shoko-asahara": [
+    {
+      id: "ref-aum-trial",
+      citation: "Tokyo subway sarin attack trials — Aum Shinrikyo (1995–2004).",
+      kind: "court",
+      year: "2004",
+      url: "https://en.wikipedia.org/wiki/Sarin_gas_attack_on_the_Tokyo_subway",
+      note: "Cult leader conviction; ideological mass-casualty terrorism.",
+    },
+  ],
+  "yoo-young-chul": [
+    {
+      id: "ref-yoo-trial",
+      citation: "South Korea v. Yoo Young-chul (2004).",
+      kind: "court",
+      year: "2004",
+      url: "https://en.wikipedia.org/wiki/Yoo_Young-chul",
+      note: "20 victims; misogynistic grievance themes in public record.",
+    },
+  ],
+  "yang-xinhai": [
+    {
+      id: "ref-yang-trial",
+      citation: "China v. Yang Xinhai (2003) — Henan–Hebei murder series.",
+      kind: "court",
+      year: "2003",
+      url: "https://en.wikipedia.org/wiki/Yang_Xinhai",
+      note: "67 confirmed homicides; rural home-invasion pattern.",
+    },
+  ],
+  "surinder-koli": [
+    {
+      id: "ref-nithari-trial",
+      citation: "Nithari serial murders — Surinder Koli convictions (2006).",
+      kind: "court",
+      year: "2006",
+      url: "https://en.wikipedia.org/wiki/Nithari_serial_murders",
+      note: "Domestic-worker setting; organ-harvest rumors contested in court.",
+    },
+  ],
+  "charles-sobhraj": [
+    {
+      id: "ref-sobhraj-trial",
+      citation: "Charles Sobhraj — Thailand/Nepal murder convictions (1970s–2022).",
+      kind: "court",
+      year: "2022",
+      url: "https://en.wikipedia.org/wiki/Charles_Sobhraj",
+      note: "Hippie-trail mobile offending; charm-based victim selection.",
+    },
+  ],
+  "adrian-lim": [
+    {
+      id: "ref-lim-trial",
+      citation: "R v Adrian Lim et al. (1988) — Toa Payoh ritual murders.",
+      kind: "court",
+      year: "1988",
+      url: "https://en.wikipedia.org/wiki/Toa_Payoh_ritual_murders",
+      note: "Occult belief system and child victims; Singapore landmark trial.",
+    },
+  ],
+  "chen-chin-hsing": [
+    {
+      id: "ref-chen-crisis",
+      citation: "1997 Taipei hostage crisis — Chen Chin-hsing.",
+      kind: "court",
+      year: "1997",
+      url: "https://en.wikipedia.org/wiki/Chen_Chin-hsing",
+      note: "Hostage siege and prior murder series; media-saturated manhunt.",
+    },
+  ],
+  "luis-garavito": [
+    {
+      id: "ref-garavito-trial",
+      citation: "Colombia v. Luis Garavito (1999) — 'La Bestia' murder series.",
+      kind: "court",
+      year: "1999",
+      url: "https://en.wikipedia.org/wiki/Luis_Garavito",
+      note: "190+ confessed child homicides; victim selection among street children.",
+    },
+  ],
+  "pedro-rodrigues-filho": [
+    {
+      id: "ref-pedrinho-trial",
+      citation: "Brazil v. Pedro Rodrigues Filho (1973–2003).",
+      kind: "court",
+      year: "2003",
+      url: "https://en.wikipedia.org/wiki/Pedro_Rodrigues_Filho",
+      note: "71 claimed victims; prison and vigilante killings in record.",
+    },
+  ],
+  "carlos-robledo-puch": [
+    {
+      id: "ref-robledo-trial",
+      citation: "Argentina v. Carlos Robledo Puch (1972).",
+      kind: "court",
+      year: "1972",
+      url: "https://en.wikipedia.org/wiki/Robledo_Puch",
+      note: "Youthful offender series; life imprisonment at age 20.",
+    },
+  ],
+  "adolfo-constanzo": [
+    {
+      id: "ref-constanzo-case",
+      citation: "Adolfo Constanzo cult murders — Matamoros (1989).",
+      kind: "court",
+      year: "1989",
+      url: "https://en.wikipedia.org/wiki/Adolfo_Constanzo",
+      note: "Narco-satanist ritual violence; law-enforcement raid record.",
+    },
+  ],
+  "gracious-david-west": [
+    {
+      id: "ref-west-ng-trial",
+      citation: "Rivers State v. Gracious David-West (2019) — Port Harcourt.",
+      kind: "court",
+      year: "2019",
+      url: "https://en.wikipedia.org/wiki/Gracious_David-West",
+      note: "Hotel pickup homicides; rapid series in single city.",
+    },
+  ],
+  "philip-onyancha": [
+    {
+      id: "ref-onyancha-trial",
+      citation: "Republic v Philip Ondara Onyancha — Kenya High Court murder trials (2010–2021).",
+      kind: "court",
+      year: "2010",
+      url: "https://www.tuko.co.ke/418129-philip-onyancha-court-sets-free-man-confessed-killing-17-women-lack-evidence.html",
+      note: "17 victims claimed; confession admissibility and acquittals in public record.",
+    },
+  ],
+  "peter-lundin": [
+    {
+      id: "ref-lundin-trial",
+      citation: "Denmark v. Peter Lundin (1991; 2000).",
+      kind: "court",
+      year: "2000",
+      url: "https://en.wikipedia.org/wiki/Peter_Lundin",
+      note: "Transnational family homicides; prior US manslaughter conviction.",
+    },
+  ],
+  "lake-bodom": [
+    {
+      id: "ref-bodom-case",
+      citation: "Lake Bodom murders (1960) — Finland unsolved.",
+      kind: "report",
+      year: "1960",
+      url: "https://en.wikipedia.org/wiki/Lake_Bodom_murders",
+      note: "Three teen victims; sole survivor; contested suspect attributions.",
+    },
+  ],
+  "mona-fandey": [
+    {
+      id: "ref-fandey-trial",
+      citation: "Malaysia v. Maznah Ismail (Mona Fandey) (1993).",
+      kind: "court",
+      year: "1994",
+      url: "https://en.wikipedia.org/wiki/Mona_Fandey",
+      note: "Occult practitioner; dismemberment of politician client.",
+    },
+  ],
+  "amrozi-nurhasyim": [
+    {
+      id: "ref-bali-trial",
+      citation: "2002 Bali bombings trials — Amrozi Nurhasyim et al.",
+      kind: "court",
+      year: "2003",
+      url: "https://en.wikipedia.org/wiki/2002_Bali_bombings",
+      note: "Jemaah Islamiyah mass-casualty attack; ideological terrorism record.",
+    },
+  ],
+  "ramadan-mansour": [
+    {
+      id: "ref-mansour-trial",
+      citation: "Egypt v. Ramadan Mansour (2006) — Cairo railway-area murders.",
+      kind: "court",
+      year: "2006",
+      url: "https://en.wikipedia.org/wiki/Ramadan_Mansour",
+      note: "32 youth victims near Ramses Station; strangulation pattern.",
+    },
+  ],
+  "abimael-guzman": [
+    {
+      id: "ref-guzman-trial",
+      citation: "Peru v. Abimael Guzmán — Shining Path terrorism trial (2006).",
+      kind: "court",
+      year: "2006",
+      url: "https://en.wikipedia.org/wiki/Abimael_Guzm%C3%A1n",
+      note: "Maoist insurgency leader; mass violence and ideological coercion.",
+    },
+  ],
+  "wayne-boden": [
+    {
+      id: "ref-boden-trial",
+      citation: "R v Wayne Clifford Boden (1971) — Canadian serial murders.",
+      kind: "court",
+      year: "1971",
+      url: "https://en.wikipedia.org/wiki/Wayne_Boden",
+      note: "Early forensic odontology bite-mark linkage across provinces.",
+    },
+  ],
+  "anatoly-slivko": [
+    {
+      id: "ref-slivko-trial",
+      citation: "USSR v. Anatoly Slivko (1964–1985).",
+      kind: "court",
+      year: "1985",
+      url: "https://en.wikipedia.org/wiki/Anatoly_Slivko",
+      note: "Youth camp leader; staged 'accident' filming of victims.",
+    },
+  ],
+  "earle-nelson": [
+    {
+      id: "ref-nelson-trial",
+      citation: "People v. Earle Nelson (1927) — Gorilla Killer series.",
+      kind: "court",
+      year: "1927",
+      url: "https://en.wikipedia.org/wiki/Earle_Nelson",
+      note: "Cross-country US/Canada murders; historical psychiatric debate.",
+    },
+  ],
+  "bruno-ludke": [
+    {
+      id: "ref-ludke-case",
+      citation: "Bruno Lüdke investigations (1937–1943) — Nazi Germany.",
+      kind: "report",
+      year: "1943",
+      url: "https://en.wikipedia.org/wiki/Bruno_L%C3%BCdke",
+      note: "Confession under Nazi police; victim count and culpability disputed by historians.",
+    },
+  ],
 };
