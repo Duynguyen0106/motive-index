@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { OpenDossierLink } from "@/components/OpenDossierLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -1088,13 +1089,9 @@ export function WorldMonitor({ initial }: Props) {
                         )}
                       </button>
                       {active ? (
-                        <Link
-                          href={`/cases/${c.slug}`}
-                          className="monitor-case-dossier-link"
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                        <OpenDossierLink slug={c.slug} className="monitor-case-dossier-link">
                           Open dossier →
-                        </Link>
+                        </OpenDossierLink>
                       ) : null}
                     </li>
                   );
@@ -1112,9 +1109,9 @@ export function WorldMonitor({ initial }: Props) {
                   <p className="text-sm font-medium text-[var(--ink)]">{selectedCase.name}</p>
                   <p className="mt-1 text-xs text-[var(--muted)]">
                     This case has no map coordinates.{" "}
-                    <Link href={`/cases/${selectedCase.slug}`} className="text-[var(--accent)] hover:underline">
+                    <OpenDossierLink slug={selectedCase.slug} className="text-[var(--accent)] hover:underline">
                       Open dossier
-                    </Link>
+                    </OpenDossierLink>
                   </p>
                 </div>
               ) : null}

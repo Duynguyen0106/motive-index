@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { OpenDossierLink } from "@/components/OpenDossierLink";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
 import { MonitorMapOverlay } from "@/components/MonitorMapOverlay";
@@ -228,6 +228,24 @@ export function CaseWorldMap({
 
         const arcsLayer = L.layerGroup().addTo(map);
         arcsLayerRef.current = arcsLayer;
+
+        map.on("popupopen", (ev) => {
+          const root = ev.popup.getElement();
+          if (!root) return;
+          L.DomEvent.disableClickPropagation(root);
+          L.DomEvent.disableScrollPropagation(root);
+          root.querySelectorAll("a[href^='/cases/']").forEach((anchor) => {
+            const el = anchor as HTMLAnchorElement;
+            if (el.dataset.dossierBound) return;
+            el.dataset.dossierBound = "1";
+            el.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const href = el.getAttribute("href");
+              if (href) window.location.assign(href);
+            });
+          });
+        });
 
         mapRef.current = map;
         setReady(true);
@@ -829,9 +847,9 @@ export function MonitorCaseCard({
         </p>
       ) : null}
       <div className="mt-4 flex flex-col gap-2">
-        <Link href={`/cases/${pin.slug}`} className="btn btn-primary block text-center text-sm">
+        <OpenDossierLink slug={pin.slug} className="btn btn-primary block text-center text-sm">
           Open dossier →
-        </Link>
+        </OpenDossierLink>
         <ShareMonitorLink slug={pin.slug} />
       </div>
     </div>

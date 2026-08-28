@@ -1847,6 +1847,13 @@ a.monitor-news-headline:hover {
   margin-top: 0.35rem;
   color: var(--accent);
   font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.monitor-popup-link:hover {
+  color: var(--cs-signal);
 }
 
 .monitor-map-controls-head {
@@ -2010,7 +2017,8 @@ a.monitor-news-headline:hover {
   position: absolute;
   top: 4.5rem;
   right: 0.75rem;
-  z-index: 480;
+  z-index: 1100;
+  pointer-events: auto;
   width: min(300px, calc(100% - 1.5rem));
   padding: 0;
   border: 1px solid var(--line-strong);

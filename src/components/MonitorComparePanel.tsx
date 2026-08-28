@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { OpenDossierLink } from "@/components/OpenDossierLink";
 import { COUNTRY_LABELS } from "@/lib/country";
 import type { MonitorCasePin } from "@/lib/geo";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
@@ -61,9 +61,9 @@ function CompareColumn({ pin, label }: { pin: MonitorCasePin; label: string }) {
           </dd>
         </div>
       </dl>
-      <Link href={`/cases/${pin.slug}`} className="btn btn-ghost mt-3 block text-center text-xs">
+      <OpenDossierLink slug={pin.slug} className="btn btn-ghost mt-3 block text-center text-xs">
         Open dossier →
-      </Link>
+      </OpenDossierLink>
     </div>
   );
 }
