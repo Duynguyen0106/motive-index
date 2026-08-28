@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks, StatBar } from "@/components/ui";
 import { toCaseArchiveSummary } from "@/lib/caseSummaries";
 import { listCountryOptions } from "@/lib/country";
-import { getAllCases, getCaseOfWeek, getUpdates, searchCasesFrom } from "@/lib/data";
+import { getPublicCases, getCaseOfWeek, getUpdates, searchCasesFrom } from "@/lib/data";
 import {
   DEFAULT_ARCHIVE_PAGE_SIZE,
   paginateCases,
@@ -44,7 +44,7 @@ export default async function ArchivePage({ searchParams }: Props) {
 
   const sort = parseArchiveSort(typeof raw.sort === "string" ? raw.sort : undefined);
 
-  const allCases = getAllCases();
+  const allCases = getPublicCases();
   const filtered = sortArchiveCases(searchCasesFrom(allCases, filters), sort);
   const paginated = paginateCases(filtered, page, pageSize);
   const summaries = paginated.items.map(toCaseArchiveSummary);

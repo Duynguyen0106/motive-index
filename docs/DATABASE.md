@@ -79,6 +79,13 @@ Rules enforced:
 
 Draft/moderation dossiers are excluded from `sitemap.xml` and carry `noindex` robots metadata.
 
+Runtime store check (after ingest or before deploy):
+
+```bash
+npm run validate:store
+```
+
+## Local development
 
 - Data is seeded from `src/data/seed.ts` and catalog enrichments on first run.
 - Writes persist atomically to `.data/store.json`.

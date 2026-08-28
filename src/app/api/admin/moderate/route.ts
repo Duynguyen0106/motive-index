@@ -44,22 +44,27 @@ export async function POST(req: Request) {
   }
 
   if (parsed.data.action === "approve") {
-    const published = publishCase(parsed.data.slug, session.email);
-    if (!published) {
-      return NextResponse.json({ error: "Publish failed" }, { status: 500 });
+    try {
+      const published = publishCase(parsed.data.slug, session.email);
+      if (!published) {
+        return NextResponse.json({ error: "Publish failed" }, { status: 500 });
+      }
+      await syncAfterCaseWrite(published);
+      const update = addUpdate({
+        id: `upd-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        headline: `Published after moderation: ${published.name}`,
+        summary: parsed.data.note || `Approved by ${session.email}`,
+        caseSlug: published.slug,
+        kind: "analysis_ready",
+        status: "published",
+      });
+      await syncAfterUpdateWrite(update);
+      return NextResponse.json({ case: published, action: "approve" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Publish validation failed";
+      return NextResponse.json({ error: message }, { status: 422 });
     }
-    await syncAfterCaseWrite(published);
-    const update = addUpdate({
-      id: `upd-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      headline: `Published after moderation: ${published.name}`,
-      summary: parsed.data.note || `Approved by ${session.email}`,
-      caseSlug: published.slug,
-      kind: "analysis_ready",
-      status: "published",
-    });
-    await syncAfterUpdateWrite(update);
-    return NextResponse.json({ case: published, action: "approve" });
   }
 
   const rejected = rejectCase(parsed.data.slug, session.email, parsed.data.note);

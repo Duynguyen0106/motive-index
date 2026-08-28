@@ -1,4 +1,5 @@
 import type { CaseNarrative, DossierChapter } from "@/lib/types";
+import { isProceduralNarrativeCase } from "@/lib/casePublishState";
 
 const CHAPTER_ORDER: DossierChapter["id"][] = [
   "origins",
@@ -72,13 +73,16 @@ function ChapterBlock({ chapter }: { chapter: DossierChapter }) {
 export function CaseNarrativeView({
   narrative,
   isDraft,
+  caseTags = [],
 }: {
   narrative: CaseNarrative;
   isDraft?: boolean;
+  caseTags?: string[];
 }) {
   const chapters = CHAPTER_ORDER.map((id) => narrative.chapters.find((c) => c.id === id)).filter(
     Boolean,
   ) as DossierChapter[];
+  const procedural = isProceduralNarrativeCase({ tags: caseTags, narrative });
 
   return (
     <div className="case-narrative grid w-full min-w-0 max-w-full gap-10 overflow-x-clip lg:grid-cols-[11rem_minmax(0,1fr)]">
@@ -98,6 +102,16 @@ export function CaseNarrativeView({
         <div className="note lg:col-span-2 text-sm">
           <p className="label mb-1">Dossier provenance</p>
           <p className="text-[var(--ink-soft)]">{narrative.reviewNote}</p>
+        </div>
+      ) : null}
+      {!isDraft && procedural ? (
+        <div className="note lg:col-span-2 text-sm">
+          <p className="label mb-1">Procedural narrative</p>
+          <p className="text-[var(--ink-soft)]">
+            Story chapters were expanded from catalog metadata using forensic-documentary templates.
+            They are hypotheses and context — not verified biography. Cross-check the References tab
+            before citing specific claims.
+          </p>
         </div>
       ) : null}
       <nav className="story-chapter-nav min-w-0 max-w-full lg:hidden" aria-label="Story chapters">

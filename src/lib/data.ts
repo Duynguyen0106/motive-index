@@ -28,7 +28,8 @@ import { invalidateArchiveStatsCache } from "@/lib/archiveStats";
 import { matchesCatalogTier } from "@/lib/caseSummaries";
 import { assertPublishableCase } from "@/lib/validation/caseProvenance";
 import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
-import { assertNoDirectPublish } from "@/lib/casePublishState";
+import { filterPublicCases, isModerationDraftCase } from "@/lib/casePublishState";
+import { assertRuntimeCaseWrite, assertModerationPublishReady } from "@/lib/validation/runtimeWriteGuard";
 
 type Store = {
   cases: CrimeCase[];
@@ -102,6 +103,11 @@ export function getAllCases(): CrimeCase[] {
   return getStore()
     .cases.slice()
     .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+}
+
+/** Published catalog excluding moderation/live-ingest drafts. */
+export function getPublicCases(): CrimeCase[] {
+  return filterPublicCases(getAllCases());
 }
 
 export function getPublishedCases(): CrimeCase[] {
@@ -191,13 +197,21 @@ export function getAnalyses() {
 }
 
 export function searchCases(filters: SearchFilters): CrimeCase[] {
-  return searchCasesFrom(getAllCases(), filters);
+  return searchCasesFrom(getPublicCases(), filters);
 }
 
-export function searchCasesFrom(cases: CrimeCase[], filters: SearchFilters): CrimeCase[] {
+export type SearchCasesOpts = { includeModerationDrafts?: boolean };
+
+export function searchCasesFrom(
+  cases: CrimeCase[],
+  filters: SearchFilters,
+  opts?: SearchCasesOpts,
+): CrimeCase[] {
+  const pool =
+    opts?.includeModerationDrafts === true ? cases : filterPublicCases(cases);
   const q = filters.q?.trim().toLowerCase() ?? "";
 
-  return cases.filter((c) => {
+  return pool.filter((c) => {
     if (filters.crimeCategory && !c.crimeCategories.includes(filters.crimeCategory)) {
       return false;
     }
@@ -302,7 +316,7 @@ export function upsertCase(
   const idx = store.cases.findIndex((c) => c.id === next.id || c.slug === next.slug);
   const existing = idx >= 0 ? store.cases[idx] : undefined;
   if (!opts?.bypassPublishGate) {
-    assertNoDirectPublish(existing, next);
+    assertRuntimeCaseWrite(existing, next);
   }
   if (idx >= 0) store.cases[idx] = next;
   else store.cases = [next, ...store.cases];
@@ -349,6 +363,20 @@ export function getModerationQueue(): CrimeCase[] {
 export function publishCase(slug: string, reviewerEmail: string): CrimeCase | undefined {
   const existing = getCaseBySlug(slug);
   if (!existing) return undefined;
+
+  assertModerationPublishReady({
+    slug: existing.slug,
+    tags: existing.tags.filter(
+      (t) =>
+        !["awaiting-moderation", "draft", "rejected", "narrative-draft", "narrative-pending"].includes(
+          t,
+        ),
+    ),
+    references: existing.references,
+    offenderName: existing.offenders?.[0]?.name,
+    name: existing.name,
+    analysisStatus: "published",
+  });
 
   assertPublishableCase({
     slug: existing.slug,

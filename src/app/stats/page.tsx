@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StatsExpandableChart } from "@/components/StatsExpandableChart";
 import { QuickLinks, StatBar } from "@/components/ui";
 import { getCachedArchiveStats } from "@/lib/archiveStats";
-import { getAllCases } from "@/lib/data";
+import { getPublicCases } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Archive statistics",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function StatsPage() {
-  const stats = getCachedArchiveStats(getAllCases(), {
+  const stats = getCachedArchiveStats(getPublicCases(), {
     country: 50,
     category: 20,
     psychFactor: 20,

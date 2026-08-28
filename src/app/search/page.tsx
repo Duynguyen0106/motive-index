@@ -16,7 +16,7 @@ import {
 } from "@/lib/types";
 import type { CrimeCategory, CountryCode, DocumentType, PsychologicalFactor, TheoreticalFramework } from "@/lib/types";
 import { COUNTRY_LABELS, listCountryOptions, resolveCaseCountry } from "@/lib/country";
-import { getAllCases } from "@/lib/data";
+import { getPublicCases } from "@/lib/data";
 import {
   DEFAULT_ARCHIVE_PAGE_SIZE,
   DEFAULT_DOC_PAGE_SIZE,
@@ -58,7 +58,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const cases = paginated.items;
   const documents = paginatedDocs.items;
   const searchOpts = { pageSize, sort, docPage, docPageSize };
-  const countryOptions = listCountryOptions(getAllCases());
+  const countryOptions = listCountryOptions(getPublicCases());
   const hasQuery = hasActiveFilters(filters);
   const focusSearch = raw.focus === "1" || raw.focus === "true";
   const monitorHref = monitorUrlFromFilters({

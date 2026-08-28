@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { buildDeepForensicAnalysis } from "@/lib/deepAnalysis";
+import { normalizeAnalysisDraft } from "@/lib/validation/analysisDraft";
 import type {
   BehaviorSignal,
   ForensicAnalysis,
@@ -227,7 +228,7 @@ export async function analyzeWithOptionalLLM(input: {
     if (!parsed.success) {
       return fallback();
     }
-    return parsed.data;
+    return normalizeAnalysisDraft(parsed.data, ANALYSIS_MODEL_VERSION);
   } catch {
     return fallback();
   }

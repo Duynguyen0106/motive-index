@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllCases, searchCasesFrom } from "@/lib/data";
+import { getPublicCases, searchCasesFrom } from "@/lib/data";
 import { resolveCaseCountry } from "@/lib/country";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   const q = url.searchParams.get("q")?.trim() ?? "";
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 20), 1), 50);
 
-  const all = getAllCases();
+  const all = getPublicCases();
 
   if (q) {
     const hits = searchCasesFrom(all, { q }).slice(0, limit).map((c) => ({

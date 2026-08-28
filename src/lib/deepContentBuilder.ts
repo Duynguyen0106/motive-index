@@ -228,13 +228,18 @@ function buildCoreNarrative(
 
   const expandedOverview = buildExpandedOverview(ctx);
   const hookSent = ctx.sentences[0] ?? expandedOverview;
+  const hasHandAuthoredDepth = Boolean(CASE_DEPTH_OVERRIDES[d.slug]);
 
   return {
     hook: `${d.subtitle} — ${hookSent.slice(0, 220)}${hookSent.length > 220 ? "…" : ""}`,
     chapters,
-    source: "human",
+    source: hasHandAuthoredDepth ? "human" : "heuristic",
     generatedAt: new Date().toISOString(),
-    reviewNote: opts?.reviewNote,
+    reviewNote:
+      opts?.reviewNote ??
+      (hasHandAuthoredDepth
+        ? undefined
+        : "Narrative expanded algorithmically from case metadata and category heuristics — not sourced line-by-line to References. Verify factual claims before citation."),
   };
 }
 

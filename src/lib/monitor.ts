@@ -1,3 +1,4 @@
+import { filterPublicCases } from "@/lib/casePublishState";
 import { searchCasesFrom } from "@/lib/data";
 import { getAllCasesAsync, getUpdatesAsync } from "@/lib/dataServer";
 import { toMonitorCaseSummary, getProvenanceTier } from "@/lib/caseSummaries";
@@ -82,7 +83,7 @@ export async function buildMonitorPayload(
   updateLimit = 24,
 ): Promise<MonitorPayload> {
   const filters = parseSearchParams(params);
-  const all = await getAllCasesAsync();
+  const all = filterPublicCases(await getAllCasesAsync());
   const cases = searchCasesFrom(all, filters);
   const rawPins = cases
     .map((c) => {
@@ -171,7 +172,7 @@ export async function buildMonitorDelta(
   updateLimit = 24,
 ): Promise<MonitorDeltaPayload> {
   const filters = parseSearchParams(params);
-  const all = await getAllCasesAsync();
+  const all = filterPublicCases(await getAllCasesAsync());
   const cases = searchCasesFrom(all, filters);
   const updates = await getUpdatesAsync(updateLimit);
   const countryStats = buildCountryStats(cases, all);

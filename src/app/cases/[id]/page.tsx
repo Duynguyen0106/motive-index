@@ -303,6 +303,7 @@ export default async function CasePage({ params, searchParams }: Props) {
           <CaseNarrativeView
             narrative={narrative}
             isDraft={crimeCase.analysis.status !== "published"}
+            caseTags={crimeCase.tags}
           />
         ) : null}
 

@@ -5,7 +5,7 @@ import { LivePageSync } from "@/components/LivePageSync";
 import { PageHeader } from "@/components/PageHeader";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
-import { getAllCases, getUpdates, getUpdatesTotal } from "@/lib/data";
+import { getPublicCases, getUpdates, getUpdatesTotal } from "@/lib/data";
 import { buildWorldNewsPayload } from "@/lib/worldNewsService";
 import { WORLD_NEWS_DISPLAY_LIMIT, WORLD_NEWS_FEED_COUNT } from "@/lib/worldNews";
 import { parseNewsFilter } from "@/lib/newsFeedUtils";
@@ -26,7 +26,7 @@ export default async function LivePage({ searchParams }: Props) {
   const newsFilter = parseNewsFilter(
     typeof raw.newsFilter === "string" ? raw.newsFilter : null,
   );
-  const countryOptions = listCountryOptions(getAllCases());
+  const countryOptions = listCountryOptions(getPublicCases());
   const country =
     countryParam && countryOptions.includes(countryParam as CountryCode)
       ? (countryParam as CountryCode)

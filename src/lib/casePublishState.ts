@@ -28,6 +28,24 @@ export function isEncyclopedicImportCase(c: Pick<CrimeCase, "tags">): boolean {
   return c.tags.includes("wikidata-import") || c.tags.includes("wikipedia-sourced");
 }
 
+/** Catalog entries visible in archive, monitor, search, and public APIs. */
+export function isPublicCatalogCase(c: Pick<CrimeCase, "tags" | "analysis">): boolean {
+  return !isModerationDraftCase(c);
+}
+
+export function filterPublicCases(cases: CrimeCase[]): CrimeCase[] {
+  return cases.filter(isPublicCatalogCase);
+}
+
+/** Procedurally expanded catalog narrative (not hand-authored or LLM). */
+export function isProceduralNarrativeCase(
+  c: Pick<CrimeCase, "tags" | "narrative">,
+): boolean {
+  if (!c.narrative) return false;
+  if (c.narrative.source === "human") return false;
+  return c.tags.includes("deep-dossier") || c.narrative.source === "heuristic";
+}
+
 export function assertNoDirectPublish(
   existing: CrimeCase | undefined,
   next: CrimeCase,
