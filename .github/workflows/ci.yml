@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, "cursor/**"]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Validate catalog
+        run: npm run validate:catalog
+
+      - name: Reseed store for runtime validation
+        run: npm run db:seed-store
+
+      - name: Validate persisted store
+        run: npm run validate:store
+
+      - name: Production build
+        run: npm run build
+        env:
+          AUTH_SECRET: ci-test-secret
+          ADMIN_EMAIL: ci@test.local
+          ADMIN_PASSWORD: ci-test-password

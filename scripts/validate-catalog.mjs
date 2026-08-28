@@ -4,6 +4,7 @@
  * Orchestrates definition, structural, and source-accuracy checks.
  */
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -46,3 +47,22 @@ if (failed > 0) {
 }
 
 console.log("=== All catalog validation steps passed ===");
+
+console.log("\n-- Runtime store (optional) --");
+const storePath = join(root, ".data", "store.json");
+if (fs.existsSync(storePath)) {
+  const storeResult = spawnSync("npm", ["run", "validate:store"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  const storeOut = `${storeResult.stdout ?? ""}${storeResult.stderr ?? ""}`.trim();
+  if (storeOut) console.log(storeOut);
+  if (storeResult.status !== 0) {
+    console.log("\n✗ Runtime store validation failed\n");
+    process.exit(1);
+  }
+  console.log("\n✓ Runtime store validation passed\n");
+} else {
+  console.log("No .data/store.json — run npm run db:seed-store to validate runtime store.\n");
+}

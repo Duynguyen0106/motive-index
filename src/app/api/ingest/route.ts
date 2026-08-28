@@ -14,6 +14,7 @@ const bodySchema = z.object({
   summary: z.string().min(3),
   jurisdiction: z.string().default("Unspecified"),
   name: z.string().optional(),
+  sourceUrl: z.string().url().optional(),
 });
 
 function slugify(input: string): string {
@@ -83,8 +84,23 @@ export async function POST(req: Request) {
     ],
     signals: [],
     documentIds: [],
-    references: [],
-    sources: [{ title: "Ingest payload (public summary)", kind: "news" }],
+    references: parsed.data.sourceUrl
+      ? [
+          {
+            id: `ref-${slug}`,
+            citation: parsed.data.headline,
+            kind: "media" as const,
+            url: parsed.data.sourceUrl,
+          },
+        ]
+      : [],
+    sources: [
+      {
+        title: parsed.data.headline,
+        url: parsed.data.sourceUrl,
+        kind: "news" as const,
+      },
+    ],
     analysis,
     featured: false,
   };

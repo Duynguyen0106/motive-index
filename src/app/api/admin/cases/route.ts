@@ -8,6 +8,13 @@ import type { CrimeCase, CrimeCategory } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+const referenceSchema = z.object({
+  citation: z.string().min(3),
+  url: z.union([z.string().url(), z.literal("")]).optional(),
+  kind: z.enum(["court", "media", "report", "book", "journal"]).default("media"),
+  note: z.string().optional(),
+});
+
 const bodySchema = z.object({
   name: z.string().min(2),
   subtitle: z.string().default(""),
@@ -20,6 +27,7 @@ const bodySchema = z.object({
   overview: z.string().min(10),
   warning: z.string().default("Draft case created in admin."),
   offenderName: z.string().optional(),
+  references: z.array(referenceSchema).optional(),
 });
 
 function slugify(input: string): string {
@@ -47,6 +55,13 @@ export async function POST(req: Request) {
   if (getCaseBySlug(slug)) slug = `${slug}-${Date.now().toString(36)}`;
   const id = `case-${Date.now()}`;
   const year = data.yearStart ?? new Date().getFullYear();
+  const references = (data.references ?? []).map((r, i) => ({
+    id: `ref-${slug}-${i}`,
+    citation: r.citation,
+    kind: r.kind,
+    url: r.url?.trim() || undefined,
+    note: r.note,
+  }));
 
   const crimeCase: CrimeCase = {
     id,
@@ -61,7 +76,7 @@ export async function POST(req: Request) {
     era: String(year),
     status: data.status,
     crimeCategories: data.crimeCategories as CrimeCategory[],
-    tags: ["admin-created"],
+    tags: ["admin-created", "awaiting-moderation", "draft"],
     psychologicalFactors: [],
     theoreticalFrameworks: [],
     diagnoses: [],
@@ -94,8 +109,15 @@ export async function POST(req: Request) {
     ],
     signals: [],
     documentIds: [],
-    references: [],
-    sources: [{ title: "Admin creation form", kind: "primary" }],
+    references,
+    sources: [
+      { title: "Admin creation form", kind: "primary" },
+      ...references.slice(0, 2).map((r) => ({
+        title: r.citation.slice(0, 120),
+        url: r.url,
+        kind: "news" as const,
+      })),
+    ],
     analysis: {
       status: "pending",
       summary: "Awaiting forensic analysis.",

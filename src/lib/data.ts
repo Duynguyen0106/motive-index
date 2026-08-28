@@ -28,7 +28,7 @@ import { invalidateArchiveStatsCache } from "@/lib/archiveStats";
 import { matchesCatalogTier } from "@/lib/caseSummaries";
 import { assertPublishableCase } from "@/lib/validation/caseProvenance";
 import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
-import { filterPublicCases, isModerationDraftCase } from "@/lib/casePublishState";
+import { filterPublicCases } from "@/lib/casePublishState";
 import { assertRuntimeCaseWrite, assertModerationPublishReady } from "@/lib/validation/runtimeWriteGuard";
 
 type Store = {
@@ -451,7 +451,7 @@ export function rejectCase(
     analysis: {
       ...existing.analysis,
       status: "draft",
-      reviewedByHuman: true,
+      reviewedByHuman: false,
       updatedAt: new Date().toISOString(),
       summary: `${existing.analysis.summary}\n\n[Rejected by ${reviewerEmail}] ${note ?? ""}`.trim(),
     },
