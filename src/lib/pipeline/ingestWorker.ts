@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { analyzeFromSignals } from "@/lib/analyze";
-import { addUpdate, getAllCases, getCaseBySlug, getUpdates, upsertCase } from "@/lib/data";
+import { addUpdate, getAllCases, getCaseBySlug, upsertCase } from "@/lib/data";
 import {
   applyNarrativeToCase,
   generateCaseNarrative,
@@ -397,46 +397,14 @@ export function getRecentJobs(limit = 20) {
   }
 }
 
-/** Ingest live world crime news as published LiveUpdate rows (no draft cases). */
+/** Warm the live RSS cache — crime news is served via worldNews payload, not updates. */
 export async function runWorldNewsPipeline(limit = 12): Promise<{
   fetched: number;
-  added: number;
+  cached: number;
   skipped: number;
 }> {
-  const existing = new Set(
-    getUpdates(200).map((u) => u.headline.toLowerCase().slice(0, 60)),
-  );
   const items = await fetchLiveWorldNews(limit * 2);
-  let added = 0;
-  let skipped = 0;
-
-  for (const item of items) {
-    if (added >= limit) break;
-    const key = item.headline.toLowerCase().slice(0, 60);
-    if (existing.has(key)) {
-      skipped += 1;
-      continue;
-    }
-    addUpdate({
-      id: item.id,
-      createdAt: item.createdAt,
-      headline: item.headline,
-      summary: item.summary,
-      kind: "world_news",
-      status: "published",
-      country: item.country,
-      region: item.region,
-      sourceUrl: item.sourceUrl,
-      sourceName: item.sourceName,
-      language: item.language,
-      languageLabel: item.languageLabel,
-      originalHeadline: item.originalHeadline,
-      caseSlug: item.caseSlug,
-    });
-    existing.add(key);
-    added += 1;
-  }
-
-  logJob({ type: "world-news", fetched: items.length, added, skipped });
-  return { fetched: items.length, added, skipped };
+  const cached = Math.min(items.length, limit);
+  logJob({ type: "world-news", fetched: items.length, cached, skipped: 0 });
+  return { fetched: items.length, cached, skipped: 0 };
 }

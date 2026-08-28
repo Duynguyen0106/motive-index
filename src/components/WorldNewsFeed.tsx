@@ -22,7 +22,6 @@ import { formatDate, formatNewsAge } from "@/lib/utils";
 type Props = {
   initial: WorldNewsPayload;
   countryFilter?: CountryCode | "";
-  updates?: import("@/lib/types").LiveUpdate[];
   onSelectCase?: (slug: string) => void;
   onPlotOnMap?: (slug: string) => void;
   onShowNewsLayer?: () => void;
@@ -155,7 +154,6 @@ function NewsCard({
 export function WorldNewsFeed({
   initial,
   countryFilter = "",
-  updates = [],
   onSelectCase,
   onPlotOnMap,
   onShowNewsLayer,
@@ -217,8 +215,8 @@ export function WorldNewsFeed({
   }, [fetchNews, disablePolling]);
 
   const hotLookup = useMemo(
-    () => buildHotNewsLookup(updates, payload.items),
-    [updates, payload.items],
+    () => buildHotNewsLookup(payload.items),
+    [payload.items],
   );
 
   const filterCounts = useMemo(

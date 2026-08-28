@@ -23,6 +23,7 @@ import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
 import { searchUrlFromFilters, paginateCases, DEFAULT_ARCHIVE_PAGE_SIZE } from "@/lib/search";
+import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
 import type { NewsFeedFilter } from "@/lib/newsFeedUtils";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
@@ -168,6 +169,10 @@ export function WorldMonitor({ initial }: Props) {
   const paginatedCases = useMemo(
     () => paginateCases(displayCases, casesPage, MONITOR_CASES_PAGE_SIZE),
     [displayCases, casesPage],
+  );
+  const archiveActivityUpdates = useMemo(
+    () => filterArchiveActivityUpdates(data.updates),
+    [data.updates],
   );
   const unsolvedCount = useMemo(
     () => data.cases.filter((c) => c.status === "unsolved").length,
@@ -544,7 +549,6 @@ export function WorldMonitor({ initial }: Props) {
   return (
     <>
       <HotNewsTicker
-        updates={data.updates}
         worldNewsItems={data.worldNews.items}
         onOpenNews={() => selectTab("news")}
         onSelectCase={(slug) => {
@@ -1338,7 +1342,6 @@ export function WorldMonitor({ initial }: Props) {
               </p>
               <WorldNewsFeed
                 initial={data.worldNews}
-                updates={data.updates}
                 countryFilter={filters.country ?? ""}
                 caseNames={Object.fromEntries(data.cases.map((c) => [c.slug, c.name]))}
                 showFullPageLink
@@ -1367,7 +1370,7 @@ export function WorldMonitor({ initial }: Props) {
               className="monitor-panel monitor-panel-scroll"
             >
               <MonitorSignalsPanel
-                updates={data.updates}
+                updates={archiveActivityUpdates}
                 stats={data.signals.stats}
                 alerts={data.signals.alerts}
                 behaviorHighlights={data.signals.behaviorHighlights}
@@ -1403,7 +1406,7 @@ export function WorldMonitor({ initial }: Props) {
                 <span className="monitor-bottom-tab-count">{data.cases.length}</span>
               ) : null}
               {id === "signals" ? (
-                <span className="monitor-bottom-tab-count">{data.updates.length}</span>
+                <span className="monitor-bottom-tab-count">{data.signals.stats.total}</span>
               ) : null}
               {id === "news" ? (
                 <span className="monitor-bottom-tab-count">{data.worldNews.items.length}</span>

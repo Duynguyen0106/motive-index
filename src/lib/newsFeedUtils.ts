@@ -1,5 +1,4 @@
 import { detectHotCrimeNews, type HotCrimeNewsItem } from "@/lib/hotNewsTicker";
-import type { LiveUpdate } from "@/lib/types";
 import type { WorldNewsItem } from "@/lib/worldNews";
 
 export type NewsFeedFilter = "all" | "hot" | "linked" | "live";
@@ -12,11 +11,8 @@ export function isArchiveLinkedItem(item: WorldNewsItem): boolean {
   return Boolean(item.caseSlug);
 }
 
-export function buildHotNewsLookup(
-  updates: LiveUpdate[],
-  items: WorldNewsItem[],
-): Map<string, HotCrimeNewsItem> {
-  return new Map(detectHotCrimeNews(updates, items).map((h) => [h.id, h]));
+export function buildHotNewsLookup(items: WorldNewsItem[]): Map<string, HotCrimeNewsItem> {
+  return new Map(detectHotCrimeNews(items).map((h) => [h.id, h]));
 }
 
 export function filterNewsItems(

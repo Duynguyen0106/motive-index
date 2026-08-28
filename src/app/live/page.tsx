@@ -41,11 +41,7 @@ export default async function LivePage({ searchParams }: Props) {
 
   return (
     <div className="site-shell page-intro page-scroll-safe py-10 md:py-12">
-      <LivePageHotNews
-        updates={archiveUpdates}
-        worldNewsItems={initialNews.items}
-        country={country || undefined}
-      />
+      <LivePageHotNews worldNewsItems={initialNews.items} country={country || undefined} />
       <Breadcrumbs
         items={[{ label: "Monitor", href: "/" }, { label: "World crime news" }]}
       />
@@ -92,16 +88,15 @@ export default async function LivePage({ searchParams }: Props) {
           <WorldNewsFeed
             initial={initialNews}
             countryFilter={country}
-            updates={archiveUpdates}
             showFullPageLink={false}
           />
         </div>
       </section>
 
-      <section className="mt-12 pb-8">
-        <h2 className="display text-2xl">Archive revision log</h2>
+      <section id="archive-activity" className="mt-12 pb-8">
+        <h2 className="display text-2xl">Archive activity log</h2>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          Ingest events, analysis drafts, and human-reviewed revisions.
+          Ingest events, analysis drafts, and human-reviewed revisions — not RSS crime news.
         </p>
         <div className="mt-6 border-t border-[var(--line-strong)]">
           <LiveFeedClient initial={archiveUpdates} />

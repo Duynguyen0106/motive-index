@@ -7,11 +7,9 @@ import {
   hotNewsTickerLabel,
   type HotCrimeNewsItem,
 } from "@/lib/hotNewsTicker";
-import type { LiveUpdate } from "@/lib/types";
 import type { WorldNewsItem } from "@/lib/worldNews";
 
 type Props = {
-  updates: LiveUpdate[];
   worldNewsItems: WorldNewsItem[];
   onOpenNews?: () => void;
   onSelectCase?: (slug: string) => void;
@@ -34,15 +32,15 @@ function writeDismissedIds(ids: Set<string>) {
   sessionStorage.setItem(DISMISS_KEY, JSON.stringify([...ids]));
 }
 
-export function HotNewsTicker({ updates, worldNewsItems, onOpenNews, onSelectCase }: Props) {
+export function HotNewsTicker({ worldNewsItems, onOpenNews, onSelectCase }: Props) {
   const [mounted, setMounted] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => new Set());
   const [pulse, setPulse] = useState(false);
   const prevTopId = useRef<string | null>(null);
 
   const hotItems = useMemo(
-    () => detectHotCrimeNews(updates, worldNewsItems),
-    [updates, worldNewsItems],
+    () => detectHotCrimeNews(worldNewsItems),
+    [worldNewsItems],
   );
 
   const visibleItems = useMemo(

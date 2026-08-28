@@ -28,7 +28,6 @@ const KIND_ORDER: MonitorSignalKind[] = [
   "new_case",
   "source_added",
   "revision",
-  "world_news",
 ];
 
 function severityClass(severity: MonitorSignalAlert["severity"]): string {
@@ -58,9 +57,13 @@ export function MonitorSignalsPanel({
         <div>
           <h2 className="display text-base">Live signals</h2>
           <p className="mt-1 text-xs text-[var(--muted)]">
-            Archive activity · behavioral highlights ·{" "}
+            Archive ingest & revisions · behavioral highlights ·{" "}
+            <Link href="/live#archive-activity" className="text-[var(--accent)] hover:underline">
+              Activity log
+            </Link>
+            {" · "}
             <Link href="/live" className="text-[var(--accent)] hover:underline">
-              Full feed
+              Crime news
             </Link>
           </p>
         </div>
@@ -177,7 +180,7 @@ export function MonitorSignalsPanel({
         </h3>
         <ul className="monitor-signals-feed-list">
           {visibleUpdates.map((u) => {
-            const meta = SIGNAL_KIND_META[u.kind];
+            const meta = SIGNAL_KIND_META[u.kind as MonitorSignalKind];
             return (
               <li key={u.id} className={`monitor-signals-feed-item monitor-signals-feed-${u.kind}`}>
                 <div className="monitor-signals-feed-icon" aria-hidden>
@@ -203,15 +206,6 @@ export function MonitorSignalsPanel({
                     >
                       {u.headline}
                     </button>
-                  ) : u.kind === "world_news" && u.sourceUrl ? (
-                    <a
-                      href={u.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="monitor-signals-feed-headline monitor-signals-feed-external"
-                    >
-                      {u.headline}
-                    </a>
                   ) : (
                     <p className="monitor-signals-feed-headline">{u.headline}</p>
                   )}

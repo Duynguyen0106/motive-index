@@ -1,5 +1,5 @@
 import { COUNTRY_LABELS } from "@/lib/country";
-import { detectHotCrimeNews } from "@/lib/hotNewsTicker";
+import { filterArchiveActivityUpdates } from "@/lib/liveUpdates";
 import type { CountryMonitorStat } from "@/lib/monitor";
 import type {
   CountryCode,
@@ -9,9 +9,8 @@ import type {
   SearchFilters,
 } from "@/lib/types";
 import { DIMENSION_LABELS } from "@/lib/types";
-import type { WorldNewsItem } from "@/lib/worldNews";
 
-export type MonitorSignalKind = LiveUpdate["kind"];
+export type MonitorSignalKind = Exclude<LiveUpdate["kind"], "world_news">;
 
 export type MonitorSignalStats = {
   total: number;
@@ -45,7 +44,6 @@ export const SIGNAL_KIND_META: Record<
   analysis_ready: { label: "Analysis ready", shortLabel: "Analysis", icon: "◎" },
   source_added: { label: "Source added", shortLabel: "Source", icon: "▣" },
   revision: { label: "Revision", shortLabel: "Revision", icon: "↻" },
-  world_news: { label: "World news", shortLabel: "News", icon: "◈" },
 };
 
 const ALL_KINDS: MonitorSignalKind[] = [
@@ -53,10 +51,10 @@ const ALL_KINDS: MonitorSignalKind[] = [
   "analysis_ready",
   "source_added",
   "revision",
-  "world_news",
 ];
 
 export function buildSignalStats(updates: LiveUpdate[]): MonitorSignalStats {
+  const archiveUpdates = filterArchiveActivityUpdates(updates);
   const byKind = Object.fromEntries(ALL_KINDS.map((k) => [k, 0])) as Record<
     MonitorSignalKind,
     number
@@ -64,12 +62,12 @@ export function buildSignalStats(updates: LiveUpdate[]): MonitorSignalStats {
   const cutoff = Date.now() - 48 * 60 * 60 * 1000;
 
   let recentCount = 0;
-  for (const u of updates) {
-    byKind[u.kind] += 1;
+  for (const u of archiveUpdates) {
+    byKind[u.kind as MonitorSignalKind] += 1;
     if (new Date(u.createdAt).getTime() >= cutoff) recentCount += 1;
   }
 
-  return { total: updates.length, byKind, recentCount };
+  return { total: archiveUpdates.length, byKind, recentCount };
 }
 
 export function buildSignalAlerts(input: {
@@ -77,22 +75,10 @@ export function buildSignalAlerts(input: {
   cases: CrimeCase[];
   countryStats: CountryMonitorStat[];
   filters: SearchFilters;
-  worldNewsItems?: WorldNewsItem[];
 }): MonitorSignalAlert[] {
   const alerts: MonitorSignalAlert[] = [];
-  const { cases, countryStats, filters, updates, worldNewsItems = [] } = input;
-
-  const hotNews = detectHotCrimeNews(updates, worldNewsItems, 3);
-  for (const item of hotNews) {
-    alerts.push({
-      id: `hot-news-${item.id}`,
-      severity: item.isBreaking ? "hot" : "watch",
-      title: item.isBreaking ? "Breaking crime news" : "Hot crime news",
-      detail: item.headline,
-      caseSlug: item.caseSlug,
-      country: item.country,
-    });
-  }
+  const { cases, countryStats, filters, updates } = input;
+  const archiveUpdates = filterArchiveActivityUpdates(updates);
 
   const unsolvedInFilter = cases.filter((c) => c.status === "unsolved").length;
   if (unsolvedInFilter > 0) {
@@ -120,7 +106,7 @@ export function buildSignalAlerts(input: {
     });
   }
 
-  const freshAnalysis = updates.filter((u) => u.kind === "analysis_ready").slice(0, 3);
+  const freshAnalysis = archiveUpdates.filter((u) => u.kind === "analysis_ready").slice(0, 3);
   if (freshAnalysis.length) {
     alerts.push({
       id: "fresh-analysis",
@@ -131,7 +117,7 @@ export function buildSignalAlerts(input: {
     });
   }
 
-  const newCases = updates.filter((u) => u.kind === "new_case").length;
+  const newCases = archiveUpdates.filter((u) => u.kind === "new_case").length;
   if (newCases > 0) {
     alerts.push({
       id: "new-ingest",
@@ -180,8 +166,9 @@ export function filterUpdatesByKind(
   updates: LiveUpdate[],
   kind: MonitorSignalKind | "",
 ): LiveUpdate[] {
-  if (!kind) return updates;
-  return updates.filter((u) => u.kind === kind);
+  const archiveUpdates = filterArchiveActivityUpdates(updates);
+  if (!kind) return archiveUpdates;
+  return archiveUpdates.filter((u) => u.kind === kind);
 }
 
 export type MonitorSignalsPayload = {
@@ -195,7 +182,6 @@ export function buildMonitorSignals(input: {
   cases: CrimeCase[];
   countryStats: CountryMonitorStat[];
   filters: SearchFilters;
-  worldNewsItems?: WorldNewsItem[];
 }): MonitorSignalsPayload {
   return {
     stats: buildSignalStats(input.updates),
