@@ -234,13 +234,18 @@ export function CaseWorldMap({
           if (!root) return;
           L.DomEvent.disableClickPropagation(root);
           L.DomEvent.disableScrollPropagation(root);
+          const stop = (e: Event) => L.DomEvent.stopPropagation(e);
+          root.addEventListener("mousedown", stop);
+          root.addEventListener("pointerdown", stop);
           root.querySelectorAll("a[href^='/cases/']").forEach((anchor) => {
             const el = anchor as HTMLAnchorElement;
             if (el.dataset.dossierBound) return;
             el.dataset.dossierBound = "1";
+            el.addEventListener("mousedown", stop);
+            el.addEventListener("pointerdown", stop);
             el.addEventListener("click", (e) => {
+              L.DomEvent.stopPropagation(e);
               e.preventDefault();
-              e.stopPropagation();
               const href = el.getAttribute("href");
               if (href) window.location.assign(href);
             });
@@ -811,6 +816,9 @@ export function MonitorCaseCard({
       role="dialog"
       aria-modal="true"
       aria-label={`Case: ${pin.name}`}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
       <div className="monitor-case-card-accent" data-status={pin.status} />
       {pin.imageUrl ? (

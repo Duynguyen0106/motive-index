@@ -2288,9 +2288,15 @@ a.monitor-news-headline:hover {
   font-weight: 600;
   color: var(--accent);
   text-decoration: none;
+  border: none;
   border-left: 2px solid var(--accent);
   margin-left: 0.75rem;
   margin-bottom: 0.25rem;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: calc(100% - 0.75rem);
+  font-family: inherit;
 }
 
 .monitor-case-dossier-link:hover {

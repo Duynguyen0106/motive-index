@@ -16,15 +16,24 @@ export function dossierHref(slug: string): string {
 export function OpenDossierLink({ slug, className, children }: Props) {
   const href = dossierHref(slug);
 
-  function openDossier(e: MouseEvent<HTMLAnchorElement>) {
+  function openDossier(e: MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
-    e.preventDefault();
     window.location.assign(href);
   }
 
+  function blockMapPointer(e: MouseEvent<HTMLButtonElement>) {
+    e.stopPropagation();
+  }
+
   return (
-    <a href={href} className={className} onClick={openDossier}>
+    <button
+      type="button"
+      className={className}
+      onClick={openDossier}
+      onMouseDown={blockMapPointer}
+      onPointerDown={blockMapPointer}
+    >
       {children}
-    </a>
+    </button>
   );
 }
