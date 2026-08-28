@@ -5,6 +5,7 @@
 import { CASE_REFERENCE_OVERRIDES } from "@/data/caseReferenceCatalog";
 import type { CaseReference } from "@/lib/types";
 import { isRetiredSlug } from "@/lib/validation/retiredSlugs";
+import { assertReferenceAccuracy } from "@/lib/validation/referenceAccuracy";
 
 /** How much we trust a dossier's factual grounding. */
 export type CaseProvenanceTier = "verified" | "curated" | "composite" | "draft";
@@ -337,7 +338,18 @@ export function validateCaseDef(def: MinimalCaseDef, opts?: { multilingual?: boo
 
 export function assertPublishableCase(c: ProvenanceInput): void {
   const violations = validateProvenance(c).filter((v) => v.level === "error");
-  if (violations.length === 0) return;
-  const msg = violations.map((v) => v.message).join("; ");
-  throw new Error(`Case failed provenance gate: ${msg}`);
+  if (violations.length > 0) {
+    const msg = violations.map((v) => v.message).join("; ");
+    throw new Error(`Case failed provenance gate: ${msg}`);
+  }
+
+  const tier = resolveProvenanceTier(c);
+  if (tier === "verified" || tier === "curated") {
+    assertReferenceAccuracy({
+      slug: c.slug,
+      references: c.references ?? [],
+      provenanceTier: tier,
+      multilingual: c.tags?.includes("multilingual-source"),
+    });
+  }
 }

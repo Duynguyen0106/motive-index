@@ -33,7 +33,7 @@ applyEnrichment() in src/data/catalog.ts
 
 ### Anti-fabrication framework
 
-Curated cases are gated by `src/lib/validation/caseProvenance.ts`:
+Curated cases are gated by `src/lib/validation/caseProvenance.ts` and `src/lib/validation/referenceAccuracy.ts`. See **[REFERENCE_ACCURACY.md](./REFERENCE_ACCURACY.md)** for the full reference quality framework.
 
 | Tier | Tag | Requirements |
 |------|-----|--------------|

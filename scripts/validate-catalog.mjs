@@ -15,6 +15,7 @@ const STEPS = [
   { name: "Database audit", script: "audit-database.mjs" },
   { name: "Source validation", script: "validate-sources.mjs" },
   { name: "Reference URL validation", script: "validate-reference-urls.mjs" },
+  { name: "Reference accuracy framework", script: "validate-reference-accuracy.mjs" },
   { name: "Reference link audit (live HTTP)", script: "audit-reference-links.mjs" },
 ];
 

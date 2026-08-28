@@ -35,8 +35,8 @@ import { monitorUrlFromFilters, searchUrlFromFilters } from "@/lib/search";
 import { getSiteUrl } from "@/lib/seo";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
 import type { SearchFilters } from "@/lib/types";
-import { isPrimarySourceReference } from "@/lib/validation/caseProvenance";
-import { isDirectSourceUrl } from "@/lib/validation/referenceUrls";
+import { getPrimaryDirectReferences } from "@/lib/validation/referenceAccuracy";
+import { ReferenceQualityBadge } from "@/components/ReferenceQualityBadge";
 
 function getCaseByIdOrSlug(idOrSlug: string): CrimeCase | undefined {
   const key = decodeURIComponent(idOrSlug);
@@ -576,9 +576,7 @@ export default async function CasePage({ params, searchParams }: Props) {
         {tab === "references" ? (
           <div className="space-y-6">
             {(() => {
-              const primaryLink = crimeCase.references.find(
-                (r) => isPrimarySourceReference(r) && isDirectSourceUrl(r.url),
-              );
+              const primaryLink = getPrimaryDirectReferences(crimeCase.references)[0];
               return primaryLink?.url ? (
                 <section className="card p-6">
                   <h2 className="display text-xl">Primary source</h2>
@@ -608,6 +606,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                 {crimeCase.references.map((r) => (
                   <li key={r.id} className="reference-item border-b border-[var(--line)] pb-4 last:border-0">
                     <div className="flex flex-wrap items-center gap-2">
+                      <ReferenceQualityBadge reference={r} />
                       <span className="text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
                         {r.kind}
                       </span>

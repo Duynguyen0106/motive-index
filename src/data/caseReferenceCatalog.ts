@@ -126,7 +126,7 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-ramirez-la-times",
-      citation: "Los Angeles Times archives — Night Stalker case coverage (1984–1989).",
+      citation: "Richard Ramirez — capture and conviction record.",
       kind: "media",
       url: "https://en.wikipedia.org/wiki/Richard_Ramirez#Capture_and_conviction",
       note: "Public panic, survivor accounts, citizen capture; see also LA Times archive articles.",
@@ -243,7 +243,7 @@ export const CASE_REFERENCE_OVERRIDES: Record<string, CaseReference[]> = {
     },
     {
       id: "ref-kaczynski-manifesto",
-      citation: "Kaczynski, T. Industrial Society and Its Future (Unabomber manifesto). Washington Post / NYT publication (1995).",
+      citation: "Kaczynski, T. Industrial Society and Its Future (Unabomber manifesto). FAS archive of FBI publication (1995).",
       kind: "media",
       year: "1995",
       url: "https://www.fas.org/irp/agencies/doj/fbi/unabom-manifesto.pdf",

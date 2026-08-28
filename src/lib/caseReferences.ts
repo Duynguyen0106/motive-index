@@ -5,6 +5,7 @@
 import { CASE_REFERENCE_OVERRIDES } from "@/data/caseReferenceCatalog";
 import type { ParsedCaseContext } from "@/lib/caseContextDepth";
 import type { CaseReference } from "@/lib/types";
+import { isPrimarySourceReference } from "@/lib/validation/caseProvenance";
 
 function pressArchive(ctx: ParsedCaseContext): string {
   const j = ctx.jurisdiction.toLowerCase();
@@ -168,6 +169,17 @@ export function buildCaseReferences(
   }
 
   const existing = opts?.existing ?? [];
+
+  /** Multilingual / hand-curated primary sources — never mix in teaching templates. */
+  const hasVerifiedPrimary = existing.some(
+    (r) =>
+      isPrimarySourceReference(r) &&
+      Boolean(r.url?.trim() || r.originalCitation?.trim()),
+  );
+  if (hasVerifiedPrimary) {
+    return dedupeReferences(existing);
+  }
+
   const generated = generatedReferences(ctx);
 
   if (existing.length >= 3) {
