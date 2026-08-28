@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type GlossaryListItem = {
   id: string;
@@ -12,6 +12,18 @@ export type GlossaryListItem = {
 
 export function GlossaryList({ items }: { items: GlossaryListItem[] }) {
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    const match = items.find((item) => item.id === hash);
+    if (match) {
+      setQuery("");
+      requestAnimationFrame(() => {
+        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [items]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

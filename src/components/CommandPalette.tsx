@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { COUNTRY_LABELS } from "@/lib/country";
 import { loadPaletteRecents, pushPaletteRecent, type PaletteRecent } from "@/lib/paletteRecents";
+import { THEORY_PALETTE_ROUTES } from "@/lib/theoryPaletteRoutes";
 
 type CaseHit = {
   id: string;
@@ -24,7 +25,7 @@ type DocumentHit = {
 };
 
 type PaletteItem = {
-  type: "route" | "filter" | "recent" | "case" | "document";
+  type: "route" | "filter" | "theory" | "recent" | "case" | "document";
   href: string;
   label: string;
   hint?: string;
@@ -60,6 +61,7 @@ const FILTER_SHORTCUTS = [
 const TYPE_LABELS: Record<PaletteItem["type"], string> = {
   route: "Page",
   filter: "Filter",
+  theory: "Theory",
   recent: "Recent",
   case: "Dossier",
   document: "Document",
@@ -183,6 +185,11 @@ export function CommandPalette() {
         (f) => f.label.toLowerCase().includes(q) || f.hint.toLowerCase().includes(q),
       )
     : FILTER_SHORTCUTS;
+  const theoryMatches = q
+    ? THEORY_PALETTE_ROUTES.filter(
+        (t) => t.label.toLowerCase().includes(q) || t.hint.toLowerCase().includes(q),
+      )
+    : THEORY_PALETTE_ROUTES;
   const recentMatches = q
     ? recents.filter((r) => r.name.toLowerCase().includes(q))
     : recents;
@@ -196,6 +203,7 @@ export function CommandPalette() {
       slug: r.slug,
     })),
     ...routeMatches.map((r) => ({ type: "route" as const, ...r })),
+    ...theoryMatches.map((t) => ({ type: "theory" as const, ...t })),
     ...filterMatches.map((f) => ({ type: "filter" as const, ...f })),
     ...cases.map((c) => ({
       type: "case" as const,

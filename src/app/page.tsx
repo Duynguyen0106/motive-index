@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { MonitorSkeleton } from "@/components/MonitorSkeleton";
-import { WorldMonitor } from "@/components/WorldMonitor";
+import { WorldMonitorClient } from "@/components/WorldMonitorClient";
 import { buildMonitorPayload } from "@/lib/monitor";
 
 export const metadata: Metadata = {
@@ -22,7 +21,7 @@ export default async function HomePage({ searchParams }: Props) {
   return (
     <div className="monitor-page">
       <Suspense fallback={<MonitorSkeleton />}>
-        <WorldMonitor initial={initial} />
+        <WorldMonitorClient initial={initial} />
       </Suspense>
     </div>
   );
