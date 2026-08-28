@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { MonitorSkeleton } from "@/components/MonitorSkeleton";
 import { WorldMonitor } from "@/components/WorldMonitor";
 import { buildMonitorPayload } from "@/lib/monitor";
 
@@ -20,7 +21,7 @@ export default async function HomePage({ searchParams }: Props) {
 
   return (
     <div className="monitor-page">
-      <Suspense fallback={<p className="site-shell py-12 text-[var(--muted)]">Loading monitor…</p>}>
+      <Suspense fallback={<MonitorSkeleton />}>
         <WorldMonitor initial={initial} />
       </Suspense>
     </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { SiteSearch } from "@/components/SiteSearch";
 
 const links = [
   { href: "/", label: "Monitor", match: (p: string) => p === "/" || p.startsWith("/monitor") },
@@ -60,6 +61,9 @@ export function SiteNav() {
         aria-label="Primary"
       >
         <div className="site-nav-links">
+          <div className="site-nav-search md:hidden">
+            <SiteSearch />
+          </div>
           {links.map((l) => {
             const active = l.match(pathname);
             return (

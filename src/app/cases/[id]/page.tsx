@@ -11,6 +11,8 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { DossierActionBar } from "@/components/DossierActionBar";
 import { PsychMap } from "@/components/PsychMap";
 import { Timeline } from "@/components/Timeline";
+import { RelatedCases } from "@/components/RelatedCases";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { CaseStatusBadge } from "@/components/ui";
 import { getActiveTab, CASE_TABS } from "@/lib/case-tabs";
 import {
@@ -98,9 +100,26 @@ export default async function CasePage({ params, searchParams }: Props) {
 
   const docs = getDocumentsForCase(crimeCase.slug);
   const { analysis } = crimeCase;
+  const allCases = getAllCases();
+  const dossierUrl = `${getSiteUrl()}/cases/${crimeCase.slug}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: crimeCase.name,
+    description: crimeCase.subtitle,
+    url: dossierUrl,
+    datePublished: `${crimeCase.yearStart}`,
+    author: { "@type": "Organization", name: "Motive Index" },
+    about: crimeCase.crimeCategories.map((c) => CRIME_CATEGORY_LABELS[c]).join(", "),
+  };
 
   return (
     <article className="dossier-page pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="dossier-header site-shell py-10 md:py-12">
         <Breadcrumbs
           items={[
@@ -161,6 +180,7 @@ export default async function CasePage({ params, searchParams }: Props) {
           <Link href="/archive" className="btn btn-ghost text-sm">
             Full archive
           </Link>
+          <ShareLinkButton url={dossierUrl} label="Share dossier" />
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
           {crimeCase.crimeCategories.map((c) => (
@@ -344,25 +364,7 @@ export default async function CasePage({ params, searchParams }: Props) {
                   ) : null}
                 </ul>
               </div>
-              {crimeCase.relatedCaseSlugs.length ? (
-                <div className="card p-5">
-                  <h3 className="text-xs font-semibold tracking-[0.14em] text-[var(--muted)] uppercase">
-                    Related cases
-                  </h3>
-                  <ul className="mt-3 space-y-2 text-sm">
-                    {crimeCase.relatedCaseSlugs.map((s) => {
-                      const related = getCaseBySlug(s);
-                      return (
-                        <li key={s}>
-                          <Link href={`/cases/${s}`} className="text-[var(--accent)] hover:underline">
-                            {related?.name ?? s}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ) : null}
+              <RelatedCases crimeCase={crimeCase} allCases={allCases} compact />
             </aside>
           </div>
         ) : null}
@@ -613,6 +615,10 @@ export default async function CasePage({ params, searchParams }: Props) {
             <DistressResources />
             <Disclaimer />
           </div>
+        ) : null}
+
+        {tab !== "overview" ? (
+          <RelatedCases crimeCase={crimeCase} allCases={allCases} />
         ) : null}
       </div>
     </article>

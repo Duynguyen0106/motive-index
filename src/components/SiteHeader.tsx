@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
+import { SiteSearch } from "@/components/SiteSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function SiteHeader() {
@@ -16,6 +17,7 @@ export function SiteHeader() {
           </p>
         </Link>
         <div className="header-tools shrink-0">
+          <SiteSearch />
           <ThemeToggle />
           <SiteNav />
         </div>

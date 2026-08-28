@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHeader } from "@/components/PageHeader";
+import { QuickLinks } from "@/components/ui";
 import { getCaseOfWeek, getGlossary, getTheories } from "@/lib/data";
 import { FRAMEWORK_LABELS } from "@/lib/types";
 
@@ -14,40 +17,46 @@ export default function ResourcesPage() {
   const cotw = getCaseOfWeek();
 
   return (
-    <div className="site-shell py-12 md:py-14">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-        Resources
-      </p>
-      <h1 className="display mt-3 text-4xl md:text-5xl">Educational resources</h1>
-      <p className="body-copy mt-4 max-w-2xl text-lg text-[var(--ink-soft)]">
-        Glossary, major theoretical overviews, and a rotating case spotlight for
-        classroom use.
-      </p>
+    <div className="site-shell page-intro py-10 md:py-14">
+      <Breadcrumbs items={[{ label: "Monitor", href: "/" }, { label: "Resources" }]} />
+      <PageHeader
+        className="mt-5"
+        label="Resources"
+        title="Educational resources"
+        description="Glossary, major theoretical overviews, and a rotating case spotlight for classroom use."
+      />
+      <QuickLinks
+        links={[
+          { href: "/archive", label: "Case archive" },
+          { href: "/method", label: "Method" },
+          { href: "/documents", label: "Documents" },
+          { href: "/contribute", label: "Contribute" },
+        ]}
+      />
 
       {cotw ? (
-        <section className="card mt-8 border-l-4 border-l-[var(--accent)] p-6 md:p-8">
-          <p className="text-xs font-semibold tracking-[0.16em] text-[var(--accent)] uppercase">
-            Case of the week
-          </p>
-          <h2 className="display mt-2 text-3xl">{cotw.name}</h2>
-          <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">
-            Teaching focus: impression management and organized instrumental
-            patterning as separable research questions—not media mythology.
-          </p>
-          <Link
-            href={`/cases/${cotw.slug}?tab=analysis`}
-            className="mt-4 inline-block text-sm font-semibold text-[var(--accent)] hover:underline"
-          >
-            Open dossier analysis →
-          </Link>
+        <section className="featured-card mt-8">
+          <div className="featured-card-accent" />
+          <div className="featured-card-body">
+            <p className="label">Case of the week</p>
+            <h2 className="display mt-2 text-3xl">{cotw.name}</h2>
+            <p className="body-copy mt-3 max-w-2xl text-[var(--ink-soft)]">
+              Teaching focus: impression management and organized instrumental patterning as
+              separable research questions—not media mythology.
+            </p>
+            <Link
+              href={`/cases/${cotw.slug}?tab=analysis`}
+              className="btn btn-primary mt-4 text-sm"
+            >
+              Open dossier analysis
+            </Link>
+          </div>
         </section>
       ) : null}
 
       <section className="mt-12">
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="display text-3xl">Theoretical overviews</h2>
-        </div>
-        <ul className="grid gap-3 md:grid-cols-2">
+        <h2 className="display text-3xl">Theoretical overviews</h2>
+        <ul className="mt-5 grid gap-3 md:grid-cols-2">
           {theories.map((t) => (
             <li key={t.id}>
               <Link href={`/resources/theories/${t.slug}`} className="card card-hover block h-full p-5">
@@ -64,9 +73,9 @@ export default function ResourcesPage() {
 
       <section className="mt-12">
         <h2 className="display text-3xl">Glossary</h2>
-        <ul className="mt-5 divide-y divide-[var(--line)] overflow-hidden rounded border border-[var(--line)] bg-white shadow-[var(--shadow)]">
+        <ul className="glossary-list mt-5 divide-y divide-[var(--line)] overflow-hidden rounded border border-[var(--line)]">
           {glossary.map((g) => (
-            <li key={g.id} className="px-5 py-4 md:px-6">
+            <li key={g.id} className="glossary-item px-5 py-4 md:px-6">
               <h3 className="font-semibold text-[var(--ink)]">{g.term}</h3>
               <p className="mt-1 text-[var(--ink-soft)]">{g.definition}</p>
               {g.relatedCaseSlugs?.length ? (
@@ -87,7 +96,7 @@ export default function ResourcesPage() {
         </ul>
       </section>
 
-      <section className="card mt-12 p-6">
+      <section className="card mt-12 p-6 pb-8">
         <h2 className="display text-2xl">Further reading</h2>
         <ul className="mt-4 space-y-2 text-[var(--ink-soft)]">
           <li>Peer-reviewed forensic psychology and criminology journals (link via your library).</li>

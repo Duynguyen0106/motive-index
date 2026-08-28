@@ -57,6 +57,7 @@ expect_contains "Home world monitor" "$BASE/" "World crime monitor"
 expect_contains "Home featured dossier" "$BASE/" "Featured dossier"
 expect_contains "Map container present" "$BASE/" "monitor-leaflet-map"
 expect_contains "Keyboard shortcuts control" "$BASE/" "Keyboard shortcuts"
+expect_contains "Header site search" "$BASE/" "site-search-input"
 expect_200 "GET /archive" "$BASE/archive"
 expect_contains "Archive featured dossier" "$BASE/archive" "Featured dossier"
 code=$(http_code "$BASE/cases")
@@ -102,6 +103,9 @@ expect_contains "Tab timeline" "$BASE/cases/ted-bundy?tab=timeline" "Behavioral 
 expect_contains "Tab analysis" "$BASE/cases/ted-bundy?tab=analysis" "Psychological map"
 expect_contains "Tab documents" "$BASE/cases/ted-bundy?tab=documents" "Document library"
 expect_contains "Tab references" "$BASE/cases/ted-bundy?tab=references" "References"
+expect_contains "Related dossiers section" "$BASE/cases/ted-bundy?tab=analysis" "Related dossiers"
+expect_contains "Share dossier button" "$BASE/cases/ted-bundy" "Share dossier"
+expect_contains "Case JSON-LD article" "$BASE/cases/ted-bundy" '"@type":"Article"'
 expect_contains "Content warning present" "$BASE/cases/ted-bundy" "Content warning"
 expect_contains "Psych factors tagged" "$BASE/cases/ted-bundy?tab=analysis" "Impression management"
 
@@ -181,6 +185,8 @@ expect_contains "About ethics section" "$BASE/about" "Ethical"
 expect_contains "About distress resources" "$BASE/about" "988"
 expect_contains "Contribute form" "$BASE/contribute" "Submission form"
 expect_contains "Glossary term" "$BASE/resources" "Modus operandi"
+expect_contains "Resources breadcrumbs" "$BASE/resources" "Educational resources"
+expect_contains "Method breadcrumbs" "$BASE/method" "Behavior first"
 expect_contains "Documents library" "$BASE/documents" "Shipman Inquiry"
 
 echo
