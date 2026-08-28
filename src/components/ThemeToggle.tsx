@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type ThemeMode = "dark" | "light";
 
@@ -19,11 +19,9 @@ function readTheme(): ThemeMode {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<ThemeMode>("dark");
-
-  useEffect(() => {
-    setTheme(readTheme());
-  }, []);
+  const [theme, setTheme] = useState<ThemeMode>(() =>
+    typeof document !== "undefined" ? readTheme() : "dark",
+  );
 
   function toggle() {
     const next: ThemeMode = theme === "dark" ? "light" : "dark";

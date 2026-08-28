@@ -2,10 +2,89 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { adminFetchInit, readJsonResponse } from "@/lib/clientFetch";
 import { getPublishReadiness } from "@/lib/moderationPublish";
 import type { CrimeCase } from "@/lib/types";
+
+function AddReferenceForm({
+  slug,
+  onAdded,
+  busy,
+  setBusy,
+}: {
+  slug: string;
+  onAdded: (next: CrimeCase) => void;
+  busy: boolean;
+  setBusy: (v: string | null) => void;
+}) {
+  const [citation, setCitation] = useState("");
+  const [url, setUrl] = useState("");
+  const [kind, setKind] = useState<"court" | "media" | "report" | "book" | "journal">("media");
+  const [error, setError] = useState("");
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setBusy(`ref-${slug}`);
+    try {
+      const res = await fetch("/api/admin/references", {
+        ...adminFetchInit,
+        method: "POST",
+        body: JSON.stringify({ slug, citation, url, kind }),
+      });
+      const data = await readJsonResponse<{ error?: string; case?: CrimeCase }>(res);
+      if (!res.ok) throw new Error(data.error || "Failed to add reference");
+      onAdded(data.case!);
+      setCitation("");
+      setUrl("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add reference");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="mt-3 space-y-2 rounded border border-[var(--line)] p-3">
+      <p className="text-xs font-semibold tracking-[0.12em] text-[var(--muted)] uppercase">
+        Add reference
+      </p>
+      <input
+        className="field w-full text-sm"
+        placeholder="Citation (court, report, or press)"
+        value={citation}
+        onChange={(e) => setCitation(e.target.value)}
+        required
+        minLength={3}
+      />
+      <input
+        className="field w-full text-sm"
+        type="url"
+        placeholder="https://… (direct source URL)"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+      />
+      <div className="flex flex-wrap gap-2">
+        <select
+          className="field text-sm"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as typeof kind)}
+        >
+          <option value="court">court</option>
+          <option value="report">report</option>
+          <option value="media">media</option>
+          <option value="book">book</option>
+          <option value="journal">journal</option>
+        </select>
+        <button type="submit" className="btn btn-ghost text-sm" disabled={busy || citation.trim().length < 3}>
+          {busy ? "Saving…" : "Save reference"}
+        </button>
+      </div>
+      {error ? <p className="text-sm text-[var(--maroon)]">{error}</p> : null}
+    </form>
+  );
+}
 
 export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
   const router = useRouter();
@@ -83,10 +162,11 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
         {items.map((c) => {
           const readiness = getPublishReadiness(c);
           const refCount = (c.references ?? []).filter((r) => r.url || r.kind).length;
+          const needsRef = readiness.blockers.some((b) => b.toLowerCase().includes("reference"));
           return (
             <li key={c.id} className="panel p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="max-w-2xl">
+                <div className="max-w-2xl grow">
                   <p className="label">
                     {c.analysis.status} · {c.tags.join(" · ")}
                   </p>
@@ -122,6 +202,19 @@ export function ModerationQueue({ initial }: { initial: CrimeCase[] }) {
                   ) : (
                     <p className="mt-3 text-sm text-[var(--accent)]">Ready for moderation review.</p>
                   )}
+                  {needsRef ? (
+                    <AddReferenceForm
+                      slug={c.slug}
+                      busy={busy === `ref-${c.slug}`}
+                      setBusy={setBusy}
+                      onAdded={(next) => {
+                        setItems((prev) => prev.map((x) => (x.slug === next.slug ? next : x)));
+                        setMessageTone("ok");
+                        setMessage(`Reference added to ${next.name}`);
+                        router.refresh();
+                      }}
+                    />
+                  ) : null}
                   <div className="mt-3 flex flex-wrap gap-4 text-sm">
                     <Link href={`/cases/${c.slug}?tab=story`} className="text-link">
                       Preview full story

@@ -44,6 +44,7 @@ export default function MethodPage() {
         <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <li><a href="#method-pipeline" className="text-link">Pipeline</a></li>
           <li><a href="#method-rubric" className="text-link">Rubric</a></li>
+          <li><a href="#method-provenance" className="text-link">Provenance</a></li>
           <li><a href="#method-rules" className="text-link">Hard rules</a></li>
         </ul>
       </nav>
@@ -72,6 +73,10 @@ export default function MethodPage() {
               "05 — Human review",
               "Featured dossiers publish only after review. Drafts stay labeled.",
             ],
+            [
+              "06 — Provenance gate",
+              "publishCase() blocks publication without verified references and clean provenance tags.",
+            ],
           ].map(([title, body]) => (
             <li key={title} className="card p-5 md:grid md:grid-cols-[220px_1fr] md:gap-8 md:p-6">
               <h3 className="display text-xl text-[var(--ink)]">{title}</h3>
@@ -96,6 +101,49 @@ export default function MethodPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section id="method-provenance" className="mt-12 scroll-mt-24">
+        <h2 className="display text-3xl text-[var(--ink)]">Provenance & anti-fabrication</h2>
+        <p className="body-copy mt-4 max-w-3xl text-[var(--ink-soft)] md:text-lg">
+          Every dossier carries a provenance tier so readers can tell verified public-record entries
+          from teaching templates, Wikipedia-sourced catalog stubs, and live-ingest drafts.
+        </p>
+        <ul className="card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+          {[
+            [
+              "Verified",
+              "Hand-curated references with ≥1 direct primary URL. Tagged public-record.",
+            ],
+            [
+              "Curated",
+              "Real cases pending full bibliography; templates allowed but labeled.",
+            ],
+            [
+              "Encyclopedic import",
+              "Wikidata/Wikipedia entity links — algorithmic analysis, not human-reviewed.",
+            ],
+            [
+              "Draft / moderation",
+              "Live ingest and admin stubs. Hidden from public browse until approved.",
+            ],
+          ].map(([name, desc]) => (
+            <li
+              key={name}
+              className="grid gap-1 px-5 py-4 md:grid-cols-[240px_1fr] md:items-baseline md:gap-8 md:px-6"
+            >
+              <span className="font-semibold text-[var(--ink)]">{name}</span>
+              <span className="body-copy text-[var(--ink-soft)]">{desc}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm text-[var(--muted)]">
+          See{" "}
+          <a href="/about" className="text-[var(--accent)] hover:underline">
+            About & ethics
+          </a>{" "}
+          and the reference quality badges on each dossier&apos;s References tab.
+        </p>
       </section>
 
       <section id="method-rules" className="mt-12 scroll-mt-24 space-y-5 pb-8">
