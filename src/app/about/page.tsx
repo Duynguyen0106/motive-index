@@ -80,6 +80,12 @@ export default function AboutPage() {
                 <strong className="text-[var(--ink)]">No clinical advice.</strong>{" "}
                 Educational use only—not diagnosis, treatment, or legal counsel.
               </li>
+              <li>
+                <strong className="text-[var(--ink)]">Anti-fabrication.</strong> Live
+                ingest and AI drafts cannot publish without a verifiable reference and
+                human moderation. Wikipedia-sourced catalog entries are labeled as
+                encyclopedic, not human-reviewed.
+              </li>
             </ul>
           </div>
         </section>
