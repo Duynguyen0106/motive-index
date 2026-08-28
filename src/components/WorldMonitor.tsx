@@ -22,7 +22,8 @@ import { MonitorSignalsPanel } from "@/components/MonitorSignalsPanel";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, resolveCaseCountry } from "@/lib/country";
-import { searchUrlFromFilters } from "@/lib/search";
+import { searchUrlFromFilters, paginateCases, DEFAULT_ARCHIVE_PAGE_SIZE } from "@/lib/search";
+import type { NewsFeedFilter } from "@/lib/newsFeedUtils";
 import type { MonitorPayload } from "@/lib/monitor";
 import type { MonitorMapViewState, RegionPreset } from "@/lib/monitorMapTypes";
 import { TIMELINE_YEAR_MAX, TIMELINE_YEAR_MIN } from "@/lib/monitorMapTypes";
@@ -44,6 +45,7 @@ import {
   type SearchFilters,
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { WORLD_NEWS_FEED_COUNT } from "@/lib/worldNews";
 
 type Props = { initial: MonitorPayload };
 type SidebarTab = "overview" | "cases" | "news" | "signals";
@@ -58,7 +60,7 @@ function parseSidebarTab(value: string | null): SidebarTab {
 function buildMonitorQuery(
   filters: SearchFilters,
   mapView: MonitorMapViewState,
-  opts?: { caseSlug?: string; tab?: SidebarTab },
+  opts?: { caseSlug?: string; tab?: SidebarTab; newsFilter?: string; casesPage?: number },
 ): string {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(filters)) {
@@ -66,6 +68,8 @@ function buildMonitorQuery(
   }
   if (opts?.caseSlug) p.set("case", opts.caseSlug);
   if (opts?.tab && opts.tab !== "overview") p.set("tab", opts.tab);
+  if (opts?.newsFilter && opts.newsFilter !== "all") p.set("newsFilter", opts.newsFilter);
+  if (opts?.casesPage && opts.casesPage > 1) p.set("casesPage", String(opts.casesPage));
   return mapViewToSearchParams(mapView, p).toString();
 }
 
@@ -76,6 +80,13 @@ function activeFilterCount(filters: SearchFilters): number {
 function caseIdFromSlug(cases: MonitorCaseSummary[], slug: string): string {
   return cases.find((c) => c.slug === slug || c.id === slug)?.id ?? "";
 }
+
+function parseNewsFilter(value: string | null): NewsFeedFilter {
+  if (value === "hot" || value === "linked" || value === "live") return value;
+  return "all";
+}
+
+const MONITOR_CASES_PAGE_SIZE = DEFAULT_ARCHIVE_PAGE_SIZE;
 
 export function WorldMonitor({ initial }: Props) {
   const router = useRouter();
@@ -109,6 +120,14 @@ export function WorldMonitor({ initial }: Props) {
   const [regionFlyRequest, setRegionFlyRequest] = useState<RegionPreset | null>(null);
   const [isPlayingTimeline, setIsPlayingTimeline] = useState(false);
   const [casesMapVisibleOnly, setCasesMapVisibleOnly] = useState(false);
+  const [casesPage, setCasesPage] = useState(() => {
+    const raw = searchParams.get("casesPage");
+    const n = raw ? parseInt(raw, 10) : 1;
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  });
+  const [newsFilter, setNewsFilter] = useState<NewsFeedFilter>(() =>
+    parseNewsFilter(searchParams.get("newsFilter")),
+  );
   const [mountedAt] = useState(() => Date.now());
   const caseCardRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -146,6 +165,10 @@ export function WorldMonitor({ initial }: Props) {
         : data.cases,
     [casesMapVisibleOnly, data.cases, visibleCaseIds],
   );
+  const paginatedCases = useMemo(
+    () => paginateCases(displayCases, casesPage, MONITOR_CASES_PAGE_SIZE),
+    [displayCases, casesPage],
+  );
   const unsolvedCount = useMemo(
     () => data.cases.filter((c) => c.status === "unsolved").length,
     [data.cases],
@@ -160,14 +183,19 @@ export function WorldMonitor({ initial }: Props) {
     (
       nextFilters: SearchFilters,
       nextMapView: MonitorMapViewState,
-      opts?: { caseSlug?: string; tab?: SidebarTab },
+      opts?: { caseSlug?: string; tab?: SidebarTab; newsFilter?: NewsFeedFilter; casesPage?: number },
     ) => {
-      const qs = buildMonitorQuery(nextFilters, nextMapView, opts);
+      const qs = buildMonitorQuery(nextFilters, nextMapView, {
+        caseSlug: opts?.caseSlug,
+        tab: opts?.tab,
+        newsFilter: opts?.newsFilter ?? newsFilter,
+        casesPage: opts?.casesPage ?? casesPage,
+      });
       startTransition(() => {
         router.replace(qs ? `/?${qs}` : "/", { scroll: false });
       });
     },
-    [router],
+    [router, newsFilter, casesPage],
   );
 
   const updateMapView = useCallback(
@@ -197,9 +225,32 @@ export function WorldMonitor({ initial }: Props) {
         : selectedCaseId
           ? data.cases.find((c) => c.id === selectedCaseId)?.slug
           : undefined;
-      syncUrl(merged, mapView, { caseSlug: slug, tab: sidebarTab });
+      setCasesPage(1);
+      syncUrl(merged, mapView, { caseSlug: slug, tab: sidebarTab, casesPage: 1 });
     },
     [filters, mapView, selectedCaseId, sidebarTab, data.cases, syncUrl],
+  );
+
+  const goToCasesPage = useCallback(
+    (page: number) => {
+      const slug = selectedCaseId
+        ? data.cases.find((c) => c.id === selectedCaseId)?.slug
+        : undefined;
+      setCasesPage(page);
+      syncUrl(filters, mapView, { caseSlug: slug, tab: sidebarTab, casesPage: page });
+    },
+    [selectedCaseId, data.cases, filters, mapView, sidebarTab, syncUrl],
+  );
+
+  const handleNewsFilterChange = useCallback(
+    (next: NewsFeedFilter) => {
+      setNewsFilter(next);
+      const slug = selectedCaseId
+        ? data.cases.find((c) => c.id === selectedCaseId)?.slug
+        : undefined;
+      syncUrl(filters, mapView, { caseSlug: slug, tab: sidebarTab, newsFilter: next });
+    },
+    [selectedCaseId, data.cases, filters, mapView, sidebarTab, syncUrl],
   );
 
   const syncMonitorUrl = useCallback(
@@ -219,6 +270,10 @@ export function WorldMonitor({ initial }: Props) {
 
   const selectTab = useCallback(
     (tab: SidebarTab) => {
+      if (isMobileLayout && tab === sidebarTab && sidebarOpen) {
+        setSidebarOpen(false);
+        return;
+      }
       setSidebarTab(tab);
       if (isMobileLayout) {
         setSidebarOpen(true);
@@ -228,7 +283,7 @@ export function WorldMonitor({ initial }: Props) {
       }
       syncMonitorUrl({ tab });
     },
-    [isMobileLayout, syncMonitorUrl],
+    [isMobileLayout, sidebarOpen, sidebarTab, syncMonitorUrl],
   );
 
   const selectCase = useCallback(
@@ -275,6 +330,10 @@ export function WorldMonitor({ initial }: Props) {
       if (id) setSelectedCaseId(id);
     }
     setSidebarTab(parseSidebarTab(searchParams.get("tab")));
+    setNewsFilter(parseNewsFilter(searchParams.get("newsFilter")));
+    const pageRaw = searchParams.get("casesPage");
+    const pageNum = pageRaw ? parseInt(pageRaw, 10) : 1;
+    setCasesPage(Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1);
   }, [initial, searchParams]);
 
   useEffect(() => {
@@ -880,7 +939,7 @@ export function WorldMonitor({ initial }: Props) {
         {isMobileLayout ? (
           <button
             type="button"
-            className="monitor-sidebar-fab monitor-desktop-only-fab"
+            className="monitor-sidebar-fab"
             aria-expanded={sidebarOpen}
             aria-controls="monitor-sidebar"
             onClick={() => setSidebarOpen((open) => !open)}
@@ -894,6 +953,15 @@ export function WorldMonitor({ initial }: Props) {
           ref={sidebarRef}
           className={`monitor-sidebar ${isMobileLayout && !sidebarOpen ? "is-collapsed" : ""}`}
         >
+          {isMobileLayout && sidebarOpen ? (
+            <button
+              type="button"
+              className="monitor-sidebar-back monitor-mobile-only"
+              onClick={() => setSidebarOpen(false)}
+            >
+              ← Back to map
+            </button>
+          ) : null}
           <div className="monitor-tabs" role="tablist" aria-label="Monitor panels">
             {TAB_IDS.map((id) => (
               <button
@@ -1111,6 +1179,13 @@ export function WorldMonitor({ initial }: Props) {
               className="monitor-panel monitor-panel-scroll"
             >
               <h2 className="display text-base">Filtered dossiers</h2>
+              {displayCases.length > 0 ? (
+                <p className="mt-1 text-xs text-[var(--muted)]">
+                  Showing {(paginatedCases.page - 1) * paginatedCases.pageSize + 1}–
+                  {Math.min(paginatedCases.page * paginatedCases.pageSize, paginatedCases.total)} of{" "}
+                  {paginatedCases.total.toLocaleString()}
+                </p>
+              ) : null}
               {mapFiltersActive ? (
                 <div className="monitor-cases-toolbar mt-2">
                   <p className="text-xs text-[var(--muted)]">
@@ -1119,14 +1194,17 @@ export function WorldMonitor({ initial }: Props) {
                   <button
                     type="button"
                     className={`monitor-map-toggle text-xs ${casesMapVisibleOnly ? "is-active" : ""}`}
-                    onClick={() => setCasesMapVisibleOnly((v) => !v)}
+                    onClick={() => {
+                      setCasesMapVisibleOnly((v) => !v);
+                      goToCasesPage(1);
+                    }}
                   >
                     {casesMapVisibleOnly ? "Showing map-visible only" : "Map-visible only"}
                   </button>
                 </div>
               ) : null}
               <ul className="monitor-case-list mt-3">
-                {displayCases.map((c) => {
+                {paginatedCases.items.map((c) => {
                   const pin = data.pins.find((p) => p.id === c.id);
                   const mapVisible = pin ? visibleCaseIds.has(c.id) : false;
                   const active = selectedCaseId === c.id;
@@ -1187,7 +1265,7 @@ export function WorldMonitor({ initial }: Props) {
                     </li>
                   );
                 })}
-                {!displayCases.length ? (
+                {!paginatedCases.items.length ? (
                   <li className="py-6 text-center text-sm text-[var(--muted)]">
                     {casesMapVisibleOnly && data.cases.length
                       ? "No map-visible cases in this filter set."
@@ -1195,6 +1273,44 @@ export function WorldMonitor({ initial }: Props) {
                   </li>
                 ) : null}
               </ul>
+              {paginatedCases.totalPages > 1 ? (
+                <nav
+                  className="monitor-cases-pagination archive-pagination mt-4 flex flex-wrap items-center justify-between gap-4"
+                  aria-label="Cases pages"
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {paginatedCases.page > 1 ? (
+                      <button
+                        type="button"
+                        className="btn btn-ghost text-xs"
+                        onClick={() => goToCasesPage(paginatedCases.page - 1)}
+                      >
+                        ← Previous
+                      </button>
+                    ) : (
+                      <span className="btn btn-ghost text-xs opacity-40 pointer-events-none">
+                        ← Previous
+                      </span>
+                    )}
+                    {paginatedCases.page < paginatedCases.totalPages ? (
+                      <button
+                        type="button"
+                        className="btn btn-ghost text-xs"
+                        onClick={() => goToCasesPage(paginatedCases.page + 1)}
+                      >
+                        Next →
+                      </button>
+                    ) : (
+                      <span className="btn btn-ghost text-xs opacity-40 pointer-events-none">
+                        Next →
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[var(--muted)]">
+                    Page {paginatedCases.page} of {paginatedCases.totalPages}
+                  </p>
+                </nav>
+              ) : null}
               {selectedCase && !selectedPin ? (
                 <div className="monitor-unplotted-card mt-4">
                   <p className="text-sm font-medium text-[var(--ink)]">{selectedCase.name}</p>
@@ -1218,7 +1334,7 @@ export function WorldMonitor({ initial }: Props) {
             >
               <h2 className="display text-base">World crime news</h2>
               <p className="mt-1 text-xs text-[var(--muted)]">
-                AI-scored hot alerts · 17 regional RSS feeds · dossier links
+                AI-scored hot alerts · {WORLD_NEWS_FEED_COUNT} regional RSS feeds · dossier links
               </p>
               <WorldNewsFeed
                 initial={data.worldNews}
@@ -1226,6 +1342,9 @@ export function WorldMonitor({ initial }: Props) {
                 countryFilter={filters.country ?? ""}
                 caseNames={Object.fromEntries(data.cases.map((c) => [c.slug, c.name]))}
                 showFullPageLink
+                disablePolling
+                filter={newsFilter}
+                onFilterChange={handleNewsFilterChange}
                 onShowNewsLayer={() => updateMapView({ contentLayer: "both" })}
                 onPlotOnMap={(slug) => {
                   const id = caseIdFromSlug(data.cases, slug);

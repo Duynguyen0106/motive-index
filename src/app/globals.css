@@ -2767,8 +2767,37 @@ a.monitor-news-headline:hover {
   overflow: hidden;
 }
 
+.monitor-sidebar-back {
+  display: none;
+}
+
+.monitor-cases-pagination {
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
 .monitor-sidebar-fab {
   display: none;
+}
+
+@media (max-width: 1023px) {
+  .monitor-sidebar-back {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--bg-subtle);
+    border: none;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+
+  .monitor-sidebar-back:hover {
+    background: var(--bg);
+  }
 }
 
 .monitor-quick-filters .monitor-chip {

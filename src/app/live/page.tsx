@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { LiveFeedClient } from "@/components/LiveFeedClient";
+import { LivePageHotNews } from "@/components/LivePageHotNews";
 import { LiveRegionFilter } from "@/components/LiveRegionFilter";
 import { WorldNewsFeed } from "@/components/WorldNewsFeed";
 import { PageHeader } from "@/components/PageHeader";
@@ -9,6 +10,7 @@ import { QuickLinks } from "@/components/ui";
 import { COUNTRY_LABELS, listCountryOptions } from "@/lib/country";
 import { getAllCases, getUpdates } from "@/lib/data";
 import { buildWorldNewsPayload } from "@/lib/worldNewsService";
+import { WORLD_NEWS_FEED_COUNT } from "@/lib/worldNews";
 import type { CountryCode } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -34,10 +36,16 @@ export default async function LivePage({ searchParams }: Props) {
     Promise.resolve(getUpdates(30)),
   ]);
 
-  const monitorHref = country ? `/?country=${country}` : "/";
+  const monitorHref = country ? `/?country=${country}&tab=news` : "/?tab=news";
+  const monitorCasesHref = country ? `/?country=${country}` : "/";
 
   return (
     <div className="site-shell page-intro page-scroll-safe py-10 md:py-12">
+      <LivePageHotNews
+        updates={archiveUpdates}
+        worldNewsItems={initialNews.items}
+        country={country || undefined}
+      />
       <Breadcrumbs
         items={[{ label: "Monitor", href: "/" }, { label: "World crime news" }]}
       />
@@ -45,7 +53,7 @@ export default async function LivePage({ searchParams }: Props) {
         className="mt-5"
         label="Live intelligence"
         title={country ? `World crime news · ${COUNTRY_LABELS[country]}` : "World crime news"}
-        description="Regional RSS clusters translated/summarized in English, linked to Motive Index dossiers where available."
+        description={`${WORLD_NEWS_FEED_COUNT} regional RSS clusters with English where available; non-English headlines shown in original language with source labels, linked to Motive Index dossiers where available.`}
       />
       <QuickLinks
         links={[
@@ -66,14 +74,20 @@ export default async function LivePage({ searchParams }: Props) {
         <p className="mt-4 text-sm text-[var(--muted)]">
           Showing news linked to {COUNTRY_LABELS[country]}.{" "}
           <Link href={monitorHref} className="text-[var(--accent)] hover:underline">
-            View cases on map
+            View on monitor (news tab)
+          </Link>
+          {" · "}
+          <Link href={monitorCasesHref} className="text-[var(--accent)] hover:underline">
+            Cases on map
           </Link>
         </p>
       ) : null}
 
       <section className="mt-10">
         <h2 className="display text-2xl">Global feed</h2>
-        <p className="mt-2 text-sm text-[var(--muted)]">Refreshes every 60 seconds</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">
+          Refreshes every 60 seconds · {WORLD_NEWS_FEED_COUNT} RSS sources
+        </p>
         <div className="mt-6 card p-5">
           <WorldNewsFeed
             initial={initialNews}

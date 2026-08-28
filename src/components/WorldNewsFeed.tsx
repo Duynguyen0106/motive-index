@@ -30,6 +30,9 @@ type Props = {
   caseNames?: Record<string, string>;
   showFilters?: boolean;
   showFullPageLink?: boolean;
+  disablePolling?: boolean;
+  filter?: NewsFeedFilter;
+  onFilterChange?: (filter: NewsFeedFilter) => void;
 };
 
 function NewsCard({
@@ -160,14 +163,27 @@ export function WorldNewsFeed({
   caseNames,
   showFilters = true,
   showFullPageLink = false,
+  disablePolling = false,
+  filter: controlledFilter,
+  onFilterChange,
 }: Props) {
   const [payload, setPayload] = useState(initial);
   const [status, setStatus] = useState<"live" | "syncing">("live");
-  const [filter, setFilter] = useState<NewsFeedFilter>("all");
+  const [internalFilter, setInternalFilter] = useState<NewsFeedFilter>("all");
+  const filter = controlledFilter ?? internalFilter;
+
+  const setFilter = useCallback(
+    (next: NewsFeedFilter) => {
+      if (onFilterChange) onFilterChange(next);
+      else setInternalFilter(next);
+    },
+    [onFilterChange],
+  );
 
   useEffect(() => {
     setPayload(initial);
-  }, [initial]);
+    if (disablePolling) setStatus("live");
+  }, [initial, disablePolling]);
 
   const fetchNews = useCallback(async () => {
     setStatus("syncing");
@@ -178,6 +194,7 @@ export function WorldNewsFeed({
   }, [countryFilter]);
 
   useEffect(() => {
+    if (disablePolling) return;
     let cancelled = false;
 
     async function poll() {
@@ -197,7 +214,7 @@ export function WorldNewsFeed({
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [fetchNews]);
+  }, [fetchNews, disablePolling]);
 
   const hotLookup = useMemo(
     () => buildHotNewsLookup(updates, payload.items),

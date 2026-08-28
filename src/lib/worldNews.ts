@@ -160,6 +160,8 @@ export const WORLD_NEWS_FEEDS: WorldNewsFeed[] = [
   },
 ];
 
+export const WORLD_NEWS_FEED_COUNT = WORLD_NEWS_FEEDS.length;
+
 export type WorldNewsItem = LiveUpdate & {
   kind: "world_news";
   region: string;
@@ -242,19 +244,22 @@ function looksLikeCrimeNews(text: string): boolean {
 }
 
 function toEnglishHeadline(title: string, feed: WorldNewsFeed): { headline: string; original?: string } {
+  const headline = title.slice(0, 200);
   if (feed.language === "en") {
-    return { headline: title.slice(0, 200) };
+    return { headline };
   }
-  return {
-    headline: `[${feed.languageLabel}] ${title.slice(0, 160)}`,
-    original: title,
-  };
+  return { headline };
 }
 
 function toSummary(summary: string, feed: WorldNewsFeed): string {
-  const base = summary || "Crime-related report from regional press.";
-  if (feed.language === "en") return base;
-  return `Translated/summarized from ${feed.languageLabel} press cluster. ${base}`;
+  const excerpt = summary.trim();
+  if (feed.language === "en") {
+    return excerpt || "Crime-related report from regional press.";
+  }
+  if (excerpt) {
+    return `Original-language excerpt from ${feed.languageLabel} regional RSS (not machine-translated). ${excerpt}`;
+  }
+  return `Crime-related report from ${feed.region} (${feed.languageLabel} source; headline shown in original language).`;
 }
 
 function inferCountryFromText(text: string, fallback?: CountryCode): CountryCode {
