@@ -92,22 +92,34 @@ async function checkUrl(entry, attempt = 1) {
         },
       });
     }
+    if (res.status === 429 && attempt < 4) {
+      clearTimeout(timer);
+      await new Promise((r) => setTimeout(r, 1500 * attempt));
+      return checkUrl(entry, attempt + 1);
+    }
     clearTimeout(timer);
     const finalUrl = res.url;
     const statusOk = res.status >= 200 && res.status < 400;
+    const rateLimited = res.status === 429;
     const redirectedHome =
       statusOk && finalUrl !== entry.url && isHomepageOnlyUrl(finalUrl);
-    const ok = statusOk && !redirectedHome;
+    const ok =
+      (statusOk && !redirectedHome) ||
+      (rateLimited && process.env.CI === "true");
     return {
       ...entry,
       status: res.status,
       finalUrl,
       ok,
-      error: !statusOk
-        ? `HTTP ${res.status}`
-        : redirectedHome
-          ? `Redirects to homepage (${finalUrl})`
-          : null,
+      error: rateLimited
+        ? process.env.CI === "true"
+          ? "HTTP 429 (rate-limited — skipped in CI)"
+          : "HTTP 429"
+        : !statusOk
+          ? `HTTP ${res.status}`
+          : redirectedHome
+            ? `Redirects to homepage (${finalUrl})`
+            : null,
     };
   } catch (e) {
     clearTimeout(timer);
@@ -183,6 +195,7 @@ async function main() {
 
   const results = await runPool(auditList, checkUrl, CONCURRENCY);
   const broken = results.filter((r) => !r.ok);
+  const rateLimited = results.filter((r) => r.status === 429);
   const mismatches = results
     .map((r) => ({ ...r, mismatch: citationMismatch(r) }))
     .filter((r) => r.mismatch);
@@ -207,6 +220,9 @@ async function main() {
   writeFileSync(reportPath, lines.join("\n") + "\n");
 
   console.log(`Broken/unreachable: ${broken.length}`);
+  if (rateLimited.length) {
+    console.log(`Rate-limited (429): ${rateLimited.length}${process.env.CI === "true" ? " — non-fatal in CI" : ""}`);
+  }
   broken.forEach((r) => {
     console.log(`  ✗ [${r.slug}] ${r.refId}: ${r.error} — ${r.url}`);
   });
