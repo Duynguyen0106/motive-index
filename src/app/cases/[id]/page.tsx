@@ -7,7 +7,7 @@ import { CaseImageGallery } from "@/components/CaseImageGallery";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CaseTabs } from "@/components/CaseTabs";
 import { CaseTabKeyboardNav } from "@/components/CaseTabKeyboardNav";
-import { CaseNarrativeView } from "@/components/CaseNarrative";
+import { CaseNarrativeView, NARRATIVE_CHAPTER_ORDER } from "@/components/CaseNarrative";
 import { ContentWarning, DistressResources } from "@/components/ContentWarning";
 import { Disclaimer } from "@/components/Disclaimer";
 import { DossierActionBar } from "@/components/DossierActionBar";
@@ -124,6 +124,9 @@ export default async function CasePage({ params, searchParams }: Props) {
     siteOrigin: getSiteUrl(),
   });
   const primaryImage = crimeCase.images?.[0];
+  const storyChapterIds = narrative
+    ? NARRATIVE_CHAPTER_ORDER.filter((id) => narrative.chapters.some((c) => c.id === id))
+    : [];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -245,7 +248,12 @@ export default async function CasePage({ params, searchParams }: Props) {
 
       <div className="dossier-sticky-stack">
         <Suspense fallback={null}>
-          <CaseTabKeyboardNav hasNarrative={Boolean(narrative)} />
+          <CaseTabKeyboardNav
+            hasNarrative={Boolean(narrative)}
+            prevCase={prevCase ? { slug: prevCase.slug, name: prevCase.name } : undefined}
+            nextCase={nextCase ? { slug: nextCase.slug, name: nextCase.name } : undefined}
+            storyChapterIds={storyChapterIds}
+          />
           <CaseTabs slug={crimeCase.slug} defaultTab={tab} hasNarrative={Boolean(narrative)} />
         </Suspense>
         <DossierActionBar

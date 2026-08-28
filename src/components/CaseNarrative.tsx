@@ -10,6 +10,8 @@ const CHAPTER_ORDER: DossierChapter["id"][] = [
   "aftermath",
 ];
 
+export const NARRATIVE_CHAPTER_ORDER = CHAPTER_ORDER;
+
 function chapterNavLabel(id: DossierChapter["id"]): string {
   const labels: Record<DossierChapter["id"], string> = {
     origins: "Origins",
@@ -122,6 +124,9 @@ export function CaseNarrativeView({
       </nav>
       <div className="w-full min-w-0 max-w-full">
         <p className="lede max-w-full text-balance text-[1.35rem] text-[var(--ink)]">{narrative.hook}</p>
+        <p className="story-chapter-hint mobile-hide mt-4 text-xs text-[var(--muted)]">
+          <kbd className="keyboard-kbd">[</kbd> <kbd className="keyboard-kbd">]</kbd> jump between chapters
+        </p>
         <hr className="rule mt-8" />
         {chapters.map((c) => (
           <ChapterBlock key={c.id} chapter={c} />

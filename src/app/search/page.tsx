@@ -5,6 +5,7 @@ import { CaseImagePanel } from "@/components/CaseImagePanel";
 import { EmptyState, QuickLinks } from "@/components/ui";
 import { getPrimaryCaseImage } from "@/lib/caseImages";
 import { SearchFilterChips } from "@/components/SearchFilterChips";
+import { SearchHighlight } from "@/components/SearchHighlight";
 import {
   CRIME_CATEGORY_LABELS,
   DOCUMENT_TYPE_LABELS,
@@ -368,8 +369,12 @@ export default async function SearchPage({ searchParams }: Props) {
                         {COUNTRY_LABELS[resolveCaseCountry(c)]} · {c.location} · {c.yearStart}
                         {c.yearEnd ? `–${c.yearEnd}` : ""}
                       </p>
-                      <h3 className="display mt-1 text-2xl">{c.name}</h3>
-                      <p className="mt-2 text-[var(--ink-soft)]">{c.subtitle}</p>
+                      <h3 className="display mt-1 text-2xl">
+                        <SearchHighlight text={c.name} query={filters.q} />
+                      </h3>
+                      <p className="mt-2 text-[var(--ink-soft)]">
+                        <SearchHighlight text={c.subtitle} query={filters.q} />
+                      </p>
                       <p className="mt-2 text-sm text-[var(--muted)]">
                         {c.crimeCategories.map((x) => CRIME_CATEGORY_LABELS[x]).join(" · ")}
                       </p>
@@ -454,8 +459,12 @@ export default async function SearchPage({ searchParams }: Props) {
                   <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-[0.12em]">
                     {DOCUMENT_TYPE_LABELS[d.type]}
                   </p>
-                  <h3 className="display mt-1 text-xl">{d.title}</h3>
-                  <p className="mt-2 text-sm text-[var(--ink-soft)]">{d.summary}</p>
+                  <h3 className="display mt-1 text-xl">
+                    <SearchHighlight text={d.title} query={filters.q} />
+                  </h3>
+                  <p className="mt-2 text-sm text-[var(--ink-soft)]">
+                    <SearchHighlight text={d.summary} query={filters.q} />
+                  </p>
                   <Link
                     href={`/cases/${d.caseSlug}?tab=documents`}
                     className="mt-3 inline-block text-sm font-medium text-[var(--accent)] hover:underline"

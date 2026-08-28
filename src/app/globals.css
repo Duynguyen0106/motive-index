@@ -3116,6 +3116,93 @@ a.monitor-news-headline:hover {
   width: min(14rem, 28vw);
 }
 
+.site-search-wrap {
+  position: relative;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .site-search-wrap {
+    display: block;
+    width: min(14rem, 28vw);
+  }
+
+  .site-search-wrap .site-search {
+    display: block;
+    width: 100%;
+  }
+}
+
+.site-search-suggestions {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--paper-elevated);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--cs-void) 35%, transparent);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.site-search-suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.site-search-suggestion.is-active,
+.site-search-suggestion:hover {
+  background: color-mix(in srgb, var(--cs-deep) 18%, transparent);
+}
+
+.site-search-suggestion-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.site-search-suggestion-sub {
+  font-size: 0.6875rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.site-search-suggestion-empty,
+.site-search-suggestion-footer {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.site-search-advanced-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.site-search-advanced-link:hover {
+  text-decoration: underline;
+}
+
+.search-highlight {
+  background: color-mix(in srgb, var(--cs-signal) 28%, transparent);
+  color: inherit;
+  padding: 0 0.1em;
+  border-radius: 2px;
+}
+
 .site-nav-search {
   width: 100%;
   padding: 0 0 0.75rem;
@@ -3123,6 +3210,7 @@ a.monitor-news-headline:hover {
   border-bottom: 1px solid var(--line);
 }
 
+.site-nav-search .site-search-wrap,
 .site-nav-search .site-search {
   display: block;
   width: 100%;
@@ -4467,6 +4555,26 @@ html[data-theme="light"] .keyboard-help-fab {
   cursor: pointer;
 }
 
+.command-palette-item-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.command-palette-type {
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 0.05rem 0.35rem;
+  border-radius: 2px;
+}
+
 .command-palette-item.is-active,
 .command-palette-item:hover {
   background: color-mix(in srgb, var(--cs-deep) 22%, transparent);
@@ -4476,6 +4584,10 @@ html[data-theme="light"] .keyboard-help-fab {
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .command-palette-hint {

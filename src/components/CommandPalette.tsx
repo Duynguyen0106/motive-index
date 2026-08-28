@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { COUNTRY_LABELS } from "@/lib/country";
+import { loadPaletteRecents, pushPaletteRecent, type PaletteRecent } from "@/lib/paletteRecents";
 
 type CaseHit = {
   id: string;
@@ -11,6 +12,23 @@ type CaseHit = {
   subtitle: string;
   country?: string;
   status: string;
+};
+
+type DocumentHit = {
+  id: string;
+  title: string;
+  type: string;
+  typeLabel: string;
+  caseSlug: string;
+  summary: string;
+};
+
+type PaletteItem = {
+  type: "route" | "filter" | "recent" | "case" | "document";
+  href: string;
+  label: string;
+  hint?: string;
+  slug?: string;
 };
 
 const ROUTES = [
@@ -35,6 +53,14 @@ const FILTER_SHORTCUTS = [
   { href: "/search?documentType=manifesto", label: "Manifestos", hint: "Document type filter" },
 ];
 
+const TYPE_LABELS: Record<PaletteItem["type"], string> = {
+  route: "Page",
+  filter: "Filter",
+  recent: "Recent",
+  case: "Dossier",
+  document: "Document",
+};
+
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
@@ -46,6 +72,8 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cases, setCases] = useState<CaseHit[]>([]);
+  const [documents, setDocuments] = useState<DocumentHit[]>([]);
+  const [recents, setRecents] = useState<PaletteRecent[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +83,7 @@ export function CommandPalette() {
     setOpen(false);
     setQuery("");
     setCases([]);
+    setDocuments([]);
     setActiveIdx(0);
   }, []);
 
@@ -62,6 +91,8 @@ export function CommandPalette() {
     setOpen(true);
     setQuery("");
     setCases([]);
+    setDocuments([]);
+    setRecents(loadPaletteRecents());
     setActiveIdx(0);
   }, []);
 
@@ -69,12 +100,16 @@ export function CommandPalette() {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setOpen((v) => !v);
-        if (!open) {
-          setQuery("");
-          setCases([]);
-          setActiveIdx(0);
-        }
+        setOpen((v) => {
+          if (!v) {
+            setQuery("");
+            setCases([]);
+            setDocuments([]);
+            setRecents(loadPaletteRecents());
+            setActiveIdx(0);
+          }
+          return !v;
+        });
         return;
       }
       if (open && e.key === "Escape") {
@@ -106,17 +141,26 @@ export function CommandPalette() {
       const q = query.trim();
       if (!q) {
         setCases([]);
+        setDocuments([]);
         setLoading(false);
         return;
       }
       setLoading(true);
       try {
-        const res = await fetch(`/api/cases?q=${encodeURIComponent(q)}&limit=12`);
-        const data = (await res.json()) as { cases: CaseHit[] };
-        setCases(data.cases ?? []);
+        const [casesRes, docsRes] = await Promise.all([
+          fetch(`/api/cases?q=${encodeURIComponent(q)}&limit=10`),
+          fetch(`/api/documents?q=${encodeURIComponent(q)}&limit=6`),
+        ]);
+        const casesData = (await casesRes.json()) as { cases: CaseHit[] };
+        const docsData = docsRes.ok
+          ? ((await docsRes.json()) as { documents: DocumentHit[] })
+          : { documents: [] };
+        setCases(casesData.cases ?? []);
+        setDocuments(docsData.documents ?? []);
         setActiveIdx(0);
       } catch {
         setCases([]);
+        setDocuments([]);
       } finally {
         setLoading(false);
       }
@@ -135,8 +179,18 @@ export function CommandPalette() {
         (f) => f.label.toLowerCase().includes(q) || f.hint.toLowerCase().includes(q),
       )
     : FILTER_SHORTCUTS;
+  const recentMatches = q
+    ? recents.filter((r) => r.name.toLowerCase().includes(q))
+    : recents;
 
-  const items: { type: "route" | "filter" | "case"; href: string; label: string; hint?: string }[] = [
+  const items: PaletteItem[] = [
+    ...recentMatches.map((r) => ({
+      type: "recent" as const,
+      href: `/cases/${r.slug}`,
+      label: r.name,
+      hint: "Recently visited",
+      slug: r.slug,
+    })),
     ...routeMatches.map((r) => ({ type: "route" as const, ...r })),
     ...filterMatches.map((f) => ({ type: "filter" as const, ...f })),
     ...cases.map((c) => ({
@@ -144,12 +198,22 @@ export function CommandPalette() {
       href: `/cases/${c.slug}`,
       label: c.name,
       hint: `${c.subtitle.slice(0, 60)}${c.country ? ` · ${COUNTRY_LABELS[c.country as keyof typeof COUNTRY_LABELS] ?? c.country}` : ""}`,
+      slug: c.slug,
+    })),
+    ...documents.map((d) => ({
+      type: "document" as const,
+      href: `/cases/${d.caseSlug}?tab=documents`,
+      label: d.title,
+      hint: `${d.typeLabel} · ${d.summary}`,
     })),
   ];
 
-  function go(href: string) {
+  function go(item: PaletteItem) {
+    if (item.slug && (item.type === "case" || item.type === "recent")) {
+      pushPaletteRecent({ slug: item.slug, name: item.label });
+    }
     close();
-    router.push(href);
+    router.push(item.href);
   }
 
   function onInputKeyDown(e: React.KeyboardEvent) {
@@ -161,7 +225,7 @@ export function CommandPalette() {
       setActiveIdx((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter" && items[activeIdx]) {
       e.preventDefault();
-      go(items[activeIdx].href);
+      go(items[activeIdx]);
     }
   }
 
@@ -184,7 +248,7 @@ export function CommandPalette() {
           ref={inputRef}
           type="search"
           className="command-palette-input field"
-          placeholder="Jump to dossier or page…"
+          placeholder="Jump to dossier, document, or page…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onInputKeyDown}
@@ -193,20 +257,25 @@ export function CommandPalette() {
         <ul className="command-palette-list" role="listbox">
           {items.length === 0 && !loading ? (
             <li className="command-palette-empty">
-              {q ? "No matches — try a dossier name or filter shortcut" : "Type to search 10,000+ dossiers or pick a page"}
+              {q
+                ? "No matches — try a dossier name, document title, or filter shortcut"
+                : "Type to search dossiers & documents, or pick a page"}
             </li>
           ) : null}
           {items.map((item, idx) => (
-            <li key={`${item.type}-${item.href}`}>
+            <li key={`${item.type}-${item.href}-${item.label}`}>
               <button
                 type="button"
                 role="option"
                 aria-selected={idx === activeIdx}
                 className={`command-palette-item ${idx === activeIdx ? "is-active" : ""}`}
                 onMouseEnter={() => setActiveIdx(idx)}
-                onClick={() => go(item.href)}
+                onClick={() => go(item)}
               >
-                <span className="command-palette-label">{item.label}</span>
+                <span className="command-palette-item-main">
+                  <span className="command-palette-type">{TYPE_LABELS[item.type]}</span>
+                  <span className="command-palette-label">{item.label}</span>
+                </span>
                 {item.hint ? (
                   <span className="command-palette-hint">{item.hint}</span>
                 ) : null}
@@ -225,7 +294,6 @@ export function CommandPalette() {
   );
 }
 
-/** Registers Cmd+K without rendering when closed — export open helper via custom event if needed. */
 export function CommandPaletteHost() {
   return <CommandPalette />;
 }

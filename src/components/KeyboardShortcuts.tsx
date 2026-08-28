@@ -12,9 +12,10 @@ const SHORTCUTS = [
   { keys: "g a", action: "Go to case archive" },
   { keys: "g n", action: "Go to world crime news" },
   { keys: "g s", action: "Go to advanced search" },
-  { keys: "[ ]", action: "Cycle monitor sidebar tabs (on home)" },
-  { keys: "Esc", action: "Close overlay / deselect map case" },
+  { keys: "[ ]", action: "Monitor sidebar tabs (home) or story chapters (Full story tab)" },
   { keys: "← →", action: "Cycle case tabs (on dossier pages)" },
+  { keys: "j / k", action: "Previous / next dossier (on dossier pages)" },
+  { keys: "Esc", action: "Close overlay / deselect map case" },
 ] as const;
 
 function isTypingTarget(target: EventTarget | null): boolean {
