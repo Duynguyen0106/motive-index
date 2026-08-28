@@ -984,7 +984,10 @@ export function WorldMonitor({ initial }: Props) {
                           </span>
                         </span>
                         {pin ? (
-                          <span className="monitor-case-pin" title="Plotted on map" />
+                          <span
+                            className={`monitor-case-pin${c.status === "unsolved" ? " monitor-case-pin-unsolved" : ""}`}
+                            title={c.status === "unsolved" ? "Unsolved · plotted on map" : "Closed / historical · plotted on map"}
+                          />
                         ) : (
                           <span className="monitor-case-pin monitor-case-pin-off" title="No coordinates" />
                         )}

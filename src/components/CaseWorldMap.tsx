@@ -32,7 +32,6 @@ import { choroplethFillOpacity, choroplethValue } from "@/lib/monitorMapTypes";
 import {
   buildRichPopupHtml,
   escapeHtml,
-  markerShapeClass,
 } from "@/lib/monitorMapUtils";
 import type { CountryCode } from "@/lib/types";
 import { CRIME_CATEGORY_LABELS } from "@/lib/types";
@@ -74,17 +73,10 @@ function markerHtml(
   hovered: boolean,
   provenanceDimmed: boolean,
 ): string {
-  const size = active || hovered ? 14 : 10;
-  const unsolved = pin.status === "unsolved";
-  const color = unsolved ? "var(--maroon)" : "var(--accent)";
-  const opacity = provenanceDimmed ? 0.35 : 1;
-  const shape = markerShapeClass(pin.primaryCategory);
-  const ring = active
-    ? `<span class="monitor-marker-ring"></span>`
-    : hovered
-      ? `<span class="monitor-marker-ring is-hover"></span>`
-      : "";
-  return `<span class="monitor-leaflet-marker ${shape}" style="width:${size}px;height:${size}px;background:${color};opacity:${opacity}">${ring}</span>`;
+  const statusClass = pin.status === "unsolved" ? "status-unsolved" : "status-resolved";
+  const stateClass = active ? "is-active" : hovered ? "is-hover" : "";
+  const dimClass = provenanceDimmed ? "is-dimmed" : "";
+  return `<span class="monitor-leaflet-marker ${statusClass} ${stateClass} ${dimClass}"></span>`;
 }
 
 function newsMarkerHtml(): string {
@@ -626,10 +618,10 @@ export function CaseWorldMap({
       </div>
       <div className="monitor-map-legend">
         <span className="monitor-legend-item">
-          <span className="monitor-dot monitor-dot-closed" /> Closed / historical
+          <span className="monitor-legend-marker status-resolved" aria-hidden /> Closed / historical
         </span>
         <span className="monitor-legend-item">
-          <span className="monitor-dot monitor-dot-unsolved" /> Unsolved
+          <span className="monitor-legend-marker status-unsolved" aria-hidden /> Unsolved
         </span>
         <span className="monitor-legend-item">
           <span className="monitor-news-marker monitor-legend-news">◆</span> News

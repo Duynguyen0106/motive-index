@@ -28,6 +28,10 @@
   --accent-soft: rgba(210, 91, 91, 0.14);
   --maroon: #d25b5b;
   --warning: #d25b5b;
+  --map-pin-resolved: #6db3cf;
+  --map-pin-resolved-ring: #b8dce8;
+  --map-pin-unsolved: #ffb020;
+  --map-pin-unsolved-ring: #ffd080;
   --overlay: rgba(47, 26, 32, 0.88);
   --background: var(--bg);
   --foreground: var(--ink);
@@ -56,6 +60,10 @@ html[data-theme="light"] {
   --accent-soft: rgba(210, 91, 91, 0.12);
   --maroon: #640404;
   --warning: #640404;
+  --map-pin-resolved: #4a8fa8;
+  --map-pin-resolved-ring: #7eb8cf;
+  --map-pin-unsolved: #c87800;
+  --map-pin-unsolved-ring: #e8a830;
   --overlay: rgba(236, 233, 233, 0.94);
 }
 
@@ -90,8 +98,11 @@ html[data-theme="light"] .monitor-hero {
 }
 
 html[data-theme="light"] .monitor-cluster {
-  background: var(--cs-deep);
-  border-color: var(--paper-elevated);
+  color: var(--paper-elevated);
+}
+
+html[data-theme="light"] .monitor-cluster.has-unsolved {
+  color: var(--paper-elevated);
 }
 
 .theme-toggle {
@@ -939,16 +950,19 @@ a {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 2px solid var(--cs-fog);
-  background: var(--cs-deep);
+  border: 2px solid var(--map-pin-resolved-ring);
+  background: var(--map-pin-resolved);
   color: var(--cs-fog);
   font-size: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 0 14px var(--ai-glow);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--map-pin-resolved) 45%, transparent);
 }
 
 .monitor-cluster.has-unsolved {
-  background: var(--maroon);
+  border-color: var(--map-pin-unsolved-ring);
+  background: var(--map-pin-unsolved);
+  color: #1a1214;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--map-pin-unsolved) 50%, transparent);
 }
 
 .monitor-pill-lang {
@@ -1173,10 +1187,47 @@ a.monitor-news-headline:hover {
 .monitor-leaflet-marker {
   display: block;
   position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+}
+
+.monitor-leaflet-marker.status-resolved {
   border-radius: 50%;
-  border: 2px solid var(--cs-fog);
-  box-shadow: 0 0 10px var(--ai-glow);
-  transition: transform 0.15s;
+  background: var(--map-pin-resolved);
+  border-color: var(--map-pin-resolved-ring);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--map-pin-resolved) 45%, transparent);
+}
+
+.monitor-leaflet-marker.status-unsolved {
+  border-radius: 2px;
+  background: var(--map-pin-unsolved);
+  border-color: var(--map-pin-unsolved-ring);
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--map-pin-unsolved) 50%, transparent);
+}
+
+.monitor-leaflet-marker.is-active {
+  transform: scale(1.2);
+  z-index: 2;
+}
+
+.monitor-leaflet-marker.status-unsolved.is-active {
+  transform: rotate(45deg) scale(1.2);
+}
+
+.monitor-leaflet-marker.is-hover {
+  transform: scale(1.08);
+}
+
+.monitor-leaflet-marker.status-unsolved.is-hover {
+  transform: rotate(45deg) scale(1.08);
+}
+
+.monitor-leaflet-marker.is-dimmed {
+  opacity: 0.35;
 }
 
 .monitor-map-float-controls {
@@ -1245,11 +1296,35 @@ a.monitor-news-headline:hover {
 }
 
 .monitor-dot-closed {
-  background: var(--accent);
+  background: var(--map-pin-resolved);
 }
 
 .monitor-dot-unsolved {
-  background: var(--maroon);
+  background: var(--map-pin-unsolved);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+.monitor-legend-marker {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+}
+
+.monitor-legend-marker.status-resolved {
+  border-radius: 50%;
+  background: var(--map-pin-resolved);
+  border-color: var(--map-pin-resolved-ring);
+}
+
+.monitor-legend-marker.status-unsolved {
+  border-radius: 2px;
+  background: var(--map-pin-unsolved);
+  border-color: var(--map-pin-unsolved-ring);
+  transform: rotate(45deg);
 }
 
 .monitor-legend-meta {
@@ -2463,8 +2538,15 @@ textarea:focus-visible {
   height: 0.5rem;
   margin-top: 0.35rem;
   border-radius: 50%;
-  background: var(--accent);
-  border: 1px solid var(--paper);
+  background: var(--map-pin-resolved);
+  border: 1px solid var(--map-pin-resolved-ring);
+}
+
+.monitor-case-pin-unsolved {
+  border-radius: 2px;
+  background: var(--map-pin-unsolved);
+  border-color: var(--map-pin-unsolved-ring);
+  transform: rotate(45deg);
 }
 
 .monitor-pill {
