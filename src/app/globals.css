@@ -1179,6 +1179,18 @@ a.monitor-news-headline:hover {
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  z-index: 1;
+}
+
+.monitor-map-interactive-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.monitor-map-interactive-layer > * {
+  pointer-events: auto;
 }
 
 .monitor-leaflet-map {
@@ -1641,6 +1653,14 @@ a.monitor-news-headline:hover {
   bottom: 5.5rem;
   left: 1rem;
   z-index: 460;
+}
+
+.monitor-compare-btn-mobile {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  margin: 0.75rem 1rem 0;
+  z-index: auto;
 }
 
 .monitor-compare-banner {

@@ -747,14 +747,37 @@ export function WorldMonitor({ initial }: Props) {
               setIsDrawingBbox(false);
             }}
           />
-          {selectedPin && comparePin ? (
-            <MonitorComparePanel
-              pinA={selectedPin}
-              pinB={comparePin}
-              onClose={() => setCompareCaseId("")}
-            />
+          {!isMobileLayout ? (
+            <div className="monitor-map-interactive-layer">
+              {selectedPin && comparePin ? (
+                <MonitorComparePanel
+                  pinA={selectedPin}
+                  pinB={comparePin}
+                  onClose={() => setCompareCaseId("")}
+                />
+              ) : null}
+              {selectedPin && !comparePin ? (
+                <MonitorCaseCard
+                  pin={selectedPin}
+                  onClose={() => {
+                    selectCase("");
+                    setCompareCaseId("");
+                  }}
+                  cardRef={caseCardRef as RefObject<HTMLDivElement | null>}
+                />
+              ) : null}
+              {selectedPin && !comparePin ? (
+                <button
+                  type="button"
+                  className="monitor-compare-btn btn btn-ghost text-xs"
+                  onClick={() => setCompareMode(true)}
+                >
+                  {compareMode ? "Select second case on map…" : "Compare with another case"}
+                </button>
+              ) : null}
+            </div>
           ) : null}
-          {selectedPin && !comparePin ? (
+          {isMobileLayout && selectedPin && !comparePin ? (
             <MonitorCaseCard
               pin={selectedPin}
               onClose={() => {
@@ -764,10 +787,17 @@ export function WorldMonitor({ initial }: Props) {
               cardRef={caseCardRef as RefObject<HTMLDivElement | null>}
             />
           ) : null}
-          {selectedPin && !comparePin ? (
+          {isMobileLayout && selectedPin && comparePin ? (
+            <MonitorComparePanel
+              pinA={selectedPin}
+              pinB={comparePin}
+              onClose={() => setCompareCaseId("")}
+            />
+          ) : null}
+          {isMobileLayout && selectedPin && !comparePin ? (
             <button
               type="button"
-              className="monitor-compare-btn btn btn-ghost text-xs"
+              className="monitor-compare-btn monitor-compare-btn-mobile btn btn-ghost text-xs"
               onClick={() => setCompareMode(true)}
             >
               {compareMode ? "Select second case on map…" : "Compare with another case"}
